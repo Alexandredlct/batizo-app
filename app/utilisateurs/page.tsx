@@ -1,4 +1,5 @@
 'use client'
+import React from 'react'
 import Sidebar from '../components/Sidebar'
 import { useState } from 'react'
 const G='#1D9E75',AM='#BA7517',RD='#E24B4A',BD='#e5e7eb'
@@ -25,6 +26,17 @@ export default function UtilisateursPage(){
   const[newName,setNewName]=useState('')
   const[newEmail,setNewEmail]=useState('')
   const[newRole,setNewRole]=useState('utilisateur')
+  const[editPerms,setEditPerms]=useState(false)
+  const estProprietaire = true // À connecter à Supabase plus tard
+  const[perms,setPerms]=useState<Record<string,Record<string,boolean>>>({
+    admin:{voir_devis:true,creer_devis:true,modifier_devis:true,dupliquer:true,envoyer_devis:true,creer_facture:true,modifier_facture:true,envoyer_facture:true,archiver:true,pdf:true,voir_clients:true,ajouter_client:true,modifier_client:true,supprimer_client:true,voir_biblio:true,ajouter_biblio:true,modifier_biblio:true,supprimer_biblio:true,gerer_users:true,inviter:true,parametres:true,infos_entreprise:true,abonnement:true,stats:true},
+    utilisateur:{voir_devis:true,creer_devis:true,modifier_devis:true,dupliquer:true,envoyer_devis:true,creer_facture:true,modifier_facture:true,envoyer_facture:true,archiver:true,pdf:true,voir_clients:true,ajouter_client:true,modifier_client:true,supprimer_client:false,voir_biblio:true,ajouter_biblio:true,modifier_biblio:true,supprimer_biblio:false,gerer_users:false,inviter:false,parametres:false,infos_entreprise:false,abonnement:false,stats:true},
+    observateur:{voir_devis:true,creer_devis:false,modifier_devis:false,dupliquer:false,envoyer_devis:false,creer_facture:false,modifier_facture:false,envoyer_facture:false,archiver:false,pdf:true,voir_clients:true,ajouter_client:false,modifier_client:false,supprimer_client:false,voir_biblio:true,ajouter_biblio:false,modifier_biblio:false,supprimer_biblio:false,gerer_users:false,inviter:false,parametres:false,infos_entreprise:false,abonnement:false,stats:true},
+  })
+  const togglePerm=(role:string,perm:string)=>{
+    if(!estProprietaire||!editPerms) return
+    setPerms(p=>({...p,[role]:{...p[role],[perm]:!p[role][perm]}}))
+  }
   const sw=collapsed?64:230
   const navItems=[
     {id:'dashboard',label:'Tableau de bord',href:'/dashboard'},
@@ -195,55 +207,70 @@ export default function UtilisateursPage(){
         
           {/* Tableau des permissions */}
           <div style={{marginTop:32}}>
-            <div style={{fontSize:15,fontWeight:700,color:'#111',marginBottom:4}}>Autorisations par rôle</div>
-            <div style={{fontSize:13,color:'#555',marginBottom:16}}>Définit ce que chaque membre de votre équipe peut faire sur Batizo.</div>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4,flexWrap:'wrap' as const,gap:8}}>
+              <div>
+                <div style={{fontSize:15,fontWeight:700,color:'#111',marginBottom:4}}>Autorisations par rôle</div>
+                <div style={{fontSize:13,color:'#555'}}>Définit ce que chaque membre peut faire sur Batizo.</div>
+              </div>
+              {estProprietaire && (
+                <button onClick={()=>setEditPerms(!editPerms)}
+                  style={{padding:'8px 16px',background:editPerms?'#1D9E75':'#fff',color:editPerms?'#fff':'#333',border:'1px solid #e5e7eb',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer',transition:'all 0.15s'}}>
+                  {editPerms ? '✓ Enregistrer' : '✏️ Modifier les autorisations'}
+                </button>
+              )}
+            </div>
+            {editPerms && (
+              <div style={{background:'#fffbeb',border:'1px solid #fde68a',borderRadius:8,padding:'10px 14px',marginBottom:12,fontSize:13,color:'#92400e'}}>
+                🔒 Vous êtes le propriétaire du compte — vous seul pouvez modifier ces autorisations.
+              </div>
+            )}
             <div style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:12,overflow:'hidden'}}>
               <table style={{width:'100%',borderCollapse:'collapse'}}>
                 <thead>
                   <tr style={{background:'#f9fafb'}}>
-                    <th style={{padding:'12px 16px',textAlign:'left',fontSize:12,color:'#888',fontWeight:600,borderBottom:'1px solid #e5e7eb',width:'40%'}}>ACTION</th>
-                    <th style={{padding:'12px 16px',textAlign:'center',fontSize:12,color:'#1D9E75',fontWeight:700,borderBottom:'1px solid #e5e7eb'}}>Admin</th>
-                    <th style={{padding:'12px 16px',textAlign:'center',fontSize:12,color:'#2563eb',fontWeight:700,borderBottom:'1px solid #e5e7eb'}}>Utilisateur</th>
-                    <th style={{padding:'12px 16px',textAlign:'center',fontSize:12,color:'#BA7517',fontWeight:700,borderBottom:'1px solid #e5e7eb'}}>Observateur</th>
+                    <th style={{padding:'12px 16px',textAlign:'left' as const,fontSize:12,color:'#888',fontWeight:600,borderBottom:'1px solid #e5e7eb',width:'40%'}}>ACTION</th>
+                    <th style={{padding:'12px 16px',textAlign:'center' as const,fontSize:12,color:'#1D9E75',fontWeight:700,borderBottom:'1px solid #e5e7eb'}}>Admin</th>
+                    <th style={{padding:'12px 16px',textAlign:'center' as const,fontSize:12,color:'#2563eb',fontWeight:700,borderBottom:'1px solid #e5e7eb'}}>Utilisateur</th>
+                    <th style={{padding:'12px 16px',textAlign:'center' as const,fontSize:12,color:'#BA7517',fontWeight:700,borderBottom:'1px solid #e5e7eb'}}>Observateur</th>
                   </tr>
                 </thead>
                 <tbody>
                   {[
                     {section:'DEVIS & FACTURES',items:[
-                      {label:'Voir les devis & factures',admin:true,utilisateur:true,observateur:true},
-                      {label:'Créer un devis',admin:true,utilisateur:true,observateur:false},
-                      {label:'Modifier un devis',admin:true,utilisateur:true,observateur:false},
-                      {label:'Dupliquer un devis',admin:true,utilisateur:true,observateur:false},
-                      {label:'Envoyer un devis par email',admin:true,utilisateur:true,observateur:false},
-                      {label:'Créer une facture',admin:true,utilisateur:true,observateur:false},
-                      {label:'Modifier une facture',admin:true,utilisateur:true,observateur:false},
-                      {label:'Envoyer une facture par email',admin:true,utilisateur:true,observateur:false},
-                      {label:'Archiver un chantier',admin:true,utilisateur:true,observateur:false},
-                      {label:'Télécharger PDF',admin:true,utilisateur:true,observateur:true},
+                      {label:'Voir les devis & factures',key:'voir_devis'},
+                      {label:'Créer un devis',key:'creer_devis'},
+                      {label:'Modifier un devis',key:'modifier_devis'},
+                      {label:'Dupliquer un devis',key:'dupliquer'},
+                      {label:'Envoyer un devis par email',key:'envoyer_devis'},
+                      {label:'Créer une facture',key:'creer_facture'},
+                      {label:'Modifier une facture',key:'modifier_facture'},
+                      {label:'Envoyer une facture par email',key:'envoyer_facture'},
+                      {label:'Archiver un chantier',key:'archiver'},
+                      {label:'Télécharger PDF',key:'pdf'},
                     ]},
                     {section:'CLIENTS',items:[
-                      {label:'Voir les clients',admin:true,utilisateur:true,observateur:true},
-                      {label:'Ajouter un client',admin:true,utilisateur:true,observateur:false},
-                      {label:'Modifier un client',admin:true,utilisateur:true,observateur:false},
-                      {label:'Supprimer un client',admin:true,utilisateur:false,observateur:false},
+                      {label:'Voir les clients',key:'voir_clients'},
+                      {label:'Ajouter un client',key:'ajouter_client'},
+                      {label:'Modifier un client',key:'modifier_client'},
+                      {label:'Supprimer un client',key:'supprimer_client'},
                     ]},
                     {section:'BIBLIOTHÈQUE',items:[
-                      {label:'Voir la bibliothèque',admin:true,utilisateur:true,observateur:true},
-                      {label:'Ajouter un ouvrage / matériau',admin:true,utilisateur:true,observateur:false},
-                      {label:'Modifier un ouvrage / matériau',admin:true,utilisateur:true,observateur:false},
-                      {label:'Supprimer un ouvrage / matériau',admin:true,utilisateur:false,observateur:false},
+                      {label:'Voir la bibliothèque',key:'voir_biblio'},
+                      {label:'Ajouter un ouvrage / matériau',key:'ajouter_biblio'},
+                      {label:'Modifier un ouvrage / matériau',key:'modifier_biblio'},
+                      {label:'Supprimer un ouvrage / matériau',key:'supprimer_biblio'},
                     ]},
                     {section:'ADMINISTRATION',items:[
-                      {label:'Gérer les utilisateurs',admin:true,utilisateur:false,observateur:false},
-                      {label:'Inviter des utilisateurs',admin:true,utilisateur:false,observateur:false},
-                      {label:'Accéder aux paramètres',admin:true,utilisateur:false,observateur:false},
-                      {label:'Modifier les infos entreprise',admin:true,utilisateur:false,observateur:false},
-                      {label:'Voir l\'abonnement',admin:true,utilisateur:false,observateur:false},
-                      {label:'Voir les statistiques',admin:true,utilisateur:true,observateur:true},
+                      {label:'Gérer les utilisateurs',key:'gerer_users'},
+                      {label:'Inviter des utilisateurs',key:'inviter'},
+                      {label:'Accéder aux paramètres',key:'parametres'},
+                      {label:"Modifier les infos entreprise",key:'infos_entreprise'},
+                      {label:"Voir l'abonnement",key:'abonnement'},
+                      {label:'Voir les statistiques',key:'stats'},
                     ]},
                   ].map((group,gi)=>(
-                    <>
-                      <tr key={'g'+gi} style={{background:'#f0fdf4'}}>
+                    <React.Fragment key={'g'+gi}>
+                      <tr style={{background:'#f0fdf4'}}>
                         <td colSpan={4} style={{padding:'8px 16px',fontSize:11,fontWeight:700,color:'#1D9E75',letterSpacing:'0.06em'}}>{group.section}</td>
                       </tr>
                       {group.items.map((item,ii)=>(
@@ -251,18 +278,30 @@ export default function UtilisateursPage(){
                           onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
                           onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
                           <td style={{padding:'10px 16px',fontSize:13,color:'#333'}}>{item.label}</td>
-                          <td style={{padding:'10px 16px',textAlign:'center'}}>{item.admin?<span style={{color:'#1D9E75',fontSize:16}}>✓</span>:<span style={{color:'#e5e7eb',fontSize:16}}>✕</span>}</td>
-                          <td style={{padding:'10px 16px',textAlign:'center'}}>{item.utilisateur?<span style={{color:'#2563eb',fontSize:16}}>✓</span>:<span style={{color:'#e5e7eb',fontSize:16}}>✕</span>}</td>
-                          <td style={{padding:'10px 16px',textAlign:'center'}}>{item.observateur?<span style={{color:'#BA7517',fontSize:16}}>✓</span>:<span style={{color:'#e5e7eb',fontSize:16}}>✕</span>}</td>
+                          {['admin','utilisateur','observateur'].map(role=>(
+                            <td key={role} style={{padding:'10px 16px',textAlign:'center' as const}}>
+                              <span
+                                onClick={()=>togglePerm(role,item.key)}
+                                style={{
+                                  fontSize:18,
+                                  cursor:editPerms&&estProprietaire?'pointer':'default',
+                                  color:perms[role][item.key]?(role==='admin'?'#1D9E75':role==='utilisateur'?'#2563eb':'#BA7517'):'#d1d5db',
+                                  transition:'color 0.15s',
+                                  display:'inline-block',
+                                  transform:editPerms?'scale(1.2)':'scale(1)',
+                                }}>
+                                {perms[role][item.key] ? '✓' : '✕'}
+                              </span>
+                            </td>
+                          ))}
                         </tr>
                       ))}
-                    </>
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>
             </div>
           </div>
-
         </div>
       </div>
     </div>
