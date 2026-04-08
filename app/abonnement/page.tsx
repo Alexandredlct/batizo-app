@@ -103,11 +103,11 @@ export default function AbonnementPage(){
               <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',flexWrap:'wrap',gap:16,marginBottom:changerPlan?20:0}}>
                 <div>
                   <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
-                    <span style={{fontSize:22,fontWeight:700}}>Plan Pro</span>
+                    <span style={{fontSize:22,fontWeight:700,color:'#111'}>Plan Pro</span>
                     <span style={{background:'#f0fdf4',color:G,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20}}>Actif</span>
                   </div>
-                  <div style={{fontSize:14,color:'#555',marginBottom:6}}>19 € HT / mois · Renouvellement le <strong>7 mai 2026</strong></div>
-                  <div style={{fontSize:13,color:'#555',display:'flex',alignItems:'center',gap:10}}>
+                  <div style={{fontSize:14,color:'#333',marginBottom:6}}>19 € HT / mois · Renouvellement le <strong>7 mai 2026</strong></div>
+                  <div style={{fontSize:13,color:'#333',display:'flex',alignItems:'center',gap:10}}>
                     Utilisateurs : <strong>5 / 10</strong>
                     <div style={{width:100,height:6,background:'#e5e7eb',borderRadius:10,position:'relative',display:'inline-block'}}>
                       <div style={{position:'absolute',left:0,top:0,height:6,width:'50%',background:G,borderRadius:10}}></div>
@@ -123,21 +123,21 @@ export default function AbonnementPage(){
               </div>
               {changerPlan&&(
                 <div style={{borderTop:`1px solid ${BD}`,paddingTop:20}}>
-                  <div style={{fontSize:14,fontWeight:600,marginBottom:14}}>Choisir un plan</div>
+                  <div style={{fontSize:14,fontWeight:600,marginBottom:14,color:'#111'}}>Choisir un plan</div>
                   <div style={{display:'flex',gap:14,flexWrap:'wrap'}}>
                     {[
                       {name:'Starter',price:'Gratuit',sub:'/ 30 jours',feats:['Devis & factures','Gestion clients','Support chat'],current:false},
                       {name:'Pro',price:'19 €',sub:'HT / mois',feats:['Photos dans les devis','IA génération de posts','Documents complets','10 utilisateurs'],current:true},
                       {name:'Business',price:'49 €',sub:'HT / mois',feats:['Tout le Pro','Utilisateurs illimités','Suivi chantier avancé','Onboarding dédié'],current:false},
                     ].map(plan=>(
-                      <div key={plan.name} style={{flex:1,minWidth:180,border:`2px solid ${plan.current?G:BD}`,borderRadius:10,padding:'16px',background:plan.current?'#f0fdf4':'#fff'}}>
+                      <div key={plan.name} style={{flex:1,minWidth:180,border:`2px solid ${plan.current?G:BD}`,borderRadius:10,padding:'16px',background:plan.current?'#f0fdf4':'#fff',display:'flex',flexDirection:'column' as const}}>
                         {plan.current&&<div style={{fontSize:11,color:G,fontWeight:700,marginBottom:6}}>Plan actuel</div>}
-                        <div style={{fontSize:16,fontWeight:700,marginBottom:4}}>{plan.name}</div>
+                        <div style={{fontSize:16,fontWeight:700,marginBottom:4,color:'#111'}}>{plan.name}</div>
                         <div style={{fontSize:18,fontWeight:700,color:G,marginBottom:10}}>{plan.price} <span style={{fontSize:12,fontWeight:400,color:'#888'}}>{plan.sub}</span></div>
-                        <ul style={{listStyle:'none',padding:0,margin:'0 0 14px',fontSize:13,color:'#555',display:'flex',flexDirection:'column',gap:4}}>
+                        <ul style={{listStyle:'none',padding:0,margin:'0 0 14px',fontSize:13,color:'#333',display:'flex',flexDirection:'column',gap:4,flex:1}}>
                           {plan.feats.map(f=><li key={f}>✓ {f}</li>)}
                         </ul>
-                        <button disabled={plan.current} style={{width:'100%',padding:'8px',background:plan.current?'#e5e7eb':G,color:plan.current?'#888':'#fff',border:'none',borderRadius:7,fontSize:13,fontWeight:600,cursor:plan.current?'not-allowed':'pointer'}}>
+                        <button disabled={plan.current} style={{width:'100%',padding:'8px',background:plan.current?'#e5e7eb':G,color:plan.current?'#888':'#fff',border:'none',borderRadius:7,fontSize:13,fontWeight:600,cursor:plan.current?'not-allowed':'pointer',marginTop:'auto'}}>
                           {plan.current?'Plan actuel':`Passer à ${plan.name}`}
                         </button>
                       </div>
@@ -158,13 +158,13 @@ export default function AbonnementPage(){
                     <svg width="30"height="18"viewBox="0 0 50 30"fill="none"><rect width="50"height="30"rx="4"fill="#1a1a6e"/><circle cx="20"cy="15"r="9"fill="#EB001B"opacity="0.9"/><circle cx="30"cy="15"r="9"fill="#F79E1B"opacity="0.9"/></svg>
                   </div>
                   <div>
-                    <div style={{fontSize:14,fontWeight:600}}>•••• •••• •••• 4242</div>
+                    <div style={{fontSize:14,fontWeight:600,color:'#111'}}>•••• •••• •••• 4242</div>
                     <div style={{fontSize:12,color:'#444'}}>Expire le 09/2027 · Mastercard</div>
                   </div>
                 </div>
                 <div style={{display:'flex',gap:8}}>
-                  <button onClick={()=>setModifierCarte(!modifierCarte)} style={{padding:'7px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,cursor:'pointer'}}>Modifier</button>
-                  <button style={{padding:'7px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,cursor:'pointer'}}>+ Ajouter une carte</button>
+                  <button onClick={()=>setModifierCarte(!modifierCarte)} style={{padding:'7px 14px',background:'#fff',border:'1px solid #333',borderRadius:7,fontSize:13,cursor:'pointer',color:'#111',fontWeight:500}}>Modifier</button>
+                  <button style={{padding:'7px 14px',background:'#fff',border:'1px solid #333',borderRadius:7,fontSize:13,cursor:'pointer',color:'#111',fontWeight:500}}>+ Ajouter une carte</button>
                 </div>
               </div>
               {modifierCarte&&(
@@ -200,10 +200,10 @@ export default function AbonnementPage(){
                 {!editFacturation?(
                   <>
                     <div>
-                      <div style={{fontSize:14,fontWeight:600,marginBottom:4}}>Batizo SAS</div>
-                      <div style={{fontSize:13,color:'#555',lineHeight:1.8}}>130 rue de Normandie<br/>92400 Courbevoie, France<br/>SIRET : 853 572 014<br/>N° TVA : FR XX XXX XXX XXX</div>
+                      <div style={{fontSize:14,fontWeight:600,marginBottom:4,color:'#111'}}>Batizo SAS</div>
+                      <div style={{fontSize:13,color:'#333',lineHeight:1.8}}>130 rue de Normandie<br/>92400 Courbevoie, France<br/>SIRET : 853 572 014<br/>N° TVA : FR XX XXX XXX XXX</div>
                     </div>
-                    <button onClick={()=>setEditFacturation(true)} style={{padding:'7px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,cursor:'pointer'}}>Modifier</button>
+                    <button onClick={()=>setEditFacturation(true)} style={{padding:'7px 14px',background:'#fff',border:'1px solid #333',borderRadius:7,fontSize:13,cursor:'pointer',color:'#111',fontWeight:500}}>Modifier</button>
                   </>
                 ):(
                   <div style={{width:'100%'}}>
@@ -274,10 +274,10 @@ export default function AbonnementPage(){
             <div style={{width:52,height:52,borderRadius:'50%',background:'#fef2f2',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 1rem'}}>
               <svg width="24"height="24"viewBox="0 0 24 24"fill="none"stroke={RD}strokeWidth="2"strokeLinecap="round"><circle cx="12"cy="12"r="10"/><line x1="12"y1="8"x2="12"y2="12"/><line x1="12"y1="16"x2="12.01"y2="16"/></svg>
             </div>
-            <h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>Annuler l'abonnement ?</h3>
-            <p style={{fontSize:14,color:'#555',marginBottom:24,lineHeight:1.6}}>Votre accès restera actif jusqu'au <strong>7 mai 2026</strong>. Après cette date, votre compte passera en mode lecture seule.</p>
+            <h3 style={{fontSize:18,fontWeight:700,marginBottom:8,color:'#111'}}>Annuler l'abonnement ?</h3>
+            <p style={{fontSize:14,color:'#333',marginBottom:24,lineHeight:1.6}}>Votre accès restera actif jusqu'au <strong>7 mai 2026</strong>. Après cette date, votre compte passera en mode lecture seule.</p>
             <div style={{display:'flex',gap:10}}>
-              <button onClick={()=>setShowModal(false)} style={{flex:1,padding:11,border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:14,cursor:'pointer'}}>Garder mon abonnement</button>
+              <button onClick={()=>setShowModal(false)} style={{flex:1,padding:11,border:'1px solid #333',borderRadius:8,background:'#fff',fontSize:14,cursor:'pointer',color:'#111',fontWeight:500}}>Garder mon abonnement</button>
               <button onClick={()=>setShowModal(false)} style={{flex:1,padding:11,background:RD,color:'#fff',border:'none',borderRadius:8,fontSize:14,fontWeight:600,cursor:'pointer'}}>Confirmer l'annulation</button>
             </div>
           </div>
