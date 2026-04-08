@@ -70,7 +70,7 @@ export default function UtilisateursPage(){
               onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
               onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}>
               <div style={{width:32,height:32,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:700,flexShrink:0}}>A</div>
-              <div style={{overflow:'hidden',flex:1}}><div style={{fontSize:12,fontWeight:600,color:'#111'}}>Mon compte</div><div style={{fontSize:11,color:'#888'}}>Batizo</div></div>
+              <div style={{overflow:'hidden',flex:1}}><div style={{fontSize:12,fontWeight:600,color:'#111'}}>Mon compte</div><div style={{fontSize:12,color:'#555'}}>Batizo</div></div>
               <svg viewBox="0 0 24 24"fill="none"stroke="#aaa"strokeWidth="2"style={{width:14,height:14,transform:userMenu?'rotate(180deg)':'',transition:'transform 0.2s'}}><polyline points="6 9 12 15 18 9"/></svg>
             </div>
             {userMenu&&(
@@ -140,7 +140,7 @@ export default function UtilisateursPage(){
             <table style={{width:'100%',borderCollapse:'collapse'}}>
               <thead><tr style={{background:'#f9fafb'}}>
                 {['Nom','Adresse email','Depuis','Permission'].map(h=>(
-                  <th key={h} style={{padding:'10px 16px',textAlign:'left',fontSize:12,color:'#888',fontWeight:600,borderBottom:`1px solid ${BD}`,textTransform:'uppercase' as const,letterSpacing:'0.04em'}}>{h}</th>
+                  <th key={h} style={{padding:'10px 16px',textAlign:'left',fontSize:12,color:'#444',fontWeight:600,borderBottom:`1px solid ${BD}`,textTransform:'uppercase' as const,letterSpacing:'0.04em'}}>{h}</th>
                 ))}
               </tr></thead>
               <tbody>
@@ -161,7 +161,7 @@ export default function UtilisateursPage(){
                     <td style={{padding:'14px 16px',fontSize:13,color:'#555'}}>{u.depuis}</td>
                     <td style={{padding:'14px 16px'}}>
                       {u.vous?(
-                        <span style={{fontSize:13,color:'#888',fontStyle:'italic'}}>Propriétaire du compte</span>
+                        <span style={{fontSize:13,color:'#444',fontStyle:'italic'}}>Propriétaire du compte</span>
                       ):(
                         <select defaultValue={u.role}
                           onChange={e=>{
@@ -181,7 +181,7 @@ export default function UtilisateursPage(){
               </tbody>
             </table>
           </div>
-          <p style={{fontSize:13,color:'#888',marginTop:12}}>{users.length} utilisateurs · Plan Pro — jusqu'à <strong>10 utilisateurs</strong></p>
+          <p style={{fontSize:13,color:'#444',marginTop:12}}>{users.length} utilisateurs · Plan Pro — jusqu'à <strong>10 utilisateurs</strong></p>
         </div>
       </div>
     </div>

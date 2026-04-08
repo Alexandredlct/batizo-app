@@ -64,7 +64,7 @@ export default function ParrainagePage(){
               onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
               onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}>
               <div style={{width:32,height:32,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:700,flexShrink:0}}>A</div>
-              <div style={{overflow:'hidden',flex:1}}><div style={{fontSize:12,fontWeight:600,color:'#111'}}>Mon compte</div><div style={{fontSize:11,color:'#888'}}>Batizo</div></div>
+              <div style={{overflow:'hidden',flex:1}}><div style={{fontSize:12,fontWeight:600,color:'#111'}}>Mon compte</div><div style={{fontSize:12,color:'#555'}}>Batizo</div></div>
               <svg viewBox="0 0 24 24"fill="none"stroke="#aaa"strokeWidth="2"style={{width:14,height:14,transform:userMenu?'rotate(180deg)':'',transition:'transform 0.2s'}}><polyline points="6 9 12 15 18 9"/></svg>
             </div>
             {userMenu&&(
@@ -130,9 +130,9 @@ export default function ParrainagePage(){
                       </div>
                       <div style={{fontSize:24,marginBottom:6}}>{step.icon}</div>
                       <div style={{fontSize:13,fontWeight:600,marginBottom:4}}>{step.title}</div>
-                      <div style={{fontSize:12,color:'#888',lineHeight:1.5}}>{step.desc}</div>
+                      <div style={{fontSize:12,color:'#444',lineHeight:1.5}}>{step.desc}</div>
                     </div>
-                    {i<2&&<div style={{fontSize:20,color:'#ccc',flexShrink:0}}>→</div>}
+                    {i<2&&<div style={{fontSize:20,color:'#777',flexShrink:0}}>→</div>}
                   </div>
                 ))}
               </div>
@@ -152,7 +152,7 @@ export default function ParrainagePage(){
                 </button>
               </div>
               <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap' as const}}>
-                <span style={{fontSize:13,color:'#888'}}>Partager via :</span>
+                <span style={{fontSize:13,color:'#444'}}>Partager via :</span>
                 {[
                   {label:'📧 Email',bg:'#eff6ff',color:'#2563eb',href:`mailto:?subject=Essayez Batizo&body=Créez votre compte : https://batizo.fr/invite/ALEX2026`},
                   {label:'💬 WhatsApp',bg:'#f0fdf4',color:G,href:`https://wa.me/?text=Essayez Batizo : https://batizo.fr/invite/ALEX2026`},
@@ -194,7 +194,7 @@ export default function ParrainagePage(){
               <table style={{width:'100%',borderCollapse:'collapse'}}>
                 <thead><tr style={{background:'#f9fafb'}}>
                   {['Nom','Email','Invité le','Statut','Récompense'].map(h=>(
-                    <th key={h}style={{padding:'10px 16px',textAlign:'left',fontSize:12,color:'#888',fontWeight:600,borderBottom:`1px solid ${BD}`,textTransform:'uppercase' as const,letterSpacing:'0.04em'}}>{h}</th>
+                    <th key={h}style={{padding:'10px 16px',textAlign:'left',fontSize:12,color:'#444',fontWeight:600,borderBottom:`1px solid ${BD}`,textTransform:'uppercase' as const,letterSpacing:'0.04em'}}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
@@ -219,7 +219,7 @@ export default function ParrainagePage(){
                           ?<span style={{color:G,fontWeight:600}}>+1 mois offert ✓</span>
                           :f.statut==='inscrit'
                           ?<span style={{color:'#888'}}>En attente d'abonnement</span>
-                          :<span style={{color:'#aaa'}}>Lien non encore utilisé</span>
+                          :<span style={{color:'#666'}}>Lien non encore utilisé</span>
                         }
                       </td>
                     </tr>

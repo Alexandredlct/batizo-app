@@ -108,18 +108,18 @@ export default function DashboardPage() {
               </div>
               <table style={{width:'100%',borderCollapse:'collapse'}}>
                 <thead><tr style={{background:'#f9fafb'}}>
-                  <th style={{padding:'8px 16px',textAlign:'left',fontSize:11,color:'#888',fontWeight:600}}>Client</th>
-                  <th style={{padding:'8px 16px',textAlign:'right',fontSize:11,color:'#888',fontWeight:600}}>Montant HT</th>
-                  <th style={{padding:'8px 16px',textAlign:'right',fontSize:11,color:'#888',fontWeight:600}}>Statut</th>
+                  <th style={{padding:'8px 16px',textAlign:'left',fontSize:12,color:'#555',fontWeight:600}}>Client</th>
+                  <th style={{padding:'8px 16px',textAlign:'right',fontSize:12,color:'#555',fontWeight:600}}>Montant HT</th>
+                  <th style={{padding:'8px 16px',textAlign:'right',fontSize:12,color:'#555',fontWeight:600}}>Statut</th>
                 </tr></thead>
                 <tbody>
                   {devis.map((d,i) => (
                     <tr key={i} onMouseEnter={e=>{e.currentTarget.style.background="#f0fdf4"}} onMouseLeave={e=>{e.currentTarget.style.background=""}} style={{borderTop:`1px solid ${BD}`}}>
                       <td style={{padding:'10px 16px'}}>
-                        <div style={{fontSize:13,fontWeight:600}}>{d.client}</div>
-                        <div style={{fontSize:11,color:'#888'}}>{d.num} · {d.date}</div>
+                        <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{d.client}</div>
+                        <div style={{fontSize:12,color:'#555'}}>{d.num} · {d.date}</div>
                       </td>
-                      <td style={{padding:'10px 16px',textAlign:'right',fontSize:13,fontWeight:600}}>{d.montant}</td>
+                      <td style={{padding:'10px 16px',textAlign:'right',fontSize:13,fontWeight:600,color:'#111'}}>{d.montant}</td>
                       <td style={{padding:'10px 16px',textAlign:'right'}}>
                         <span style={{background:`${d.sc}22`,color:d.sc,padding:'3px 10px',borderRadius:20,fontSize:11,fontWeight:700}}>{d.statut}</span>
                       </td>
@@ -139,8 +139,8 @@ export default function DashboardPage() {
                   <div key={i} className="client-row" style={{display:"flex",alignItems:"center",gap:12,padding:"8px 12px",borderTop:i>0?`1px solid ${BD}`:"none",transition:"background 0.15s"}}>
                     <div style={{width:36,height:36,borderRadius:'50%',background:c.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,color:c.c}}>{c.i}</div>
                     <div style={{flex:1}}>
-                      <div style={{fontSize:13,fontWeight:600}}>{c.nom}</div>
-                      <div style={{fontSize:11,color:'#888'}}>{c.n} chantier{c.n>1?'s':''}</div>
+                      <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{c.nom}</div>
+                      <div style={{fontSize:12,color:'#555'}}>{c.n} chantier{c.n>1?'s':''}</div>
                     </div>
                     <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{c.ca}</div>
                   </div>

@@ -63,7 +63,7 @@ export default function MesInfosPage(){
               onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
               onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}>
               <div style={{width:32,height:32,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:700,flexShrink:0}}>A</div>
-              <div style={{overflow:'hidden',flex:1}}><div style={{fontSize:12,fontWeight:600,color:'#111'}}>Mon compte</div><div style={{fontSize:11,color:'#888'}}>Batizo</div></div>
+              <div style={{overflow:'hidden',flex:1}}><div style={{fontSize:12,fontWeight:600,color:'#111'}}>Mon compte</div><div style={{fontSize:12,color:'#555'}}>Batizo</div></div>
               <svg viewBox="0 0 24 24"fill="none"stroke="#aaa"strokeWidth="2"style={{width:14,height:14,transform:userMenu?'rotate(180deg)':'',transition:'transform 0.2s'}}><polyline points="6 9 12 15 18 9"/></svg>
             </div>
             {userMenu&&(
@@ -113,7 +113,7 @@ export default function MesInfosPage(){
                 </div>
                 <div>
                   <div style={{fontSize:15,fontWeight:600}}>Alexandre Delcourt</div>
-                  <div style={{fontSize:13,color:'#888'}}>Administrateur · Plan Pro</div>
+                  <div style={{fontSize:13,color:'#444'}}>Administrateur · Plan Pro</div>
                   <div style={{fontSize:12,color:G,cursor:'pointer',marginTop:4}}>Modifier la photo</div>
                 </div>
               </div>
@@ -175,7 +175,7 @@ export default function MesInfosPage(){
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',paddingBottom:16,borderBottom:`1px solid ${BD}`,marginBottom:16,flexWrap:'wrap' as const,gap:12}}>
                 <div>
                   <div style={{fontSize:14,fontWeight:600,marginBottom:3}}>Mot de passe</div>
-                  <div style={{fontSize:13,color:'#888'}}>Dernière modification il y a 3 mois</div>
+                  <div style={{fontSize:13,color:'#444'}}>Dernière modification il y a 3 mois</div>
                 </div>
                 <button onClick={()=>setShowMdp(!showMdp)}style={{padding:'7px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,cursor:'pointer'}}>Modifier le mot de passe</button>
               </div>
@@ -204,7 +204,7 @@ export default function MesInfosPage(){
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap' as const,gap:12}}>
                 <div>
                   <div style={{fontSize:14,fontWeight:600,marginBottom:3}}>Double authentification (2FA)</div>
-                  <div style={{fontSize:13,color:'#888'}}>Sécurisez votre compte avec une vérification en deux étapes</div>
+                  <div style={{fontSize:13,color:'#444'}}>Sécurisez votre compte avec une vérification en deux étapes</div>
                 </div>
                 <div onClick={()=>setTwoFA(!twoFA)}style={{width:44,height:24,borderRadius:12,background:twoFA?G:'#d1d5db',cursor:'pointer',position:'relative',transition:'background 0.2s'}}>
                   <div style={{position:'absolute',top:2,left:twoFA?22:2,width:20,height:20,borderRadius:'50%',background:'#fff',transition:'left 0.2s',boxShadow:'0 1px 3px rgba(0,0,0,0.2)'}}></div>

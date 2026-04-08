@@ -58,7 +58,7 @@ export default function AbonnementPage(){
               <div style={{width:32,height:32,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:700,flexShrink:0}}>A</div>
               <div style={{overflow:'hidden',flex:1}}>
                 <div style={{fontSize:12,fontWeight:600,color:'#111',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>Mon compte</div>
-                <div style={{fontSize:11,color:'#888'}}>Batizo</div>
+                <div style={{fontSize:12,color:'#555'}}>Batizo</div>
               </div>
               <svg viewBox="0 0 24 24"fill="none"stroke="#aaa"strokeWidth="2"style={{width:14,height:14,flexShrink:0,transform:userMenu?'rotate(180deg)':'rotate(0deg)',transition:'transform 0.2s'}}><polyline points="6 9 12 15 18 9"/></svg>
             </div>
@@ -159,7 +159,7 @@ export default function AbonnementPage(){
                   </div>
                   <div>
                     <div style={{fontSize:14,fontWeight:600}}>•••• •••• •••• 4242</div>
-                    <div style={{fontSize:12,color:'#888'}}>Expire le 09/2027 · Mastercard</div>
+                    <div style={{fontSize:12,color:'#444'}}>Expire le 09/2027 · Mastercard</div>
                   </div>
                 </div>
                 <div style={{display:'flex',gap:8}}>
@@ -236,7 +236,7 @@ export default function AbonnementPage(){
               <table style={{width:'100%',borderCollapse:'collapse'}}>
                 <thead><tr style={{background:'#f9fafb'}}>
                   {['Date','Description','Montant','Statut','Facture'].map(h=>(
-                    <th key={h} style={{padding:'10px 16px',textAlign:'left',fontSize:12,color:'#888',fontWeight:600,borderBottom:`1px solid ${BD}`}}>{h}</th>
+                    <th key={h} style={{padding:'10px 16px',textAlign:'left',fontSize:12,color:'#444',fontWeight:600,borderBottom:`1px solid ${BD}`}}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
@@ -256,7 +256,7 @@ export default function AbonnementPage(){
                         <span style={{background:statut==='payé'?'#f0fdf4':'#fef2f2',color:statut==='payé'?G:RD,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20}}>{statut==='payé'?'Payé':'Échoué'}</span>
                       </td>
                       <td style={{padding:'12px 16px'}}>
-                        {statut==='payé'?<button style={{background:'none',border:`1px solid ${BD}`,borderRadius:6,padding:'4px 10px',fontSize:12,cursor:'pointer',color:'#555'}}>⬇ PDF</button>:<span style={{fontSize:12,color:'#aaa'}}>—</span>}
+                        {statut==='payé'?<button style={{background:'none',border:`1px solid ${BD}`,borderRadius:6,padding:'4px 10px',fontSize:12,cursor:'pointer',color:'#555'}}>⬇ PDF</button>:<span style={{fontSize:12,color:'#666'}}>—</span>}
                       </td>
                     </tr>
                   ))}
