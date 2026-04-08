@@ -29,6 +29,9 @@ export default function MesInfosPage(){
   }
 
   const[twoFA,setTwoFA]=useState(false)
+  const[notifs,setNotifs]=useState({devisSigne:true,facturePaye:true,relance:false,impaye:true})
+  const[showDeleteModal,setShowDeleteModal]=useState(false)
+  const[deleteConfirm,setDeleteConfirm]=useState('')
   const sw=collapsed?64:230
   const save=()=>{setHasChanges(false);setToast(true);setTimeout(()=>setToast(false),3000)}
   const navItems=[
@@ -232,8 +235,122 @@ export default function MesInfosPage(){
               </div>
             </div>
           </div>
+
+          {/* Historique connexions */}
+          <div style={{marginBottom:24}}>
+            <div style={{fontSize:13,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Historique des connexions</div>
+            <div style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:12,overflow:'hidden'}}>
+              <table style={{width:'100%',borderCollapse:'collapse'}}>
+                <thead><tr style={{background:'#f9fafb'}}>
+                  {['Date','Appareil','Localisation','Statut'].map(h=>(
+                    <th key={h} style={{padding:'10px 16px',textAlign:'left' as const,fontSize:12,color:'#888',fontWeight:600,borderBottom:'1px solid #e5e7eb'}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {[
+                    {date:'09/04/2026 08:32',appareil:'MacBook Air - Chrome',lieu:'Paris, France',actuel:true},
+                    {date:'08/04/2026 19:15',appareil:'iPhone 15 - Safari',lieu:'Paris, France',actuel:false},
+                    {date:'07/04/2026 14:03',appareil:'MacBook Air - Chrome',lieu:'Courbevoie',actuel:false},
+                    {date:'05/04/2026 09:44',appareil:'MacBook Air - Chrome',lieu:'Paris, France',actuel:false},
+                    {date:'03/04/2026 16:21',appareil:'iPad - Safari',lieu:'Lyon, France',actuel:false},
+                  ].map((conn,i)=>(
+                    <tr key={i} style={{borderBottom:i<4?'1px solid #e5e7eb':'none'}}
+                      onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
+                      onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
+                      <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{conn.date}</td>
+                      <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{conn.appareil}</td>
+                      <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{conn.lieu}</td>
+                      <td style={{padding:'12px 16px'}}>
+                        {conn.actuel
+                          ? <span style={{background:'#f0fdf4',color:'#1D9E75',fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20}}>Session actuelle</span>
+                          : <span style={{background:'#f9fafb',color:'#888',fontSize:11,fontWeight:600,padding:'3px 10px',borderRadius:20}}>Terminee</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Notifications */}
+          <div style={{marginBottom:24}}>
+            <div style={{fontSize:13,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Preferences notifications</div>
+            <div style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:12,padding:'20px 24px'}}>
+              {[
+                {key:'devisSigne',label:'Devis signe',desc:'Email quand un devis est signe'},
+                {key:'facturePaye',label:'Facture payee',desc:'Email a chaque paiement recu'},
+                {key:'impaye',label:'Facture impayee',desc:'Rappel apres 30 jours'},
+                {key:'relance',label:'Relances auto',desc:'Emails de relance clients'},
+              ].map(notif=>(
+                <div key={notif.key} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 0',borderBottom:'1px solid #f3f4f6'}}>
+                  <div>
+                    <div style={{fontSize:14,fontWeight:500,color:'#111',marginBottom:2}}>{notif.label}</div>
+                    <div style={{fontSize:12,color:'#888'}}>{notif.desc}</div>
+                  </div>
+                  <div onClick={()=>{setNotifs(p=>({...p,[notif.key]:!p[notif.key as keyof typeof p]}));setHasChanges(true)}}
+                    style={{width:44,height:24,borderRadius:12,background:notifs[notif.key as keyof typeof notifs]?'#1D9E75':'#d1d5db',cursor:'pointer',position:'relative' as const,transition:'background 0.2s',flexShrink:0}}>
+                    <div style={{position:'absolute',top:2,left:notifs[notif.key as keyof typeof notifs]?22:2,width:20,height:20,borderRadius:'50%',background:'#fff',transition:'left 0.2s'}}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* RGPD */}
+          <div style={{marginBottom:24}}>
+            <div style={{fontSize:13,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Mes donnees RGPD</div>
+            <div style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:12,padding:'20px 24px',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap' as const,gap:16}}>
+              <div>
+                <div style={{fontSize:14,fontWeight:600,color:'#111',marginBottom:4}}>Telecharger mes donnees</div>
+                <div style={{fontSize:13,color:'#555'}}>Export JSON conforme RGPD.</div>
+              </div>
+              <button onClick={()=>{const d={date:new Date().toISOString(),notifs,twoFA};const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='batizo.json';a.click();URL.revokeObjectURL(u)}}
+                style={{padding:'10px 20px',background:'#f9fafb',border:'1px solid #e5e7eb',borderRadius:8,fontSize:13,fontWeight:600,color:'#333',cursor:'pointer'}}
+                onMouseEnter={e=>{const b=e.currentTarget as HTMLButtonElement;b.style.background='#f0fdf4';b.style.color='#1D9E75'}}
+                onMouseLeave={e=>{const b=e.currentTarget as HTMLButtonElement;b.style.background='#f9fafb';b.style.color='#333'}}>
+                Telecharger
+              </button>
+            </div>
+          </div>
+
+          {/* Danger */}
+          <div style={{marginBottom:24}}>
+            <div style={{fontSize:13,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Zone de danger</div>
+            <div style={{background:'#fff',border:'1px solid #fca5a5',borderRadius:12,padding:'20px 24px',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap' as const,gap:16}}>
+              <div>
+                <div style={{fontSize:14,fontWeight:600,color:'#111',marginBottom:4}}>Supprimer mon compte</div>
+                <div style={{fontSize:13,color:'#555'}}>Action irreversible.</div>
+              </div>
+              <button onClick={()=>setShowDeleteModal(true)}
+                style={{padding:'10px 20px',background:'#fff',border:'1px solid #E24B4A',borderRadius:8,fontSize:13,fontWeight:600,color:'#E24B4A',cursor:'pointer'}}
+                onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#fef2f2'}
+                onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background='#fff'}>
+                Supprimer mon compte
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
+
+      {showDeleteModal&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:999,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowDeleteModal(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:'2rem',maxWidth:420,width:'90%'}}>
+            <h3 style={{fontSize:18,fontWeight:700,color:'#111',marginBottom:8,textAlign:'center' as const}}>Supprimer mon compte ?</h3>
+            <p style={{fontSize:14,color:'#555',marginBottom:20,lineHeight:1.6,textAlign:'center' as const}}>Tous vos devis, factures et clients seront supprimes.</p>
+            <p style={{fontSize:13,color:'#555',marginBottom:8}}>Tapez SUPPRIMER pour confirmer :</p>
+            <input value={deleteConfirm} onChange={e=>setDeleteConfirm(e.target.value)} placeholder="SUPPRIMER"
+              style={{width:'100%',padding:'10px 12px',border:'1px solid #e5e7eb',borderRadius:8,fontSize:13,outline:'none',marginBottom:16,boxSizing:'border-box' as const,color:'#111'}}/>
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={()=>{setShowDeleteModal(false);setDeleteConfirm('')}} style={{flex:1,padding:11,border:'1px solid #333',borderRadius:8,background:'#fff',fontSize:14,cursor:'pointer',color:'#111',fontWeight:500}}>Annuler</button>
+              <button disabled={deleteConfirm!=='SUPPRIMER'} onClick={()=>setShowDeleteModal(false)}
+                style={{flex:1,padding:11,background:deleteConfirm==='SUPPRIMER'?'#E24B4A':'#f3f4f6',color:deleteConfirm==='SUPPRIMER'?'#fff':'#aaa',border:'none',borderRadius:8,fontSize:14,fontWeight:600,cursor:deleteConfirm==='SUPPRIMER'?'pointer':'not-allowed'}}>
+                Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast&&(
         <div style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',color:'#fff',borderRadius:10,padding:'12px 24px',zIndex:9999,display:'flex',alignItems:'center',gap:10,boxShadow:'0 4px 20px rgba(0,0,0,0.3)'}}>
