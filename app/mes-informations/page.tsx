@@ -13,9 +13,10 @@ export default function MesInfosPage(){
   const[userMenu,setUserMenu]=useState(false)
   const[showMdp,setShowMdp]=useState(false)
   const[toast,setToast]=useState(false)
+  const[hasChanges,setHasChanges]=useState(false)
   const[twoFA,setTwoFA]=useState(false)
   const sw=collapsed?64:230
-  const save=()=>{setToast(true);setTimeout(()=>setToast(false),3000)}
+  const save=()=>{setHasChanges(false);setToast(true);setTimeout(()=>setToast(false),3000)}
   const navItems=[
     {id:'dashboard',label:'Tableau de bord',href:'/dashboard'},
     {id:'devis',label:'Devis & Factures',href:'/devis',badge:'8'},
@@ -33,7 +34,7 @@ export default function MesInfosPage(){
     <div style={{gridColumn:full?'1/-1':'auto'}}>
       <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>{label}</label>
       <input type={type} defaultValue={defaultVal} style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const,transition:'border-color 0.15s'}}
-        onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+        onChange={()=>setHasChanges(true)} onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
         onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
     </div>
   )
@@ -96,7 +97,7 @@ export default function MesInfosPage(){
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
         <div style={{height:60,background:'#fff',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 24px',flexShrink:0}}>
           <div style={{fontSize:16,fontWeight:700,color:'#111'}}>Mes informations</div>
-          <button onClick={save}style={{padding:'8px 18px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>Enregistrer les modifications</button>
+          <button onClick={save}style={{padding:'8px 18px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>{hasChanges && <span style={{position:'absolute',top:-4,right:-4,width:10,height:10,background:'#BA7517',borderRadius:'50%',border:'2px solid #fff'}}></span>}Enregistrer les modifications</button>
         </div>
         <div style={{flex:1,overflowY:'auto',padding:24,maxWidth:900}}>
 
@@ -134,7 +135,7 @@ export default function MesInfosPage(){
                 <Field label="Nom de l'entreprise *" defaultVal="Batizo SAS"/>
                 <div>
                   <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Forme juridique</label>
-                  <select defaultValue="SAS"style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
+                  <select defaultValue="SAS" onChange={()=>setHasChanges(true)} style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
                     <option>SAS</option><option>SARL</option><option>EURL</option><option>Auto-entrepreneur</option>
                   </select>
                 </div>
@@ -157,7 +158,7 @@ export default function MesInfosPage(){
                 <Field label="Ville *" defaultVal="Courbevoie"/>
                 <div>
                   <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Pays</label>
-                  <select defaultValue="France"style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
+                  <select defaultValue="France" onChange={()=>setHasChanges(true)} style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
                     <option>France</option><option>Belgique</option><option>Suisse</option>
                   </select>
                 </div>
@@ -206,7 +207,7 @@ export default function MesInfosPage(){
                   <div style={{fontSize:14,fontWeight:600,color:'#111',marginBottom:3}}>Double authentification (2FA)</div>
                   <div style={{fontSize:13,color:'#444'}}>Sécurisez votre compte avec une vérification en deux étapes</div>
                 </div>
-                <div onClick={()=>setTwoFA(!twoFA)}style={{width:44,height:24,borderRadius:12,background:twoFA?G:'#d1d5db',cursor:'pointer',position:'relative',transition:'background 0.2s'}}>
+                <div onClick={()=>setTwoFA(!twoFA);setHasChanges(true)}style={{width:44,height:24,borderRadius:12,background:twoFA?G:'#d1d5db',cursor:'pointer',position:'relative',transition:'background 0.2s'}}>
                   <div style={{position:'absolute',top:2,left:twoFA?22:2,width:20,height:20,borderRadius:'50%',background:'#fff',transition:'left 0.2s',boxShadow:'0 1px 3px rgba(0,0,0,0.2)'}}></div>
                 </div>
               </div>
