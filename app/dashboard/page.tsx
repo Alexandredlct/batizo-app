@@ -103,7 +103,7 @@ export default function DashboardPage() {
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:20}}>
             <div style={{background:'#fff',borderRadius:12,border:`1px solid ${BD}`,overflow:'hidden'}}>
               <div style={{padding:'14px 16px',borderBottom:`1px solid ${BD}`,display:'flex',justifyContent:'space-between'}}>
-                <span style={{fontSize:14,fontWeight:700}}>Derniers devis</span>
+                <span style={{fontSize:14,fontWeight:700,color:'#111'}}>Derniers devis</span>
                 <span style={{fontSize:12,color:G,cursor:'pointer',fontWeight:600}}>Voir tout →</span>
               </div>
               <table style={{width:'100%',borderCollapse:'collapse'}}>
@@ -131,7 +131,7 @@ export default function DashboardPage() {
 
             <div style={{background:'#fff',borderRadius:12,border:`1px solid ${BD}`,overflow:'hidden'}}>
               <div style={{padding:'14px 16px',borderBottom:`1px solid ${BD}`,display:'flex',justifyContent:'space-between'}}>
-                <span style={{fontSize:14,fontWeight:700}}>Top clients 2026</span>
+                <span style={{fontSize:14,fontWeight:700,color:'#111'}}>Top clients 2026</span>
                 <span style={{fontSize:12,color:G,cursor:'pointer',fontWeight:600}}>Voir tout →</span>
               </div>
               <div style={{padding:'12px 16px',display:'flex',flexDirection:'column',gap:12}}>
@@ -150,7 +150,7 @@ export default function DashboardPage() {
           </div>
 
           <div style={{background:'#fff',borderRadius:12,border:`1px solid ${BD}`,padding:16}}>
-            <div style={{fontSize:14,fontWeight:700,marginBottom:12}}>Actions rapides</div>
+            <div style={{fontSize:14,fontWeight:700,marginBottom:12,color:'#111'}}>Actions rapides</div>
             <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
               {actions.map(a => (
                 <button key={a.l} style={{display:'flex',alignItems:'center',gap:8,padding:'10px 16px',background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',color:'#333',whiteSpace:'nowrap'}}>
