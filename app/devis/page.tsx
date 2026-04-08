@@ -212,7 +212,7 @@ export default function DevisPage() {
               <div style={{width:32,height:32,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:700,flexShrink:0}}>A</div>
               <div style={{overflow:'hidden',flex:1}}>
                 <div style={{fontSize:12,fontWeight:600,color:'#111',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>Mon compte</div>
-                <div style={{fontSize:11,color:'#888'}}>Batizo</div>
+                <div style={{fontSize:12,color:'#555'}}>Batizo</div>
               </div>
               <a href="/login" style={{color:'#aaa',textDecoration:'none',flexShrink:0}}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{width:14,height:14}}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -241,6 +241,25 @@ export default function DevisPage() {
 
         <div style={{flex:1,overflowY:'auto',padding:24}}>
 
+
+          {/* BANDEAU RÉCAPITULATIF */}
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:20}}>
+            <div style={{background:'#fff',borderRadius:10,padding:'14px 16px',border:'1px solid #e5e7eb'}}>
+              <div style={{fontSize:11,color:'#555',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.04em',marginBottom:4}}>Total devisé</div>
+              <div style={{fontSize:20,fontWeight:700,color:'#111'}}>{fmt(filtered.reduce((s,c)=>s+c.montantDevis,0))} HT</div>
+              <div style={{fontSize:12,color:'#555',marginTop:2}}>{filtered.length} chantiers affichés</div>
+            </div>
+            <div style={{background:'#fff',borderRadius:10,padding:'14px 16px',border:'1px solid #e5e7eb'}}>
+              <div style={{fontSize:11,color:'#555',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.04em',marginBottom:4}}>Total facturé encaissé</div>
+              <div style={{fontSize:20,fontWeight:700,color:'#1D9E75'}}>{fmt(filtered.reduce((s,c)=>s+getMontantFacture(c),0))} HT</div>
+              <div style={{fontSize:12,color:'#555',marginTop:2}}>{filtered.reduce((s,c)=>s+c.montantDevis,0) > 0 ? Math.round(filtered.reduce((s,c)=>s+getMontantFacture(c),0)/filtered.reduce((s,c)=>s+c.montantDevis,0)*100) : 0}% du CA devisé</div>
+            </div>
+            <div style={{background:'#fff',borderRadius:10,padding:'14px 16px',border:'1px solid #E24B4A22'}}>
+              <div style={{fontSize:11,color:'#555',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.04em',marginBottom:4}}>Reste à encaisser</div>
+              <div style={{fontSize:20,fontWeight:700,color:'#E24B4A'}}>{fmt(filtered.reduce((s,c)=>s+c.montantDevis,0) - filtered.reduce((s,c)=>s+getMontantFacture(c),0))} HT</div>
+              <div style={{fontSize:12,color:'#555',marginTop:2}}>Factures impayées incluses</div>
+            </div>
+          </div>
           {/* Onglets */}
           <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
             {tabs.map(t => {
@@ -426,17 +445,17 @@ export default function DevisPage() {
                           <table style={{width:'100%',borderCollapse:'collapse'}}>
                             <thead>
                               <tr style={{background:'#f9fafb'}}>
-                                <th style={{padding:'8px 16px',textAlign:'left',fontSize:11,color:'#888',fontWeight:600,width:30}}></th>
-                                <th style={{padding:'8px 16px',textAlign:'left',fontSize:11,color:'#888',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('ref')}>
+                                <th style={{padding:'8px 16px',textAlign:'left',fontSize:12,color:'#555',fontWeight:600,width:30}}></th>
+                                <th style={{padding:'8px 16px',textAlign:'left',fontSize:12,color:'#555',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('ref')}>
                                   Référence <SortIcon field="ref"/>
                                 </th>
-                                <th style={{padding:'8px 16px',textAlign:'right',fontSize:11,color:'#888',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('montant')}>
+                                <th style={{padding:'8px 16px',textAlign:'right',fontSize:12,color:'#555',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('montant')}>
                                   Montant HT <SortIcon field="montant"/>
                                 </th>
-                                <th style={{padding:'8px 16px',textAlign:'center',fontSize:11,color:'#888',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('date')}>
+                                <th style={{padding:'8px 16px',textAlign:'center',fontSize:12,color:'#555',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('date')}>
                                   Date <SortIcon field="date"/>
                                 </th>
-                                <th style={{padding:'8px 16px',textAlign:'center',fontSize:11,color:'#888',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('statut')}>
+                                <th style={{padding:'8px 16px',textAlign:'center',fontSize:12,color:'#555',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('statut')}>
                                   Statut <SortIcon field="statut"/>
                                 </th>
                                 <th style={{padding:'8px 16px',width:40}}></th>
@@ -461,7 +480,7 @@ export default function DevisPage() {
                                     {d.label && <span style={{fontSize:11,color:'#aaa',marginLeft:4}}>{d.label}</span>}
                                   </td>
                                   <td style={{padding:'10px 16px',textAlign:'right',fontSize:13,fontWeight:600}}>{fmt(d.montant)}</td>
-                                  <td style={{padding:'10px 16px',textAlign:'center',fontSize:12,color:'#666'}}>{d.date}</td>
+                                  <td style={{padding:'10px 16px',textAlign:'center',fontSize:13,color:'#444'}}>{d.date}</td>
                                   <td style={{padding:'10px 16px',textAlign:'center'}}>
                                     <select value={d.statut} onChange={e => handleStatutChange(c.id,d.ref,e.target.value,d.type)}
                                       style={{padding:'4px 8px',border:`1px solid ${statutColors[d.statut]}`,borderRadius:6,fontSize:12,color:statutColors[d.statut],fontWeight:600,background:`${statutColors[d.statut]}18`,outline:'none',cursor:'pointer'}}>
@@ -552,7 +571,7 @@ export default function DevisPage() {
           <div style={{padding:'16px 20px',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
             <div>
               <div style={{fontSize:15,fontWeight:700,color:'#111'}}>{previewDoc.doc.ref}</div>
-              <div style={{fontSize:12,color:'#888'}}>{previewDoc.chantier.client} — {previewDoc.chantier.titre}</div>
+              <div style={{fontSize:13,color:'#555'}}>{previewDoc.chantier.client} — {previewDoc.chantier.titre}</div>
             </div>
             <div style={{display:'flex',gap:8,alignItems:'center'}}>
               <button style={{display:'flex',alignItems:'center',gap:6,padding:'7px 14px',background:G,color:'#fff',border:'none',borderRadius:7,fontSize:12,fontWeight:600,cursor:'pointer'}}>

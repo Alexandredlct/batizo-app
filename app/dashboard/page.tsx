@@ -143,9 +143,9 @@ export default function DashboardPage() {
               {label:'Marge moyenne',value:'34%',change:'↑ +2pts vs mars',cc:G},
             ].map(m => (
               <div key={m.label} style={{background:'#fff',borderRadius:12,padding:16,border:`1px solid ${BD}`}}>
-                <div style={{fontSize:12,color:'#888',marginBottom:6}}>{m.label}</div>
+                <div style={{fontSize:12,color:'#444',fontWeight:500,marginBottom:6}}>{m.label}</div>
                 <div style={{fontSize:20,fontWeight:700,color:(m as any).vc||'#111',marginBottom:4}}>{m.value}</div>
-                <div style={{fontSize:11,color:m.cc,fontWeight:500}}>{m.change}</div>
+                <div style={{fontSize:12,color:m.cc,fontWeight:500}}>{m.change}</div>
               </div>
             ))}
           </div>
