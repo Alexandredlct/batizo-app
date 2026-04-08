@@ -104,7 +104,7 @@ export default function DashboardPage() {
               {prenom[0]?.toUpperCase()}
             </button>
           ) : (
-            <div style={{display:'flex',alignItems:'center',gap:8,padding:8,borderRadius:8,background:'#f9fafb'}}>
+            <div style={{display:'flex',alignItems:'center',gap:8,padding:8,borderRadius:8,background:'#f9fafb',cursor:'pointer'}} onClick={e=>{e.stopPropagation();setUserMenu(!userMenu)}}>
               <div style={{width:32,height:32,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:700,flexShrink:0}}>{prenom[0]?.toUpperCase()}</div>
               <div style={{overflow:'hidden',flex:1}}>
                 <div style={{fontSize:12,fontWeight:600,color:'#111',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{prenom}</div>
