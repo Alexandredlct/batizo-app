@@ -192,7 +192,7 @@ export default function DashboardPage() {
                       <div style={{fontSize:13,fontWeight:600}}>{c.nom}</div>
                       <div style={{fontSize:11,color:'#888'}}>{c.n} chantier{c.n>1?'s':''}</div>
                     </div>
-                    <div style={{fontSize:13,fontWeight:700,color:'#111'}>{c.ca}</div>
+                    <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{c.ca}</div>
                   </div>
                 ))}
               </div>
