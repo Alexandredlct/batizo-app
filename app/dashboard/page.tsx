@@ -186,7 +186,7 @@ export default function DashboardPage() {
               </div>
               <div style={{padding:'12px 16px',display:'flex',flexDirection:'column',gap:12}}>
                 {topClients.map((c,i) => (
-                  <div key={i} style={{display:'flex',alignItems:'center',gap:12}}>
+                  <div key={i} className="client-row" style={{display:"flex",alignItems:"center",gap:12,padding:"8px 12px",borderTop:i>0?`1px solid ${BD}`:"none",transition:"background 0.15s"}}>
                     <div style={{width:36,height:36,borderRadius:'50%',background:c.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,color:c.c}}>{c.i}</div>
                     <div style={{flex:1}}>
                       <div style={{fontSize:13,fontWeight:600}}>{c.nom}</div>
