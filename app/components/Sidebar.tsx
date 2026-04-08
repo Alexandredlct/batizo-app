@@ -31,20 +31,8 @@ export default function Sidebar({ activePage }: { activePage: string }) {
   const [collapsed, setCollapsed] = useState(false)
   const [userMenu, setUserMenu] = useState(false)
   const [prenom, setPrenom] = useState('')
-  const [photo, setPhoto] = useState<string|null>(null)
   
-  useEffect(() => {
-    const stored = localStorage.getItem('batizo_photo')
-    if (stored) setPhoto(stored)
-    // Écouter les changements de photo
-    const onUpdate = () => setPhoto(localStorage.getItem('batizo_photo'))
-    window.addEventListener('storage', onUpdate)
-    window.addEventListener('batizo_photo_updated', onUpdate)
-    return () => {
-      window.removeEventListener('storage', onUpdate)
-      window.removeEventListener('batizo_photo_updated', onUpdate)
-    }
-  }, [])
+
   const [entreprise, setEntreprise] = useState('Batizo')
   const { photo } = usePhoto()
   const sw = collapsed ? 64 : 230
