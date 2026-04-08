@@ -8,12 +8,12 @@ const NavIcon=({id}:{id:string})=>{
   if(id==='clients')return<svg viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2"strokeLinecap="round"style={{width:17,height:17,flexShrink:0}}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9"cy="7"r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
   return<svg viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2"strokeLinecap="round"style={{width:17,height:17,flexShrink:0}}><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
 }
-const initUsers=[
-  {nom:'Alexandre Delcourt',email:'a.delcourt@batizo.fr',depuis:'01/03/2024',role:'proprietaire',vous:true},
-  {nom:'Emma Strano',email:'e.strano@batizo.fr',depuis:'04/09/2024',role:'modification',vous:false},
-  {nom:'Ysaline Bernard',email:'y.bernard@batizo.fr',depuis:'15/01/2025',role:'modification',vous:false},
-  {nom:'Xavier Concy',email:'x.concy@batizo.fr',depuis:'03/03/2025',role:'lecture',vous:false},
-  {nom:'Thomas Giraud',email:'t.giraud@batizo.fr',depuis:'10/01/2026',role:'modification',vous:false},
+const initUsers:any[]=[
+  {nom:'Alexandre Delcourt',email:'a.delcourt@batizo.fr',depuis:'01/03/2024',role:'proprietaire',vous:true,statut:'actif'},
+  {nom:'Emma Strano',email:'e.strano@batizo.fr',depuis:'04/09/2024',role:'modification',vous:false,statut:'actif'},
+  {nom:'Ysaline Bernard',email:'y.bernard@batizo.fr',depuis:'15/01/2025',role:'modification',vous:false,statut:'actif'},
+  {nom:'Xavier Concy',email:'x.concy@batizo.fr',depuis:'03/03/2025',role:'lecture',vous:false,statut:'actif'},
+  {nom:'Thomas Giraud',email:'t.giraud@batizo.fr',depuis:'10/01/2026',role:'modification',vous:false,statut:'actif'},
 ]
 const roleLabels:Record<string,string>={proprietaire:'Propriétaire du compte',modification:'Lecture et modification',lecture:'Lecture seule',revoque:"Révoquer l'accès"}
 const roleColors:Record<string,string>={proprietaire:G,modification:'#2563eb',lecture:AM,revoque:RD}
@@ -41,7 +41,7 @@ export default function UtilisateursPage(){
   ]
   const inviter=()=>{
     if(!newName||!newEmail)return
-    setUsers(p=>[...p,{nom:newName,email:newEmail,depuis:new Date().toLocaleDateString('fr-FR'),role:newRole,vous:false}])
+    setUsers(p=>[...p,{nom:newName,email:newEmail,depuis:new Date().toLocaleDateString('fr-FR'),role:newRole,vous:false,statut:'en_attente'}])
     setNewName('');setNewEmail('');setNewRole('modification');setShowForm(false)
   }
   return(
@@ -139,7 +139,7 @@ export default function UtilisateursPage(){
           <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,overflow:'hidden'}}>
             <table style={{width:'100%',borderCollapse:'collapse'}}>
               <thead><tr style={{background:'#f9fafb'}}>
-                {['Nom','Adresse email','Depuis','Permission'].map(h=>(
+                {['Nom','Adresse email','Depuis','Statut','Permission'].map(h=>(
                   <th key={h} style={{padding:'10px 16px',textAlign:'left',fontSize:12,color:'#444',fontWeight:600,borderBottom:`1px solid ${BD}`,textTransform:'uppercase' as const,letterSpacing:'0.04em'}}>{h}</th>
                 ))}
               </tr></thead>
@@ -159,6 +159,11 @@ export default function UtilisateursPage(){
                     </td>
                     <td style={{padding:'14px 16px',fontSize:13,color:'#555'}}>{u.email}</td>
                     <td style={{padding:'14px 16px',fontSize:13,color:'#555'}}>{u.depuis}</td>
+                    <td style={{padding:'14px 16px'}}>
+                      <span style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,background:u.statut==='actif'?'#f0fdf4':u.statut==='en_attente'?'#fffbeb':'#f9fafb',color:u.statut==='actif'?'#1D9E75':u.statut==='en_attente'?'#BA7517':'#888'}}>
+                        {u.statut==='actif'?'Actif':u.statut==='en_attente'?'En attente':'—'}
+                      </span>
+                    </td>
                     <td style={{padding:'14px 16px'}}>
                       {u.vous?(
                         <span style={{fontSize:13,color:'#444',fontStyle:'italic'}}>Propriétaire du compte</span>
