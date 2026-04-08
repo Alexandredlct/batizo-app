@@ -31,22 +31,7 @@ export default function MesInfosPage(){
     }
     reader.readAsDataURL(file)
   }
-  const[photo,setPhoto]=useState<string|null>(()=>{
-    if(typeof window!=='undefined') return localStorage.getItem('batizo_photo')
-    return null
-  })
-  const handlePhoto=(e:React.ChangeEvent<HTMLInputElement>)=>{
-    const file=e.target.files?.[0]
-    if(!file)return
-    const reader=new FileReader()
-    reader.onload=ev=>{
-      const result=ev.target?.result as string
-      setPhoto(result)
-      localStorage.setItem('batizo_photo',result)
-      setHasChanges(true)
-    }
-    reader.readAsDataURL(file)
-  }
+
   const[twoFA,setTwoFA]=useState(false)
   const sw=collapsed?64:230
   const save=()=>{setHasChanges(false);setToast(true);setTimeout(()=>setToast(false),3000)}
