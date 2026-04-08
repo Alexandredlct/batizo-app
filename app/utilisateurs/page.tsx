@@ -27,6 +27,8 @@ export default function UtilisateursPage(){
   const[newEmail,setNewEmail]=useState('')
   const[newRole,setNewRole]=useState('utilisateur')
   const[editPerms,setEditPerms]=useState(false)
+  const[showTransfert,setShowTransfert]=useState(false)
+  const[transfertCible,setTransfertCible]=useState<{nom:string,idx:number}|null>(null)
   const estProprietaire = true // À connecter à Supabase plus tard
   const[perms,setPerms]=useState<Record<string,Record<string,boolean>>>({
     proprietaire:{voir_devis:true,creer_devis:true,modifier_devis:true,dupliquer:true,envoyer_devis:true,creer_facture:true,modifier_facture:true,envoyer_facture:true,archiver:true,pdf:true,voir_clients:true,ajouter_client:true,modifier_client:true,supprimer_client:true,voir_biblio:true,ajouter_biblio:true,modifier_biblio:true,supprimer_biblio:true,gerer_users:true,inviter:true,parametres:true,infos_entreprise:true,abonnement:true,transfert:true,stats:true},
@@ -34,6 +36,20 @@ export default function UtilisateursPage(){
     utilisateur:{voir_devis:true,creer_devis:true,modifier_devis:true,dupliquer:true,envoyer_devis:true,creer_facture:true,modifier_facture:true,envoyer_facture:true,archiver:true,pdf:true,voir_clients:true,ajouter_client:true,modifier_client:true,supprimer_client:false,voir_biblio:true,ajouter_biblio:true,modifier_biblio:true,supprimer_biblio:false,gerer_users:false,inviter:false,parametres:false,infos_entreprise:false,abonnement:false,transfert:false,stats:true},
     observateur:{voir_devis:true,creer_devis:false,modifier_devis:false,dupliquer:false,envoyer_devis:false,creer_facture:false,modifier_facture:false,envoyer_facture:false,archiver:false,pdf:true,voir_clients:true,ajouter_client:false,modifier_client:false,supprimer_client:false,voir_biblio:true,ajouter_biblio:false,modifier_biblio:false,supprimer_biblio:false,gerer_users:false,inviter:false,parametres:false,infos_entreprise:false,abonnement:false,transfert:false,stats:true},
   })
+  const transfererPropriete=(idx:number,nom:string)=>{
+    setTransfertCible({nom,idx})
+    setShowTransfert(true)
+  }
+  const confirmerTransfert=()=>{
+    if(!transfertCible) return
+    setUsers(p=>p.map((u,i)=>{
+      if(u.vous) return {...u,role:'admin',vous:false}
+      if(i===transfertCible.idx) return {...u,role:'admin',vous:true,statut:'actif'}
+      return u
+    }))
+    setShowTransfert(false)
+    setTransfertCible(null)
+  }
   const togglePerm=(role:string,perm:string)=>{
     if(!estProprietaire||!editPerms) return
     setPerms(p=>({...p,[role]:{...p[role],[perm]:!p[role][perm]}}))
@@ -307,6 +323,33 @@ export default function UtilisateursPage(){
           </div>
         </div>
       </div>
+      {/* Modal transfert propriété */}
+      {showTransfert && transfertCible && (
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:999,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <div style={{background:'#fff',borderRadius:16,padding:'2rem',maxWidth:420,width:'90%',textAlign:'center' as const}}>
+            <div style={{width:52,height:52,borderRadius:'50%',background:'#fef2f2',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 1rem'}}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E24B4A" strokeWidth="2" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <h3 style={{fontSize:18,fontWeight:700,color:'#111',marginBottom:8}}>Transférer la propriété ?</h3>
+            <p style={{fontSize:14,color:'#555',lineHeight:1.6,marginBottom:8}}>
+              Vous allez transférer la propriété du compte à <strong style={{color:'#111'}}>{transfertCible.nom}</strong>.
+            </p>
+            <p style={{fontSize:13,color:'#888',lineHeight:1.6,marginBottom:24}}>
+              Vous deviendrez <strong>Admin</strong> et perdrez l'accès à certaines fonctions réservées au propriétaire. Cette action est irréversible sauf si le nouveau propriétaire vous retransfère les droits.
+            </p>
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={()=>{setShowTransfert(false);setTransfertCible(null)}}
+                style={{flex:1,padding:11,border:'1px solid #e5e7eb',borderRadius:8,background:'#fff',fontSize:14,cursor:'pointer',color:'#333',fontWeight:500}}>
+                Annuler
+              </button>
+              <button onClick={confirmerTransfert}
+                style={{flex:1,padding:11,background:'#E24B4A',color:'#fff',border:'none',borderRadius:8,fontSize:14,fontWeight:600,cursor:'pointer'}}>
+                Confirmer le transfert
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
