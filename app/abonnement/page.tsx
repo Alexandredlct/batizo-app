@@ -15,6 +15,19 @@ export default function AbonnementPage(){
   const[modifierCarte,setModifierCarte]=useState(false)
   const[editFacturation,setEditFacturation]=useState(false)
   const[showModal,setShowModal]=useState(false)
+  const[emailsFacture,setEmailsFacture]=useState(['a.delcourt@batizo.fr'])
+  const[newEmailFacture,setNewEmailFacture]=useState('')
+  const[showAddEmail,setShowAddEmail]=useState(false)
+  const ajouterEmail=()=>{
+    if(!newEmailFacture||emailsFacture.includes(newEmailFacture))return
+    setEmailsFacture(p=>[...p,newEmailFacture])
+    setNewEmailFacture('')
+    setShowAddEmail(false)
+  }
+  const supprimerEmail=(email:string)=>{
+    if(emailsFacture.length<=1)return
+    setEmailsFacture(p=>p.filter(e=>e!==email))
+  }
   const sw=collapsed?64:230
   const navItems=[
     {id:'dashboard',label:'Tableau de bord',href:'/dashboard'},
@@ -171,21 +184,21 @@ export default function AbonnementPage(){
                 <div style={{marginTop:20,paddingTop:20,borderTop:`1px solid ${BD}`}}>
                   <div style={{display:'flex',gap:12,flexWrap:'wrap',marginBottom:12}}>
                     <div style={{flex:1,minWidth:180}}>
-                      <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Numéro de carte</label>
-                      <input placeholder="1234 5678 9012 3456" style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+                      <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Numéro de carte</label>
+                      <input placeholder="1234 5678 9012 3456" style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
                     </div>
                     <div style={{width:100}}>
-                      <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Expiration</label>
-                      <input placeholder="MM/AA" style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none'}}/>
+                      <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Expiration</label>
+                      <input placeholder="MM/AA" style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111'}}/>
                     </div>
                     <div style={{width:80}}>
-                      <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>CVV</label>
-                      <input placeholder="•••" style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none'}}/>
+                      <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>CVV</label>
+                      <input placeholder="•••" style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111'}}/>
                     </div>
                   </div>
                   <div style={{display:'flex',gap:8}}>
                     <button style={{padding:'8px 18px',background:G,color:'#fff',border:'none',borderRadius:7,fontSize:13,fontWeight:600,cursor:'pointer'}}>Enregistrer</button>
-                    <button onClick={()=>setModifierCarte(false)} style={{padding:'8px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,cursor:'pointer'}}>Annuler</button>
+                    <button onClick={()=>setModifierCarte(false)} style={{padding:'8px 14px',background:'#fff',border:'1px solid #333',borderRadius:7,fontSize:13,cursor:'pointer',color:'#111',fontWeight:500}}>Annuler</button>
                   </div>
                 </div>
               )}
@@ -208,20 +221,20 @@ export default function AbonnementPage(){
                 ):(
                   <div style={{width:'100%'}}>
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
-                      {[['Nom entreprise','Batizo SAS'],['SIRET','853 572 014'],['Adresse','130 rue de Normandie'],['N° TVA','FR XX XXX XXX XXX']].map(([label,val])=>(
+                      {[['Nom entreprise *','Batizo SAS'],['SIRET *','853 572 014'],['Adresse *','130 rue de Normandie'],['N° TVA','FR XX XXX XXX XXX']].map(([label,val])=>(
                         <div key={label}>
-                          <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>{label}</label>
-                          <input defaultValue={val} style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+                          <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>{label}</label>
+                          <input defaultValue={val} style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
                         </div>
                       ))}
                     </div>
                     <div style={{display:'grid',gridTemplateColumns:'120px 1fr',gap:12,marginBottom:12}}>
-                      <div><label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Code postal</label><input defaultValue="92400" style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none'}}/></div>
-                      <div><label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Ville</label><input defaultValue="Courbevoie" style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none'}}/></div>
+                      <div><label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Code postal</label><input defaultValue="92400" style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111'}}/></div>
+                      <div><label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Ville</label><input defaultValue="Courbevoie" style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111'}}/></div>
                     </div>
                     <div style={{display:'flex',gap:8}}>
                       <button onClick={()=>setEditFacturation(false)} style={{padding:'8px 18px',background:G,color:'#fff',border:'none',borderRadius:7,fontSize:13,fontWeight:600,cursor:'pointer'}}>Enregistrer</button>
-                      <button onClick={()=>setEditFacturation(false)} style={{padding:'8px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,cursor:'pointer'}}>Annuler</button>
+                      <button onClick={()=>setEditFacturation(false)} style={{padding:'8px 14px',background:'#fff',border:'1px solid #333',borderRadius:7,fontSize:13,cursor:'pointer',color:'#111',fontWeight:500}}>Annuler</button>
                     </div>
                   </div>
                 )}
@@ -264,6 +277,48 @@ export default function AbonnementPage(){
               </table>
             </div>
           </div>
+
+          {/* Emails de facturation */}
+          <div style={{marginBottom:24}}>
+            <div style={{fontSize:13,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Emails de facturation</div>
+            <div style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:12,padding:'20px 24px'}}>
+              <p style={{fontSize:13,color:'#555',marginBottom:16,lineHeight:1.6}}>
+                Les factures mensuelles seront envoyées automatiquement aux adresses email suivantes.
+              </p>
+              <div style={{display:'flex',flexDirection:'column' as const,gap:8,marginBottom:16}}>
+                {emailsFacture.map((email,i)=>(
+                  <div key={i} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',background:'#f9fafb',border:'1px solid #e5e7eb',borderRadius:8}}>
+                    <div style={{display:'flex',alignItems:'center',gap:8}}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                      <span style={{fontSize:13,color:'#111',fontWeight:i===0?600:400}}>{email}</span>
+                      {i===0&&<span style={{fontSize:10,fontWeight:700,color:'#1D9E75',background:'#f0fdf4',padding:'2px 7px',borderRadius:10}}>Principal</span>}
+                    </div>
+                    {i>0&&(
+                      <button onClick={()=>supprimerEmail(email)} style={{background:'none',border:'none',cursor:'pointer',color:'#E24B4A',fontSize:18,lineHeight:1,padding:2}}>×</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {showAddEmail?(
+                <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap' as const}}>
+                  <input type="email" value={newEmailFacture} onChange={e=>setNewEmailFacture(e.target.value)}
+                    placeholder="email@exemple.fr"
+                    onKeyDown={e=>e.key==='Enter'&&ajouterEmail()}
+                    style={{flex:1,minWidth:200,padding:'8px 12px',border:'1px solid #e5e7eb',borderRadius:7,fontSize:13,outline:'none',color:'#111'}}/>
+                  <button onClick={ajouterEmail} style={{padding:'8px 16px',background:'#1D9E75',color:'#fff',border:'none',borderRadius:7,fontSize:13,fontWeight:600,cursor:'pointer'}}>Ajouter</button>
+                  <button onClick={()=>{setShowAddEmail(false);setNewEmailFacture('')}} style={{padding:'8px 12px',background:'#fff',border:'1px solid #333',borderRadius:7,fontSize:13,cursor:'pointer',color:'#111'}}>Annuler</button>
+                </div>
+              ):(
+                <button onClick={()=>setShowAddEmail(true)} style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',border:'1px solid #e5e7eb',borderRadius:7,fontSize:13,cursor:'pointer',color:'#333',fontWeight:500,transition:'all 0.15s'}}
+                  onMouseEnter={e=>{const b=e.currentTarget as HTMLButtonElement;b.style.borderColor='#1D9E75';b.style.color='#1D9E75'}}
+                  onMouseLeave={e=>{const b=e.currentTarget as HTMLButtonElement;b.style.borderColor='#e5e7eb';b.style.color='#333'}}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Ajouter une adresse email
+                </button>
+              )}
+            </div>
+          </div>
+
         </div>
       </div>
 
