@@ -112,7 +112,7 @@ export default function MesInfosPage(){
                   </div>
                 </div>
                 <div>
-                  <div style={{fontSize:15,fontWeight:600}}>Alexandre Delcourt</div>
+                  <div style={{fontSize:15,fontWeight:600,color:'#111'}}>Alexandre Delcourt</div>
                   <div style={{fontSize:13,color:'#444'}}>Administrateur · Plan Pro</div>
                   <div style={{fontSize:12,color:G,cursor:'pointer',marginTop:4}}>Modifier la photo</div>
                 </div>
