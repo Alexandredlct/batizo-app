@@ -352,7 +352,7 @@ export default function DevisPage() {
                                 <>
                                   <span style={{fontSize:16,fontWeight:700,color:'#111'}}>{c.client} — {c.titre}</span>
                                   <button onClick={e => { e.stopPropagation(); setEditingTitre(c.id); setEditTitreVal(c.titre) }} title="Modifier le titre"
-                                    style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',padding:2,display:'flex',alignItems:'center',transition:'color 0.15s'}}
+                                    style={{background:'none',border:'none',cursor:'pointer',color:'#999',padding:2,display:'flex',alignItems:'center',transition:'color 0.15s'}}
                                     onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color=G}
                                     onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color='#ccc'}>
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -361,9 +361,7 @@ export default function DevisPage() {
                               )}
                             </div>
                             <div style={{fontSize:13,color:'#555',marginBottom:4}}>
-                              Total devisé : <strong style={{color:'#111'}}>{fmt(c.montantDevis)} HT</strong>
-                              <span style={{margin:'0 6px',color:'#ccc'}}>·</span>
-                              Total facturé : <strong style={{color:montantFacture===0?'#aaa':G}}>{fmt(montantFacture)} HT</strong>
+                              <strong style={{color:'#111'}}>{fmt(c.montantDevis)} HT</strong> <span style={{color:'#ccc'}}>devisé · </span><strong style={{color:montantFacture===0?'#aaa':G}}>{fmt(montantFacture)} HT</strong> <span style={{color:'#ccc'}}>facturé</span>
                             </div>
                             <div style={{display:"flex",alignItems:"center",gap:20,flexWrap:"wrap",marginBottom:4}}>
                             <span style={{display:"flex",alignItems:"center",gap:4,fontSize:13}}><span>📍</span>
