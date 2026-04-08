@@ -36,9 +36,13 @@ export default function Sidebar({ activePage }: { activePage: string }) {
     const stored = localStorage.getItem('batizo_photo')
     if (stored) setPhoto(stored)
     // Écouter les changements de photo
-    const onStorage = () => setPhoto(localStorage.getItem('batizo_photo'))
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
+    const onUpdate = () => setPhoto(localStorage.getItem('batizo_photo'))
+    window.addEventListener('storage', onUpdate)
+    window.addEventListener('batizo_photo_updated', onUpdate)
+    return () => {
+      window.removeEventListener('storage', onUpdate)
+      window.removeEventListener('batizo_photo_updated', onUpdate)
+    }
   }, [])
   const [entreprise, setEntreprise] = useState('Batizo')
   const sw = collapsed ? 64 : 230

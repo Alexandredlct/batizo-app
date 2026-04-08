@@ -27,6 +27,7 @@ export default function MesInfosPage(){
       const result=ev.target?.result as string
       setPhoto(result)
       localStorage.setItem('batizo_photo',result)
+      window.dispatchEvent(new Event('batizo_photo_updated'))
       setHasChanges(true)
     }
     reader.readAsDataURL(file)
