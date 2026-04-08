@@ -373,7 +373,6 @@ export default function DevisPage() {
                                 onMouseLeave={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color='#555'; a.style.borderBottomColor='#ccc' }}>
                                 {c.adresse}
                               </a>
-<a
                               <a href={`tel:${c.tel.replace(/\s/g,'')}`} onClick={e => e.stopPropagation()}
                                 style={{color:'#555',textDecoration:'none',borderBottom:'1px dashed #ccc',transition:'color 0.15s,borderColor 0.15s'}}
                                 onMouseEnter={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color=G; a.style.borderBottomColor=G }}
