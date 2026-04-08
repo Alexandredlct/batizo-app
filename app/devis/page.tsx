@@ -254,7 +254,7 @@ export default function DevisPage() {
                                 </select>
                               </td>
                               <td style={{padding:'10px 16px',textAlign:'center'}}>
-                                <button style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:16'}}>⋯</button>
+                                <button style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:16}}>⋯</button>
                               </td>
                             </tr>
                           ))}
