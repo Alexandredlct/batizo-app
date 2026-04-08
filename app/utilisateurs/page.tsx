@@ -39,9 +39,14 @@ export default function UtilisateursPage(){
     {icon:'🎁',label:'Parrainage',href:'/parrainage'},
     {icon:'👤',label:'Mes informations',href:'/mes-informations'},
   ]
-  const inviter=()=>{
+  const inviter=async()=>{
     if(!newName||!newEmail)return
     setUsers(p=>[...p,{nom:newName,email:newEmail,depuis:new Date().toLocaleDateString('fr-FR'),role:newRole,vous:false,statut:'en_attente'}])
+    try {
+      const res = await fetch('/api/invite',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:newEmail,nom:newName,role:newRole})})
+      const data = await res.json()
+      if(data.error) console.error('Erreur invitation:',data.error)
+    } catch(e) { console.error(e) }
     setNewName('');setNewEmail('');setNewRole('modification');setShowForm(false)
   }
   return(
