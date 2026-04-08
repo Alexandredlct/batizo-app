@@ -1,4 +1,5 @@
 'use client'
+import Sidebar from '../components/Sidebar'
 import { useState } from 'react'
 
 const G = '#1D9E75', AM = '#BA7517', RD = '#E24B4A', BD = '#e5e7eb'
@@ -186,45 +187,7 @@ export default function DevisPage() {
   return (
     <div style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}} onClick={() => { setActionMenu(null); setDocMenu(null) }}>
 
-      {/* SIDEBAR */}
-      <div style={{width:sw,minWidth:sw,height:'100vh',background:'#fff',borderRight:`1px solid ${BD}`,display:'flex',flexDirection:'column',transition:'width 0.2s',overflow:'hidden',flexShrink:0}}>
-        <div style={{padding:'16px 14px',borderBottom:`1px solid ${BD}`,minHeight:60,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-          {!collapsed && <a href="/dashboard" style={{fontSize:'18px',fontWeight:'800',color:'#111',textDecoration:'none'}}>Bati<span style={{color:G}}>zo</span></a>}
-          <button onClick={() => setCollapsed(!collapsed)} style={{background:'none',border:'none',cursor:'pointer',color:'#888',padding:4,borderRadius:6,marginLeft:collapsed?'auto':0}}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{width:18,height:18}}><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          </button>
-        </div>
-        <nav style={{flex:1,padding:'12px 8px',display:'flex',flexDirection:'column',gap:2}}>
-          {navItems.map(n => (
-            <a key={n.id} href={n.href} title={collapsed?n.label:undefined}
-              style={{display:'flex',alignItems:'center',gap:10,padding:'9px 10px',borderRadius:8,background:n.id==='devis'?'#f0fdf4':'none',color:n.id==='devis'?G:'#555',fontWeight:n.id==='devis'?600:400,fontSize:13,textDecoration:'none',justifyContent:collapsed?'center':'flex-start',transition:'background 0.15s'}}
-              onMouseEnter={e => { if(n.id!=='devis') (e.currentTarget as HTMLAnchorElement).style.background='#f9fafb' }}
-              onMouseLeave={e => { if(n.id!=='devis') (e.currentTarget as HTMLAnchorElement).style.background='none' }}>
-              <NavIcon id={n.id}/>
-              {!collapsed && <span style={{flex:1}}>{n.label}</span>}
-              {!collapsed && n.badge && <span style={{background:G,color:'#fff',fontSize:10,fontWeight:700,padding:'1px 6px',borderRadius:10}}>{n.badge}</span>}
-            </a>
-          ))}
-        </nav>
-        {!collapsed ? (
-          <div style={{padding:12,borderTop:`1px solid ${BD}`}}>
-            <div style={{display:'flex',alignItems:'center',gap:8,padding:8,borderRadius:8,background:'#f9fafb'}}>
-              <div style={{width:32,height:32,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:700,flexShrink:0}}>A</div>
-              <div style={{overflow:'hidden',flex:1}}>
-                <div style={{fontSize:12,fontWeight:600,color:'#111',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>Mon compte</div>
-                <div style={{fontSize:12,color:'#555'}}>Batizo</div>
-              </div>
-              <a href="/login" style={{color:'#aaa',textDecoration:'none',flexShrink:0}}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{width:14,height:14}}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-              </a>
-            </div>
-          </div>
-        ) : (
-          <div style={{padding:12,borderTop:`1px solid ${BD}`}}>
-            <div style={{width:40,height:40,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:13,fontWeight:700,margin:'0 auto'}}>A</div>
-          </div>
-        )}
-      </div>
+      <Sidebar activePage="devis"/>
 
       {/* MAIN */}
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>

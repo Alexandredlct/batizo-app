@@ -1,4 +1,5 @@
 'use client'
+import Sidebar from '../components/Sidebar'
 import { useState } from 'react'
 const G='#1D9E75',AM='#BA7517',RD='#E24B4A',BD='#e5e7eb'
 const NavIcon=({id}:{id:string})=>{
