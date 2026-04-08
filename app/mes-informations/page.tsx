@@ -207,7 +207,7 @@ export default function MesInfosPage(){
                   <div style={{fontSize:14,fontWeight:600,color:'#111',marginBottom:3}}>Double authentification (2FA)</div>
                   <div style={{fontSize:13,color:'#444'}}>Sécurisez votre compte avec une vérification en deux étapes</div>
                 </div>
-                <div onClick={()=>setTwoFA(!twoFA);setHasChanges(true)}style={{width:44,height:24,borderRadius:12,background:twoFA?G:'#d1d5db',cursor:'pointer',position:'relative',transition:'background 0.2s'}}>
+                <div onClick={()=>{setTwoFA(!twoFA);setHasChanges(true)}}style={{width:44,height:24,borderRadius:12,background:twoFA?G:'#d1d5db',cursor:'pointer',position:'relative',transition:'background 0.2s'}}>
                   <div style={{position:'absolute',top:2,left:twoFA?22:2,width:20,height:20,borderRadius:'50%',background:'#fff',transition:'left 0.2s',boxShadow:'0 1px 3px rgba(0,0,0,0.2)'}}></div>
                 </div>
               </div>
