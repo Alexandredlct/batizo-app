@@ -129,7 +129,7 @@ export default function ParrainagePage(){
                         {step.num}
                       </div>
                       <div style={{fontSize:24,marginBottom:6}}>{step.icon}</div>
-                      <div style={{fontSize:13,fontWeight:600,marginBottom:4}}>{step.title}</div>
+                      <div style={{fontSize:13,fontWeight:600,marginBottom:4,color:'#111'}}>{step.title}</div>
                       <div style={{fontSize:12,color:'#444',lineHeight:1.5}}>{step.desc}</div>
                     </div>
                     {i<2&&<div style={{fontSize:20,color:'#777',flexShrink:0}}>→</div>}
@@ -202,9 +202,9 @@ export default function ParrainagePage(){
                     <tr key={i}style={{borderBottom:i<filleuls.length-1?`1px solid ${BD}`:'none'}}
                       onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
                       onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
-                      <td style={{padding:'12px 16px',fontSize:14,fontWeight:500}}>{f.nom}</td>
-                      <td style={{padding:'12px 16px',fontSize:13,color:'#555'}}>{f.email}</td>
-                      <td style={{padding:'12px 16px',fontSize:13,color:'#555'}}>{f.date}</td>
+                      <td style={{padding:'12px 16px',fontSize:14,fontWeight:500,color:'#111'}}>{f.nom}</td>
+                      <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{f.email}</td>
+                      <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{f.date}</td>
                       <td style={{padding:'12px 16px'}}>
                         <span style={{
                           background:f.statut==='abonne'?'#f0fdf4':f.statut==='inscrit'?'#eff6ff':'#fffbeb',
