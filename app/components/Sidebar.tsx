@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { usePhoto } from '../context/PhotoContext'
 
 const G = '#1D9E75', RD = '#E24B4A', BD = '#e5e7eb'
 
@@ -45,6 +46,7 @@ export default function Sidebar({ activePage }: { activePage: string }) {
     }
   }, [])
   const [entreprise, setEntreprise] = useState('Batizo')
+  const { photo } = usePhoto()
   const sw = collapsed ? 64 : 230
 
   useEffect(() => {
