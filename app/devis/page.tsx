@@ -317,7 +317,7 @@ export default function DevisPage() {
             return (
               <div key={mois} style={{marginBottom:28}}>
                 <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:`2px solid ${BD}`,marginBottom:10,flexWrap:'wrap',gap:8}}>
-                  <span style={{fontSize:14,fontWeight:700,color:'#111'}}>{mois}</span>
+                  <span style={{fontSize:16,fontWeight:700,color:'#111'}}>{mois}</span>
                   <span style={{fontSize:12,color:'#555'}}>
                     {stats.count} devis &nbsp;·&nbsp; <strong>{fmt(stats.totalDevis)} HT</strong> devisés &nbsp;·&nbsp;
                     <span style={{color:G,fontWeight:600}}>{fmt(stats.totalPaye)} HT payés</span> &nbsp;·&nbsp;
@@ -347,10 +347,10 @@ export default function DevisPage() {
                                   onBlur={() => saveTitre(c.id)}
                                   onKeyDown={e => { if(e.key==='Enter') saveTitre(c.id); if(e.key==='Escape') setEditingTitre(null) }}
                                   onClick={e => e.stopPropagation()}
-                                  style={{fontSize:14,fontWeight:700,color:'#111',border:`1px solid ${G}`,borderRadius:6,padding:'2px 8px',outline:'none',minWidth:220,background:'#f0fdf4'}}/>
+                                  style={{fontSize:16,fontWeight:700,color:'#111',border:`1px solid ${G}`,borderRadius:6,padding:'2px 8px',outline:'none',minWidth:220,background:'#f0fdf4'}}/>
                               ) : (
                                 <>
-                                  <span style={{fontSize:14,fontWeight:700,color:'#111'}}>{c.client} — {c.titre}</span>
+                                  <span style={{fontSize:16,fontWeight:700,color:'#111'}}>{c.client} — {c.titre}</span>
                                   <button onClick={e => { e.stopPropagation(); setEditingTitre(c.id); setEditTitreVal(c.titre) }} title="Modifier le titre"
                                     style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',padding:2,display:'flex',alignItems:'center',transition:'color 0.15s'}}
                                     onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color=G}
@@ -365,17 +365,15 @@ export default function DevisPage() {
                               <span style={{margin:'0 6px',color:'#ccc'}}>·</span>
                               Total facturé : <strong style={{color:montantFacture===0?'#aaa':G}}>{fmt(montantFacture)} HT</strong>
                             </div>
-                            <div style={{fontSize:13,marginBottom:3,display:'flex',alignItems:'center',gap:4}}>
-                              <span>📍</span>
+                            <div style={{display:"flex",alignItems:"center",gap:20,flexWrap:"wrap",marginBottom:4}}>
+                            <span style={{display:"flex",alignItems:"center",gap:4,fontSize:13}}><span>📍</span>
                               <a href={mapsUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
                                 style={{color:'#555',textDecoration:'none',borderBottom:'1px dashed #ccc',transition:'color 0.15s,borderColor 0.15s'}}
                                 onMouseEnter={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color=G; a.style.borderBottomColor=G }}
                                 onMouseLeave={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color='#555'; a.style.borderBottomColor='#ccc' }}>
                                 {c.adresse}
                               </a>
-                            </div>
-                            <div style={{fontSize:13,marginBottom:3,display:'flex',alignItems:'center',gap:4}}>
-                              <span>📞</span>
+<a
                               <a href={`tel:${c.tel.replace(/\s/g,'')}`} onClick={e => e.stopPropagation()}
                                 style={{color:'#555',textDecoration:'none',borderBottom:'1px dashed #ccc',transition:'color 0.15s,borderColor 0.15s'}}
                                 onMouseEnter={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color=G; a.style.borderBottomColor=G }}
@@ -477,9 +475,9 @@ export default function DevisPage() {
                                       style={{background:'none',border:'none',cursor:'pointer',color:G,fontWeight:600,fontSize:13,padding:0,textDecoration:'underline',textDecorationStyle:'dotted',textUnderlineOffset:2}}>
                                       {d.ref}
                                     </button>
-                                    {d.label && <span style={{fontSize:11,color:'#aaa',marginLeft:4}}>{d.label}</span>}
+                                    {d.label && <span style={{fontSize:11,color:'#555',marginLeft:4,fontWeight:500}}>{d.label}</span>}
                                   </td>
-                                  <td style={{padding:'10px 16px',textAlign:'right',fontSize:13,fontWeight:600}}>{fmt(d.montant)}</td>
+                                  <td style={{padding:'10px 16px',textAlign:'right',fontSize:13,fontWeight:700,color:'#111'}}>{fmt(d.montant)}</td>
                                   <td style={{padding:'10px 16px',textAlign:'center',fontSize:13,color:'#444'}}>{d.date}</td>
                                   <td style={{padding:'10px 16px',textAlign:'center'}}>
                                     <select value={d.statut} onChange={e => handleStatutChange(c.id,d.ref,e.target.value,d.type)}
