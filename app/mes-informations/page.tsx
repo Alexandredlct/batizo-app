@@ -14,6 +14,22 @@ export default function MesInfosPage(){
   const[showMdp,setShowMdp]=useState(false)
   const[toast,setToast]=useState(false)
   const[hasChanges,setHasChanges]=useState(false)
+  const[photo,setPhoto]=useState<string|null>(()=>{
+    if(typeof window!=='undefined') return localStorage.getItem('batizo_photo')
+    return null
+  })
+  const handlePhoto=(e:React.ChangeEvent<HTMLInputElement>)=>{
+    const file=e.target.files?.[0]
+    if(!file)return
+    const reader=new FileReader()
+    reader.onload=ev=>{
+      const result=ev.target?.result as string
+      setPhoto(result)
+      localStorage.setItem('batizo_photo',result)
+      setHasChanges(true)
+    }
+    reader.readAsDataURL(file)
+  }
   const[twoFA,setTwoFA]=useState(false)
   const sw=collapsed?64:230
   const save=()=>{setHasChanges(false);setToast(true);setTimeout(()=>setToast(false),3000)}
@@ -107,7 +123,9 @@ export default function MesInfosPage(){
             <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,padding:'20px 24px'}}>
               <div style={{display:'flex',alignItems:'center',gap:20,marginBottom:20,flexWrap:'wrap' as const}}>
                 <div style={{position:'relative'}}>
-                  <div style={{width:72,height:72,borderRadius:'50%',background:`${G}22`,color:G,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,fontWeight:700}}>AD</div>
+                  <div style={{width:72,height:72,borderRadius:'50%',background:`${G}22`,color:G,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,fontWeight:700,overflow:'hidden',flexShrink:0}}>
+                    {photo?<img src={photo} alt="profil" style={{width:'100%',height:'100%',objectFit:'cover'}}/>:<span>AD</span>}
+                  </div>
                   <div style={{position:'absolute',bottom:0,right:0,width:24,height:24,borderRadius:'50%',background:G,border:'2px solid #fff',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}>
                     <svg width="11"height="11"viewBox="0 0 24 24"fill="none"stroke="#fff"strokeWidth="3"strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                   </div>

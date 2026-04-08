@@ -30,6 +30,16 @@ export default function Sidebar({ activePage }: { activePage: string }) {
   const [collapsed, setCollapsed] = useState(false)
   const [userMenu, setUserMenu] = useState(false)
   const [prenom, setPrenom] = useState('')
+  const [photo, setPhoto] = useState<string|null>(null)
+  
+  useEffect(() => {
+    const stored = localStorage.getItem('batizo_photo')
+    if (stored) setPhoto(stored)
+    // Écouter les changements de photo
+    const onStorage = () => setPhoto(localStorage.getItem('batizo_photo'))
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
   const [entreprise, setEntreprise] = useState('Batizo')
   const sw = collapsed ? 64 : 230
 
@@ -73,7 +83,9 @@ export default function Sidebar({ activePage }: { activePage: string }) {
             style={{display:'flex',alignItems:'center',gap:8,padding:8,borderRadius:8,background:'#f9fafb',cursor:'pointer',transition:'background 0.15s'}}
             onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
             onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background='#f9fafb'}>
-            <div style={{width:32,height:32,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:13,fontWeight:700,flexShrink:0}}>{initiales}</div>
+            <div style={{width:32,height:32,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:13,fontWeight:700,flexShrink:0,overflow:'hidden'}}>
+            {photo?<img src={photo} alt="profil" style={{width:'100%',height:'100%',objectFit:'cover'}}/>:initiales}
+          </div>
             <div style={{overflow:'hidden',flex:1}}>
               <div style={{fontSize:12,fontWeight:600,color:'#111',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{prenom || 'Mon compte'}</div>
               <div style={{fontSize:11,color:'#888'}}>{entreprise}</div>
@@ -107,8 +119,8 @@ export default function Sidebar({ activePage }: { activePage: string }) {
       ) : (
         <div style={{padding:12,borderTop:`1px solid ${BD}`}}>
           <div onClick={e => { e.stopPropagation(); setUserMenu(!userMenu) }}
-            style={{width:40,height:40,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:13,fontWeight:700,margin:'0 auto',cursor:'pointer'}}>
-            {initiales}
+            style={{width:40,height:40,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:13,fontWeight:700,margin:'0 auto',cursor:'pointer',overflow:'hidden'}}>
+            {photo?<img src={photo} alt="profil" style={{width:'100%',height:'100%',objectFit:'cover'}}/>:initiales}
           </div>
         </div>
       )}
