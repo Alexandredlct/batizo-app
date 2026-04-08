@@ -164,7 +164,7 @@ export default function DashboardPage() {
                 </tr></thead>
                 <tbody>
                   {devis.map((d,i) => (
-                    <tr key={i} style={{borderTop:`1px solid ${BD}`}}>
+                    <tr key={i} onMouseEnter={e=>{e.currentTarget.style.background="#f0fdf4"}} onMouseLeave={e=>{e.currentTarget.style.background=""}} style={{borderTop:`1px solid ${BD}`}}>
                       <td style={{padding:'10px 16px'}}>
                         <div style={{fontSize:13,fontWeight:600}}>{d.client}</div>
                         <div style={{fontSize:11,color:'#888'}}>{d.num} · {d.date}</div>
