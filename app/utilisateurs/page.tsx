@@ -165,8 +165,8 @@ export default function UtilisateursPage(){
                     <td style={{padding:'14px 16px',fontSize:13,color:'#555'}}>{u.email}</td>
                     <td style={{padding:'14px 16px',fontSize:13,color:'#555'}}>{u.depuis}</td>
                     <td style={{padding:'14px 16px'}}>
-                      <span style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,background:u.statut==='actif'?'#f0fdf4':u.statut==='en_attente'?'#fffbeb':'#f9fafb',color:u.statut==='actif'?'#1D9E75':u.statut==='en_attente'?'#BA7517':'#888'}}>
-                        {u.statut==='actif'?'Actif':u.statut==='en_attente'?'En attente':'—'}
+                      <span style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,background:u.statut==='actif'?'#f0fdf4':u.statut==='en_attente'?'#fffbeb':u.statut==='desactive'?'#fef2f2':'#f9fafb',color:u.statut==='actif'?'#1D9E75':u.statut==='en_attente'?'#BA7517':u.statut==='desactive'?'#E24B4A':'#888'}}>
+                        {u.statut==='actif'?'Actif':u.statut==='en_attente'?'En attente':u.statut==='desactive'?'Désactivé':'—'}
                       </span>
                     </td>
                     <td style={{padding:'14px 16px'}}>
@@ -176,7 +176,7 @@ export default function UtilisateursPage(){
                         <select defaultValue={u.role}
                           onChange={e=>{
                             const newRole=e.target.value
-                            setUsers(p=>p.map((usr,idx)=>idx===i?{...usr,role:newRole}:usr))
+                            setUsers(p=>p.map((usr,idx)=>idx===i?{...usr,role:newRole,statut:newRole==='revoque'?'desactive':usr.statut==='desactive'?'actif':usr.statut}:usr))
                           }}
                           style={{padding:'5px 10px',border:`1px solid ${roleColors[u.role]||BD}`,borderRadius:6,fontSize:12,color:roleColors[u.role]||'#333',fontWeight:600,background:`${roleColors[u.role] || '#e5e7eb'}18`,outline:'none',cursor:'pointer'}}>
                           <option value="revoque">Révoquer l'accès</option>
