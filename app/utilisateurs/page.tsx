@@ -110,19 +110,19 @@ export default function UtilisateursPage(){
 
           {showForm&&(
             <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,padding:20,marginBottom:20}}>
-              <div style={{fontSize:14,fontWeight:600,marginBottom:14}}>Inviter un nouvel utilisateur</div>
+              <div style={{fontSize:14,fontWeight:600,marginBottom:14,color:'#111'}}>Inviter un nouvel utilisateur</div>
               <div style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'flex-end'}}>
                 <div style={{flex:1,minWidth:200}}>
-                  <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Prénom Nom *</label>
-                  <input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="Ex : Emma Strano" style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+                  <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Prénom Nom *</label>
+                  <input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="Ex : Emma Strano" style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
                 </div>
                 <div style={{flex:1,minWidth:200}}>
-                  <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Adresse email *</label>
-                  <input value={newEmail} onChange={e=>setNewEmail(e.target.value)} placeholder="email@batizo.fr" style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+                  <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Adresse email *</label>
+                  <input value={newEmail} onChange={e=>setNewEmail(e.target.value)} placeholder="email@batizo.fr" style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
                 </div>
                 <div style={{minWidth:180}}>
-                  <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Permission</label>
-                  <select value={newRole} onChange={e=>setNewRole(e.target.value)} style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff'}}>
+                  <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Permission</label>
+                  <select value={newRole} onChange={e=>setNewRole(e.target.value)} style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
                     <option value="lecture">Lecture seule</option>
                     <option value="modification">Lecture et modification</option>
                     <option value="proprietaire">Propriétaire du compte</option>
@@ -130,7 +130,7 @@ export default function UtilisateursPage(){
                 </div>
                 <div style={{display:'flex',gap:8}}>
                   <button onClick={inviter} style={{padding:'9px 18px',background:G,color:'#fff',border:'none',borderRadius:7,fontSize:13,fontWeight:600,cursor:'pointer'}}>Inviter</button>
-                  <button onClick={()=>setShowForm(false)} style={{padding:'9px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,cursor:'pointer'}}>Annuler</button>
+                  <button onClick={()=>setShowForm(false)} style={{padding:'9px 14px',background:'#fff',border:'1px solid #333',borderRadius:7,fontSize:13,cursor:'pointer',color:'#111',fontWeight:500}}>Annuler</button>
                 </div>
               </div>
             </div>
@@ -148,7 +148,7 @@ export default function UtilisateursPage(){
                   <tr key={i} style={{borderBottom:i<users.length-1?`1px solid ${BD}`:'none'}}
                     onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
                     onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
-                    <td style={{padding:'14px 16px',fontSize:14,fontWeight:500}}>
+                    <td style={{padding:'14px 16px',fontSize:14,fontWeight:500,color:'#111'}}>
                       <div style={{display:'flex',alignItems:'center',gap:8}}>
                         <div style={{width:32,height:32,borderRadius:'50%',background:`${G}22`,color:G,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,flexShrink:0}}>
                           {u.nom.split(' ').map(n=>n[0]).join('').slice(0,2)}
