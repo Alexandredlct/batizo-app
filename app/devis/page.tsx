@@ -5,7 +5,6 @@ const G = '#1D9E75', AM = '#BA7517', RD = '#E24B4A', BD = '#e5e7eb'
 
 const statutColors: Record<string,string> = { brouillon:'#888', attente:AM, finalise:'#2563eb', signe:G, refuse:RD, payee:G, impayee:RD }
 const statutLabels: Record<string,string> = { brouillon:'Brouillon', attente:'En attente', finalise:'Finalisé', signe:'Signé', refuse:'Refusé', payee:'Payée', impayee:'Impayée' }
-const statutBg: Record<string,string> = { brouillon:'#f9fafb', attente:'#fffbeb', finalise:'#eff6ff', signe:'#f0fdf4', refuse:'#fef2f2', payee:'#f0fdf4', impayee:'#fef2f2' }
 
 type Doc = { ref:string; type:string; label?:string; montant:number; date:string; statut:string }
 type Chantier = { id:string; mois:string; client:string; titre:string; adresse:string; tel:string; vendeur:string; montantDevis:number; statut:string; archive:boolean; docs:Doc[]; note?:string }
@@ -115,8 +114,9 @@ export default function DevisPage() {
       if (!chantier) return prev
       const doc = chantier.docs.find(d => d.ref===docRef)
       if (!doc) return prev
-      const newDoc = {...doc, ref:doc.ref+'-COPIE', statut:'brouillon'}
-      return prev.map(c => c.id===chantierId ? {...c,docs:[...c.docs,newDoc]} : c)
+      const newRef = doc.ref.replace(/(\d+)$/, (m) => String(parseInt(m)+1))
+      const newDoc = {...doc, ref:newRef+'-COPIE', statut:'brouillon'}
+      return prev.map(c => c.id===chantierId ? {...c, docs:[...c.docs, newDoc]} : c)
     })
     setActionMenu(null)
   }
@@ -131,18 +131,22 @@ export default function DevisPage() {
     return target.includes(q)
   }
 
-  const sortDocs = (docs:Doc[]) => [...docs].sort((a,b) => {
-    let va: string|number = '', vb: string|number = ''
-    if (sortConfig.field==='montant') { va=a.montant; vb=b.montant }
-    else if (sortConfig.field==='date') { va=a.date.split('/').reverse().join(''); vb=b.date.split('/').reverse().join('') }
-    else if (sortConfig.field==='statut') { va=a.statut; vb=b.statut }
-    else { va=a.ref; vb=b.ref }
-    if (va<vb) return sortConfig.dir==='asc' ? -1 : 1
-    if (va>vb) return sortConfig.dir==='asc' ? 1 : -1
-    return 0
-  })
+  const sortDocs = (docs:Doc[]) => {
+    return [...docs].sort((a,b) => {
+      let va: string|number = '', vb: string|number = ''
+      if (sortConfig.field==='montant') { va=a.montant; vb=b.montant }
+      else if (sortConfig.field==='date') { va=a.date.split('/').reverse().join(''); vb=b.date.split('/').reverse().join('') }
+      else if (sortConfig.field==='statut') { va=a.statut; vb=b.statut }
+      else { va=a.ref; vb=b.ref }
+      if (va<vb) return sortConfig.dir==='asc' ? -1 : 1
+      if (va>vb) return sortConfig.dir==='asc' ? 1 : -1
+      return 0
+    })
+  }
 
-  const handleSort = (field:SortField) => setSortConfig(p => p.field===field ? {...p,dir:p.dir==='asc'?'desc':'asc'} : {field,dir:'asc'})
+  const handleSort = (field:SortField) => {
+    setSortConfig(p => p.field===field ? {...p,dir:p.dir==='asc'?'desc':'asc'} : {field,dir:'asc'})
+  }
 
   const SortIcon = ({field}:{field:SortField}) => (
     <span style={{marginLeft:3,color:sortConfig.field===field?G:'#ccc',fontSize:10}}>
@@ -171,11 +175,6 @@ export default function DevisPage() {
     const totalPaye = items.reduce((s,c) => s+getMontantFacture(c), 0)
     return { count:items.length, totalDevis, totalPaye, aEncaisser:totalDevis-totalPaye }
   }
-
-  // Récapitulatif global
-  const totalGlobalDevis = filtered.reduce((s,c) => s+c.montantDevis, 0)
-  const totalGlobalFacture = filtered.reduce((s,c) => s+getMontantFacture(c), 0)
-  const totalGlobalEncaisser = totalGlobalDevis - totalGlobalFacture
 
   const navItems = [
     {id:'dashboard',label:'Tableau de bord',href:'/dashboard'},
@@ -241,25 +240,6 @@ export default function DevisPage() {
         </div>
 
         <div style={{flex:1,overflowY:'auto',padding:24}}>
-
-          {/* BANDEAU RÉCAPITULATIF GLOBAL */}
-          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:20}}>
-            <div style={{background:'#fff',borderRadius:10,padding:'14px 16px',border:`1px solid ${BD}`}}>
-              <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.04em',marginBottom:4}}>Total devisé</div>
-              <div style={{fontSize:20,fontWeight:700,color:'#111'}}>{fmt(totalGlobalDevis)} HT</div>
-              <div style={{fontSize:11,color:'#aaa',marginTop:2}}>{filtered.length} chantiers affichés</div>
-            </div>
-            <div style={{background:'#fff',borderRadius:10,padding:'14px 16px',border:`1px solid ${BD}`}}>
-              <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.04em',marginBottom:4}}>Total facturé encaissé</div>
-              <div style={{fontSize:20,fontWeight:700,color:G}}>{fmt(totalGlobalFacture)} HT</div>
-              <div style={{fontSize:11,color:'#aaa',marginTop:2}}>{totalGlobalDevis > 0 ? Math.round(totalGlobalFacture/totalGlobalDevis*100) : 0}% du CA devisé</div>
-            </div>
-            <div style={{background:'#fff',borderRadius:10,padding:'14px 16px',border:`1px solid ${RD}22`}}>
-              <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.04em',marginBottom:4}}>Reste à encaisser</div>
-              <div style={{fontSize:20,fontWeight:700,color:RD}}>{fmt(totalGlobalEncaisser)} HT</div>
-              <div style={{fontSize:11,color:'#aaa',marginTop:2}}>Factures impayées incluses</div>
-            </div>
-          </div>
 
           {/* Onglets */}
           <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
@@ -329,24 +309,20 @@ export default function DevisPage() {
                 {items.map(c => {
                   const montantFacture = getMontantFacture(c)
                   const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(c.adresse)}`
-                  const bgTint = statutBg[c.statut] || '#fff'
-
                   return (
-                    <div key={c.id} style={{background:'#fff',border:`1px solid ${BD}`,borderLeft:`3px solid ${statutColors[c.statut]}`,borderRadius:10,marginBottom:8,overflow:'visible',position:'relative',transition:'box-shadow 0.15s'}}
-                      onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.boxShadow='0 2px 12px rgba(0,0,0,0.08)'}
+                    <div key={c.id} style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,marginBottom:8,overflow:'visible',position:'relative',transition:'box-shadow 0.15s'}}
+                      onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.boxShadow='0 2px 12px rgba(29,158,117,0.1)'}
                       onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.boxShadow=''}>
 
-                      {/* LAYOUT 2 COLONNES */}
-                      <div onClick={() => toggle(c.id)} style={{display:'grid',gridTemplateColumns:'1fr auto',gap:0,cursor:'pointer',transition:'background 0.15s',borderRadius:expanded[c.id]?'8px 8px 0 0':'8px',background:bgTint+'44'}}
-                        onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background=bgTint+'99'}
-                        onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background=bgTint+'44'}>
-
-                        {/* COL GAUCHE — Identité */}
-                        <div style={{padding:'14px 16px',display:'flex',gap:10,alignItems:'flex-start'}}>
-                          <span style={{color:statutColors[c.statut],fontSize:11,marginTop:5,flexShrink:0,display:'inline-block',transition:'transform 0.2s',transform:expanded[c.id]?'rotate(90deg)':'rotate(0deg)'}}>▶</span>
-                          <div style={{flex:1,minWidth:0}}>
+                      {/* Ligne principale */}
+                      <div onClick={() => toggle(c.id)} style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',padding:'14px 16px',cursor:'pointer',transition:'background 0.15s',borderRadius:expanded[c.id]?'10px 10px 0 0':'10px'}}
+                        onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
+                        onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background=''}>
+                        <div style={{display:'flex',alignItems:'flex-start',gap:12,flex:1,minWidth:0}}>
+                          <span style={{color:G,fontSize:11,marginTop:4,flexShrink:0,display:'inline-block',transition:'transform 0.2s',transform:expanded[c.id]?'rotate(90deg)':'rotate(0deg)'}}>▶</span>
+                          <div style={{minWidth:0,flex:1}}>
                             {/* Titre éditable */}
-                            <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:6}}>
+                            <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:5}}>
                               {editingTitre===c.id ? (
                                 <input autoFocus value={editTitreVal} onChange={e => setEditTitreVal(e.target.value)}
                                   onBlur={() => saveTitre(c.id)}
@@ -355,78 +331,74 @@ export default function DevisPage() {
                                   style={{fontSize:14,fontWeight:700,color:'#111',border:`1px solid ${G}`,borderRadius:6,padding:'2px 8px',outline:'none',minWidth:220,background:'#f0fdf4'}}/>
                               ) : (
                                 <>
-                                  <span style={{fontSize:15,fontWeight:700,color:'#111'}}>{c.client}</span>
-                                  <span style={{fontSize:13,color:'#888',fontWeight:400}}>— {c.titre}</span>
-                                  <button onClick={e => { e.stopPropagation(); setEditingTitre(c.id); setEditTitreVal(c.titre) }}
-                                    style={{background:'none',border:'none',cursor:'pointer',color:'#ddd',padding:2,display:'flex',alignItems:'center',transition:'color 0.15s',flexShrink:0}}
+                                  <span style={{fontSize:14,fontWeight:700,color:'#111'}}>{c.client} — {c.titre}</span>
+                                  <button onClick={e => { e.stopPropagation(); setEditingTitre(c.id); setEditTitreVal(c.titre) }} title="Modifier le titre"
+                                    style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',padding:2,display:'flex',alignItems:'center',transition:'color 0.15s'}}
                                     onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color=G}
-                                    onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color='#ddd'}>
-                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color='#ccc'}>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                   </button>
                                 </>
                               )}
                             </div>
-                            {/* Adresse + Tel sur même ligne */}
-                            <div style={{display:'flex',alignItems:'center',gap:16,flexWrap:'wrap',marginBottom:4}}>
+                            <div style={{fontSize:13,color:'#555',marginBottom:4}}>
+                              Total devisé : <strong style={{color:'#111'}}>{fmt(c.montantDevis)} HT</strong>
+                              <span style={{margin:'0 6px',color:'#ccc'}}>·</span>
+                              Total facturé : <strong style={{color:montantFacture===0?'#aaa':G}}>{fmt(montantFacture)} HT</strong>
+                            </div>
+                            <div style={{fontSize:13,marginBottom:3,display:'flex',alignItems:'center',gap:4}}>
+                              <span>📍</span>
                               <a href={mapsUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
-                                style={{display:'flex',alignItems:'center',gap:4,color:'#666',textDecoration:'none',fontSize:13,transition:'color 0.15s'}}
-                                onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.color=G}
-                                onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color='#666'}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                style={{color:'#555',textDecoration:'none',borderBottom:'1px dashed #ccc',transition:'color 0.15s,borderColor 0.15s'}}
+                                onMouseEnter={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color=G; a.style.borderBottomColor=G }}
+                                onMouseLeave={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color='#555'; a.style.borderBottomColor='#ccc' }}>
                                 {c.adresse}
                               </a>
+                            </div>
+                            <div style={{fontSize:13,marginBottom:3,display:'flex',alignItems:'center',gap:4}}>
+                              <span>📞</span>
                               <a href={`tel:${c.tel.replace(/\s/g,'')}`} onClick={e => e.stopPropagation()}
-                                style={{display:'flex',alignItems:'center',gap:4,color:'#666',textDecoration:'none',fontSize:13,transition:'color 0.15s',flexShrink:0}}
-                                onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.color=G}
-                                onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color='#666'}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.99 1.16 2 2 0 013 .98h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.91 8.91a16 16 0 006.08 6.08l1.28-1.29a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+                                style={{color:'#555',textDecoration:'none',borderBottom:'1px dashed #ccc',transition:'color 0.15s,borderColor 0.15s'}}
+                                onMouseEnter={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color=G; a.style.borderBottomColor=G }}
+                                onMouseLeave={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color='#555'; a.style.borderBottomColor='#ccc' }}>
                                 {c.tel}
                               </a>
                             </div>
-                            {/* Vendeur + note */}
-                            <div style={{display:'flex',alignItems:'center',gap:10}}>
-                              <span style={{fontSize:12,color:'#888'}}>👤 <strong style={{color:'#555'}}>{c.vendeur}</strong></span>
+                            <div style={{fontSize:13,display:'flex',alignItems:'center',gap:6}}>
+                              <span>👤</span>
+                              <span style={{color:'#888'}}>Vendeur : <strong style={{color:'#555'}}>{c.vendeur}</strong></span>
+                              {/* Bouton note */}
                               <button onClick={e => { e.stopPropagation(); setEditingNote(editingNote===c.id?null:c.id); setNoteVal(c.note||'') }}
-                                style={{display:'flex',alignItems:'center',gap:3,background:'none',border:`1px solid ${c.note?AM:BD}`,borderRadius:5,cursor:'pointer',padding:'2px 7px',fontSize:11,color:c.note?AM:'#aaa',transition:'all 0.15s'}}
+                                title="Note interne"
+                                style={{display:'flex',alignItems:'center',gap:3,background:'none',border:`1px solid ${c.note?AM:BD}`,borderRadius:5,cursor:'pointer',padding:'2px 6px',fontSize:11,color:c.note?AM:'#aaa',transition:'all 0.15s'}}
                                 onMouseEnter={e => { const b=e.currentTarget as HTMLButtonElement; b.style.borderColor=AM; b.style.color=AM }}
                                 onMouseLeave={e => { const b=e.currentTarget as HTMLButtonElement; b.style.borderColor=c.note?AM:BD; b.style.color=c.note?AM:'#aaa' }}>
                                 📝 {c.note ? 'Note' : 'Ajouter note'}
                               </button>
                             </div>
-                            {/* Note éditeur */}
+                            {/* Zone note */}
                             {editingNote===c.id && (
                               <div style={{marginTop:8}} onClick={e => e.stopPropagation()}>
                                 <textarea value={noteVal} onChange={e => setNoteVal(e.target.value)}
                                   placeholder="Note interne (visible uniquement par votre équipe)…"
-                                  style={{width:'100%',padding:'8px 10px',border:`1px solid ${AM}`,borderRadius:8,fontSize:12,outline:'none',resize:'vertical',minHeight:60,boxSizing:'border-box',background:'#fffbeb',fontFamily:'system-ui,sans-serif'}}/>
+                                  style={{width:'100%',padding:'8px 10px',border:`1px solid ${AM}`,borderRadius:8,fontSize:12,outline:'none',resize:'vertical',minHeight:60,boxSizing:'border-box',background:'#fffbeb',color:'#555',fontFamily:'system-ui,sans-serif'}}/>
                                 <div style={{display:'flex',gap:6,marginTop:4}}>
                                   <button onClick={() => saveNote(c.id)} style={{padding:'4px 12px',background:G,color:'#fff',border:'none',borderRadius:6,fontSize:12,cursor:'pointer',fontWeight:600}}>Sauvegarder</button>
                                   <button onClick={() => setEditingNote(null)} style={{padding:'4px 12px',background:'#fff',color:'#888',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,cursor:'pointer'}}>Annuler</button>
                                 </div>
                               </div>
                             )}
+                            {/* Affichage note sauvegardée */}
                             {c.note && editingNote!==c.id && (
-                              <div style={{marginTop:6,padding:'5px 10px',background:'#fffbeb',border:'1px solid #fde68a',borderRadius:6,fontSize:12,color:'#92400e'}}>
+                              <div style={{marginTop:6,padding:'6px 10px',background:'#fffbeb',border:`1px solid #fde68a`,borderRadius:6,fontSize:12,color:'#92400e',lineHeight:1.5}}>
                                 📝 {c.note}
                               </div>
                             )}
                           </div>
                         </div>
-
-                        {/* COL DROITE — Chiffres + actions */}
-                        <div style={{padding:'14px 16px',display:'flex',flexDirection:'column',alignItems:'flex-end',justifyContent:'space-between',minWidth:220,borderLeft:`1px solid ${BD}33`}} onClick={e => e.stopPropagation()}>
-                          <div style={{textAlign:'right',marginBottom:10}}>
-                            <span style={{background:`${statutColors[c.statut]}18`,color:statutColors[c.statut],padding:'4px 12px',borderRadius:20,fontSize:12,fontWeight:700}}>{statutLabels[c.statut]}</span>
-                          </div>
-                          <div style={{textAlign:'right',marginBottom:12}}>
-                            <div style={{fontSize:13,color:'#888',marginBottom:2}}>Devisé</div>
-                            <div style={{fontSize:20,fontWeight:700,color:'#111',lineHeight:1}}>{fmt(c.montantDevis)}</div>
-                            <div style={{fontSize:11,color:'#aaa',marginBottom:8}}>HT</div>
-                            <div style={{fontSize:12,color:'#888',marginBottom:1}}>Facturé encaissé</div>
-                            <div style={{fontSize:16,fontWeight:600,color:montantFacture===0?'#ccc':G}}>{fmt(montantFacture)} <span style={{fontSize:11,fontWeight:400}}>HT</span></div>
-                          </div>
-                          {/* Actions */}
-                          <div style={{display:'flex',alignItems:'center',gap:4}}>
+                        <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0,marginLeft:16}} onClick={e => e.stopPropagation()}>
+                          <span style={{background:`${statutColors[c.statut]}18`,color:statutColors[c.statut],padding:'3px 10px',borderRadius:20,fontSize:11,fontWeight:700}}>{statutLabels[c.statut]}</span>
+                          <div style={{display:'inline-flex',alignItems:'center',gap:4}}>
                             <button onClick={e => archiver(c.id,e)}
                               style={{display:'flex',alignItems:'center',gap:4,padding:'5px 10px',border:`1px solid ${BD}`,borderRadius:6,background:'#fff',fontSize:11,cursor:'pointer',color:'#666',transition:'all 0.15s'}}
                               onMouseEnter={e => { const b=e.currentTarget as HTMLButtonElement; b.style.borderColor=AM; b.style.color=AM; b.style.background='#fffbeb' }}
@@ -455,15 +427,23 @@ export default function DevisPage() {
                             <thead>
                               <tr style={{background:'#f9fafb'}}>
                                 <th style={{padding:'8px 16px',textAlign:'left',fontSize:11,color:'#888',fontWeight:600,width:30}}></th>
-                                <th style={{padding:'8px 16px',textAlign:'left',fontSize:11,color:'#888',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('ref')}>Référence <SortIcon field="ref"/></th>
-                                <th style={{padding:'8px 16px',textAlign:'right',fontSize:11,color:'#888',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('montant')}>Montant HT <SortIcon field="montant"/></th>
-                                <th style={{padding:'8px 16px',textAlign:'center',fontSize:11,color:'#888',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('date')}>Date <SortIcon field="date"/></th>
-                                <th style={{padding:'8px 16px',textAlign:'center',fontSize:11,color:'#888',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('statut')}>Statut <SortIcon field="statut"/></th>
+                                <th style={{padding:'8px 16px',textAlign:'left',fontSize:11,color:'#888',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('ref')}>
+                                  Référence <SortIcon field="ref"/>
+                                </th>
+                                <th style={{padding:'8px 16px',textAlign:'right',fontSize:11,color:'#888',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('montant')}>
+                                  Montant HT <SortIcon field="montant"/>
+                                </th>
+                                <th style={{padding:'8px 16px',textAlign:'center',fontSize:11,color:'#888',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('date')}>
+                                  Date <SortIcon field="date"/>
+                                </th>
+                                <th style={{padding:'8px 16px',textAlign:'center',fontSize:11,color:'#888',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('statut')}>
+                                  Statut <SortIcon field="statut"/>
+                                </th>
                                 <th style={{padding:'8px 16px',width:40}}></th>
                               </tr>
                             </thead>
                             <tbody>
-                              {sortDocs(c.docs).map((d,di) => (
+                              {sortDocs(c.docs).map((d, di) => (
                                 <tr key={di} style={{borderTop:`1px solid ${BD}`,transition:'background 0.15s'}}
                                   onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background='#f0fdf4'}
                                   onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background=''}>
@@ -473,6 +453,7 @@ export default function DevisPage() {
                                       : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>}
                                   </td>
                                   <td style={{padding:'10px 16px',fontSize:13,fontWeight:500}}>
+                                    {/* Numéro cliquable → preview */}
                                     <button onClick={e => { e.stopPropagation(); setPreviewDoc({doc:d,chantier:c}) }}
                                       style={{background:'none',border:'none',cursor:'pointer',color:G,fontWeight:600,fontSize:13,padding:0,textDecoration:'underline',textDecorationStyle:'dotted',textUnderlineOffset:2}}>
                                       {d.ref}
@@ -567,25 +548,41 @@ export default function DevisPage() {
       {/* PANNEAU PREVIEW */}
       {previewDoc && (
         <div style={{position:'fixed',top:0,right:0,width:'520px',height:'100vh',background:'#fff',boxShadow:'-4px 0 24px rgba(0,0,0,0.15)',zIndex:500,display:'flex',flexDirection:'column',overflow:'hidden'}}>
+          {/* Header preview */}
           <div style={{padding:'16px 20px',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
             <div>
               <div style={{fontSize:15,fontWeight:700,color:'#111'}}>{previewDoc.doc.ref}</div>
               <div style={{fontSize:12,color:'#888'}}>{previewDoc.chantier.client} — {previewDoc.chantier.titre}</div>
             </div>
             <div style={{display:'flex',gap:8,alignItems:'center'}}>
-              <button style={{display:'flex',alignItems:'center',gap:6,padding:'7px 14px',background:G,color:'#fff',border:'none',borderRadius:7,fontSize:12,fontWeight:600,cursor:'pointer'}}>✏️ Modifier</button>
-              <button style={{display:'flex',alignItems:'center',gap:6,padding:'7px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,cursor:'pointer'}}>📥 PDF</button>
-              <button onClick={() => setPreviewDoc(null)} style={{width:30,height:30,borderRadius:'50%',border:`1px solid ${BD}`,background:'#f9fafb',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,color:'#888'}}>×</button>
+              <button style={{display:'flex',alignItems:'center',gap:6,padding:'7px 14px',background:G,color:'#fff',border:'none',borderRadius:7,fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                ✏️ Modifier
+              </button>
+              <button style={{display:'flex',alignItems:'center',gap:6,padding:'7px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,cursor:'pointer'}}>
+                📥 PDF
+              </button>
+              <button onClick={() => setPreviewDoc(null)}
+                style={{width:30,height:30,borderRadius:'50%',border:`1px solid ${BD}`,background:'#f9fafb',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,color:'#888'}}>×</button>
             </div>
           </div>
+
+          {/* Contenu devis */}
           <div style={{flex:1,overflowY:'auto',padding:24}}>
+            {/* En-tête entreprise */}
             <div style={{display:'flex',justifyContent:'space-between',marginBottom:24}}>
               <div>
-                <div style={{fontSize:20,fontWeight:800,color:G,marginBottom:4}}>Batizo</div>
-                <div style={{fontSize:12,color:'#555',lineHeight:1.7}}>130 rue de Normandie<br/>92400 Courbevoie<br/>01 84 78 24 50</div>
+                <div style={{fontSize:20,fontWeight:'800' as const,color:G,marginBottom:4}}>Batizo</div>
+                <div style={{fontSize:12,color:'#555',lineHeight:1.7}}>
+                  130 rue de Normandie<br/>
+                  92400 Courbevoie<br/>
+                  01 84 78 24 50<br/>
+                  contact@batizo.fr
+                </div>
               </div>
               <div style={{textAlign:'right'}}>
-                <div style={{fontSize:18,fontWeight:700,color:'#111',marginBottom:6}}>{previewDoc.doc.type==='devis' ? 'DEVIS' : 'FACTURE'}</div>
+                <div style={{fontSize:18,fontWeight:700,color:'#111',marginBottom:6}}>
+                  {previewDoc.doc.type==='devis' ? 'DEVIS' : 'FACTURE'}
+                </div>
                 <div style={{fontSize:13,color:'#555',lineHeight:1.7}}>
                   <strong>N° :</strong> {previewDoc.doc.ref}<br/>
                   <strong>Date :</strong> {previewDoc.doc.date}<br/>
@@ -593,12 +590,23 @@ export default function DevisPage() {
                 </div>
               </div>
             </div>
+
+            {/* Client */}
             <div style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:8,padding:'12px 16px',marginBottom:20}}>
               <div style={{fontSize:11,fontWeight:600,color:'#888',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:6}}>Client</div>
               <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{previewDoc.chantier.client}</div>
-              <div style={{fontSize:12,color:'#555',lineHeight:1.7,marginTop:4}}>{previewDoc.chantier.adresse}<br/>{previewDoc.chantier.tel}</div>
+              <div style={{fontSize:12,color:'#555',lineHeight:1.7,marginTop:4}}>
+                {previewDoc.chantier.adresse}<br/>
+                {previewDoc.chantier.tel}
+              </div>
             </div>
-            <div style={{marginBottom:16,fontSize:13,color:'#555'}}><strong>Objet :</strong> {previewDoc.chantier.titre}</div>
+
+            {/* Objet */}
+            <div style={{marginBottom:16,fontSize:13,color:'#555'}}>
+              <strong>Objet :</strong> {previewDoc.chantier.titre}
+            </div>
+
+            {/* Tableau ouvrages */}
             <table style={{width:'100%',borderCollapse:'collapse',marginBottom:16,fontSize:12}}>
               <thead>
                 <tr style={{background:G,color:'#fff'}}>
@@ -611,7 +619,7 @@ export default function DevisPage() {
               </thead>
               <tbody>
                 {[
-                  {label:"Main d'œuvre — Installation", qty:16, unit:'h', pu:65, total:1040},
+                  {label:'Main d\'œuvre — Installation', qty:16, unit:'h', pu:65, total:1040},
                   {label:'Fournitures et matériaux', qty:1, unit:'forfait', pu:Math.round(previewDoc.doc.montant*0.55), total:Math.round(previewDoc.doc.montant*0.55)},
                   {label:'Dépose et évacuation', qty:1, unit:'forfait', pu:Math.round(previewDoc.doc.montant*0.2), total:Math.round(previewDoc.doc.montant*0.2)},
                 ].map((row,i) => (
@@ -625,6 +633,8 @@ export default function DevisPage() {
                 ))}
               </tbody>
             </table>
+
+            {/* Totaux */}
             <div style={{display:'flex',justifyContent:'flex-end',marginBottom:20}}>
               <div style={{minWidth:220}}>
                 {[
@@ -639,18 +649,27 @@ export default function DevisPage() {
                 ))}
               </div>
             </div>
-            <div style={{background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:8,padding:'12px 16px',marginBottom:16}}>
+
+            {/* Conditions */}
+            <div style={{background:'#f0fdf4',border:`1px solid #bbf7d0`,borderRadius:8,padding:'12px 16px',marginBottom:16}}>
               <div style={{fontSize:11,fontWeight:600,color:G,textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:6}}>Conditions de paiement</div>
               <div style={{fontSize:12,color:'#555',lineHeight:1.7}}>
                 Acompte de 30% à la commande — 35% en cours de travaux — Solde de 35% à la réception.<br/>
-                Ce devis est valable 30 jours.
+                Ce devis est valable 30 jours. Pour accepter, retournez-le signé avec la mention "Bon pour accord".
               </div>
             </div>
-            <div style={{fontSize:11,color:'#aaa',textAlign:'center'}}>Batizo SAS — RCS Nanterre — TVA Intracommunautaire FR XX XXX XXX XXX</div>
+
+            <div style={{fontSize:11,color:'#aaa',textAlign:'center'}}>
+              Batizo SAS — RCS Nanterre — TVA Intracommunautaire FR XX XXX XXX XXX
+            </div>
           </div>
         </div>
       )}
-      {previewDoc && <div onClick={() => setPreviewDoc(null)} style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.3)',zIndex:499}}/>}
+
+      {/* Overlay preview */}
+      {previewDoc && (
+        <div onClick={() => setPreviewDoc(null)} style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.3)',zIndex:499}}/>
+      )}
 
       {/* TOAST */}
       {toast.visible && (
