@@ -1,6 +1,7 @@
 'use client'
 import Sidebar from '../components/Sidebar'
 import { useState, useEffect } from 'react'
+import { usePhoto } from '../context/PhotoContext'
 const G='#1D9E75',AM='#BA7517',RD='#E24B4A',BD='#e5e7eb'
 const NavIcon=({id}:{id:string})=>{
   if(id==='dashboard')return<svg viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2"strokeLinecap="round"style={{width:17,height:17,flexShrink:0}}><rect x="3"y="3"width="7"height="7"/><rect x="14"y="3"width="7"height="7"/><rect x="3"y="14"width="7"height="7"/><rect x="14"y="14"width="7"height="7"/></svg>
@@ -14,11 +15,7 @@ export default function MesInfosPage(){
   const[showMdp,setShowMdp]=useState(false)
   const[toast,setToast]=useState(false)
   const[hasChanges,setHasChanges]=useState(false)
-  const[photo,setPhoto]=useState<string|null>(null)
-  useEffect(()=>{
-    const stored=localStorage.getItem('batizo_photo')
-    if(stored) setPhoto(stored)
-  },[])
+  const { photo, setPhoto } = usePhoto()
   const handlePhoto=(e:React.ChangeEvent<HTMLInputElement>)=>{
     const file=e.target.files?.[0]
     if(!file)return
@@ -26,8 +23,6 @@ export default function MesInfosPage(){
     reader.onload=ev=>{
       const result=ev.target?.result as string
       setPhoto(result)
-      localStorage.setItem('batizo_photo',result)
-      window.dispatchEvent(new Event('batizo_photo_updated'))
       setHasChanges(true)
     }
     reader.readAsDataURL(file)
