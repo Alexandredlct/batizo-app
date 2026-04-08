@@ -20,10 +20,10 @@ export default function DashboardPage() {
   const sw = collapsed ? 64 : 230
 
   const devis = [
-    { client:'Martin Dupont', num:'DEV-2026-042', date:'05/04', montant:'4 200 €', statut:'Envoyé', sc:'#2563eb' },
-    { client:'SCI Les Pins', num:'DEV-2026-041', date:'03/04', montant:'12 800 €', statut:'Signé', sc:G },
-    { client:'Isabelle Renard', num:'DEV-2026-040', date:'01/04', montant:'1 950 €', statut:'En attente', sc:AM },
-    { client:'SARL Bâti Pro', num:'DEV-2026-039', date:'28/03', montant:'8 600 €', statut:'Refusé', sc:RD },
+    { client:'Martin Dupont', num:'DEV-2026-042', date:'05/04', montant:'4 200 € HT', statut:'Envoyé', sc:'#2563eb' },
+    { client:'SCI Les Pins', num:'DEV-2026-041', date:'03/04', montant:'12 800 € HT', statut:'Signé', sc:G },
+    { client:'Isabelle Renard', num:'DEV-2026-040', date:'01/04', montant:'1 950 € HT', statut:'En attente', sc:AM },
+    { client:'SARL Bâti Pro', num:'DEV-2026-039', date:'28/03', montant:'8 600 € HT', statut:'Refusé', sc:RD },
   ]
 
   const topClients = [
@@ -31,6 +31,16 @@ export default function DashboardPage() {
     { i:'SB', nom:'SARL Bâti Pro', n:2, ca:'22 100 €', bg:'#dbeafe', c:'#1d4ed8' },
     { i:'MD', nom:'Martin Dupont', n:4, ca:'18 750 €', bg:'#fce7f3', c:'#9d174d' },
     { i:'IR', nom:'Isabelle Renard', n:1, ca:'8 550 €', bg:'#fef3c7', c:'#92400e' },
+  ]
+
+  const actions = [
+    {l:'Nouveau devis', e:'📄'},
+    {l:'Nouvelle facture', e:'🧾'},
+    {l:'Nouveau client', e:'👤'},
+    {l:'Ajouter matériau', e:'📦'},
+    {l:'Ajouter ouvrage', e:'🔨'},
+    {l:"Ajouter main d'œuvre", e:'👷'},
+    {l:'Voir les impayés', e:'⚠️'},
   ]
 
   return (
@@ -82,24 +92,22 @@ export default function DashboardPage() {
         </div>
 
         <div style={{flex:1,overflowY:'auto',padding:24}}>
-          <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',flexWrap:'wrap',gap:12,marginBottom:24}}>
-            <div>
-              <h2 style={{fontSize:20,fontWeight:700,margin:'0 0 4px',color:'#111'}}>Bonjour {prenom} 👋</h2>
-              <p style={{fontSize:14,color:'#666',margin:0}}>Voici un résumé de votre activité — Avril 2026</p>
-            </div>
+          <div style={{marginBottom:24}}>
+            <h2 style={{fontSize:20,fontWeight:700,margin:'0 0 4px',color:'#111'}}>Bonjour {prenom} 👋</h2>
+            <p style={{fontSize:14,color:'#666',margin:0}}>Voici un résumé de votre activité — Avril 2026</p>
           </div>
 
           <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:12,marginBottom:20}}>
             {[
-              {label:'CA ce mois',value:'24 850 €',change:'↑ +12% vs mars',cc:G},
-              {label:'CA cette année',value:'87 400 €',change:'↑ +18% vs 2025',cc:G},
-              {label:'Devis en attente',value:'8',change:'42 300 € en jeu',cc:AM,vc:AM},
-              {label:'Factures impayées',value:'3 400 €',change:'2 en retard',cc:RD,vc:RD},
+              {label:'CA ce mois',value:'24 850 € HT',change:'↑ +12% vs mars',cc:G},
+              {label:'CA cette année',value:'87 400 € HT',change:'↑ +18% vs 2025',cc:G},
+              {label:'Devis en attente',value:'8',change:'42 300 € HT en jeu',cc:AM,vc:AM},
+              {label:'Factures impayées',value:'3 400 € HT',change:'2 en retard',cc:RD,vc:RD},
               {label:'Marge moyenne',value:'34%',change:'↑ +2pts vs mars',cc:G},
             ].map(m => (
               <div key={m.label} style={{background:'#fff',borderRadius:12,padding:16,border:`1px solid ${BD}`}}>
                 <div style={{fontSize:12,color:'#888',marginBottom:6}}>{m.label}</div>
-                <div style={{fontSize:22,fontWeight:700,color:m.vc||'#111',marginBottom:4}}>{m.value}</div>
+                <div style={{fontSize:20,fontWeight:700,color:m.vc||'#111',marginBottom:4}}>{m.value}</div>
                 <div style={{fontSize:11,color:m.cc,fontWeight:500}}>{m.change}</div>
               </div>
             ))}
@@ -114,7 +122,7 @@ export default function DashboardPage() {
               <table style={{width:'100%',borderCollapse:'collapse'}}>
                 <thead><tr style={{background:'#f9fafb'}}>
                   <th style={{padding:'8px 16px',textAlign:'left',fontSize:11,color:'#888',fontWeight:600}}>Client</th>
-                  <th style={{padding:'8px 16px',textAlign:'right',fontSize:11,color:'#888',fontWeight:600}}>Montant</th>
+                  <th style={{padding:'8px 16px',textAlign:'right',fontSize:11,color:'#888',fontWeight:600}}>Montant HT</th>
                   <th style={{padding:'8px 16px',textAlign:'right',fontSize:11,color:'#888',fontWeight:600}}>Statut</th>
                 </tr></thead>
                 <tbody>
@@ -156,9 +164,9 @@ export default function DashboardPage() {
 
           <div style={{background:'#fff',borderRadius:12,border:`1px solid ${BD}`,padding:16}}>
             <div style={{fontSize:14,fontWeight:700,marginBottom:12}}>Actions rapides</div>
-            <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
-              {[{l:'Nouveau devis',e:'📄'},{l:'Nouveau client',e:'👤'},{l:'Ajouter matériau',e:'📦'},{l:'Voir les impayés',e:'⚠️'}].map(a => (
-                <button key={a.l} style={{display:'flex',alignItems:'center',gap:8,padding:'10px 16px',background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',color:'#333'}}>
+            <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+              {actions.map(a => (
+                <button key={a.l} style={{display:'flex',alignItems:'center',gap:8,padding:'10px 16px',background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',color:'#333',whiteSpace:'nowrap'}}>
                   {a.e} {a.l}
                 </button>
               ))}
