@@ -9,14 +9,14 @@ const NavIcon=({id}:{id:string})=>{
   return<svg viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2"strokeLinecap="round"style={{width:17,height:17,flexShrink:0}}><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
 }
 const initUsers:any[]=[
-  {nom:'Alexandre Delcourt',email:'a.delcourt@batizo.fr',depuis:'01/03/2024',role:'proprietaire',vous:true,statut:'actif'},
-  {nom:'Emma Strano',email:'e.strano@batizo.fr',depuis:'04/09/2024',role:'modification',vous:false,statut:'actif'},
-  {nom:'Ysaline Bernard',email:'y.bernard@batizo.fr',depuis:'15/01/2025',role:'modification',vous:false,statut:'actif'},
-  {nom:'Xavier Concy',email:'x.concy@batizo.fr',depuis:'03/03/2025',role:'lecture',vous:false,statut:'actif'},
-  {nom:'Thomas Giraud',email:'t.giraud@batizo.fr',depuis:'10/01/2026',role:'modification',vous:false,statut:'actif'},
+  {nom:'Alexandre Delcourt',email:'a.delcourt@batizo.fr',depuis:'01/03/2024',role:'admin',vous:true,statut:'actif'},
+  {nom:'Emma Strano',email:'e.strano@batizo.fr',depuis:'04/09/2024',role:'utilisateur',vous:false,statut:'actif'},
+  {nom:'Ysaline Bernard',email:'y.bernard@batizo.fr',depuis:'15/01/2025',role:'utilisateur',vous:false,statut:'actif'},
+  {nom:'Xavier Concy',email:'x.concy@batizo.fr',depuis:'03/03/2025',role:'observateur',vous:false,statut:'actif'},
+  {nom:'Thomas Giraud',email:'t.giraud@batizo.fr',depuis:'10/01/2026',role:'utilisateur',vous:false,statut:'actif'},
 ]
-const roleLabels:Record<string,string>={proprietaire:'Propriétaire du compte',modification:'Lecture et modification',lecture:'Lecture seule',revoque:"Révoquer l'accès"}
-const roleColors:Record<string,string>={proprietaire:G,modification:'#2563eb',lecture:AM,revoque:RD}
+const roleLabels:Record<string,string>={admin:'Admin',utilisateur:'Utilisateur',observateur:'Observateur',revoque:"Révoquer l'accès"}
+const roleColors:Record<string,string>={admin:G,utilisateur:'#2563eb',observateur:AM,revoque:RD}
 export default function UtilisateursPage(){
   const[collapsed,setCollapsed]=useState(false)
   const[userMenu,setUserMenu]=useState(false)
@@ -24,7 +24,7 @@ export default function UtilisateursPage(){
   const[users,setUsers]=useState(initUsers)
   const[newName,setNewName]=useState('')
   const[newEmail,setNewEmail]=useState('')
-  const[newRole,setNewRole]=useState('modification')
+  const[newRole,setNewRole]=useState('utilisateur')
   const sw=collapsed?64:230
   const navItems=[
     {id:'dashboard',label:'Tableau de bord',href:'/dashboard'},
@@ -126,11 +126,11 @@ export default function UtilisateursPage(){
                   <input value={newEmail} onChange={e=>setNewEmail(e.target.value)} placeholder="email@batizo.fr" style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
                 </div>
                 <div style={{minWidth:180}}>
-                  <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Permission</label>
+                  <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Rôle</label>
                   <select value={newRole} onChange={e=>setNewRole(e.target.value)} style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
-                    <option value="lecture">Lecture seule</option>
-                    <option value="modification">Lecture et modification</option>
-                    <option value="proprietaire">Propriétaire du compte</option>
+                    <option value="observateur">Observateur</option>
+                    <option value="utilisateur" selected>Utilisateur</option>
+                    <option value="admin">Admin</option>
                   </select>
                 </div>
                 <div style={{display:'flex',gap:8}}>
@@ -144,7 +144,7 @@ export default function UtilisateursPage(){
           <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,overflow:'hidden'}}>
             <table style={{width:'100%',borderCollapse:'collapse'}}>
               <thead><tr style={{background:'#f9fafb'}}>
-                {['Nom','Adresse email','Depuis','Statut','Permission'].map(h=>(
+                {['Nom','Adresse email','Inscrit le','Statut','Rôle'].map(h=>(
                   <th key={h} style={{padding:'10px 16px',textAlign:'left',fontSize:12,color:'#444',fontWeight:600,borderBottom:`1px solid ${BD}`,textTransform:'uppercase' as const,letterSpacing:'0.04em'}}>{h}</th>
                 ))}
               </tr></thead>
@@ -180,9 +180,9 @@ export default function UtilisateursPage(){
                           }}
                           style={{padding:'5px 10px',border:`1px solid ${roleColors[u.role]||BD}`,borderRadius:6,fontSize:12,color:roleColors[u.role]||'#333',fontWeight:600,background:`${roleColors[u.role] || '#e5e7eb'}18`,outline:'none',cursor:'pointer'}}>
                           <option value="revoque">Révoquer l'accès</option>
-                          <option value="lecture">Lecture seule</option>
-                          <option value="modification">Lecture et modification</option>
-                          <option value="proprietaire">Propriétaire du compte</option>
+                          <option value="observateur">Observateur</option>
+                          <option value="utilisateur">Utilisateur</option>
+                          <option value="admin">Admin</option>
                         </select>
                       )}
                     </td>
@@ -192,6 +192,77 @@ export default function UtilisateursPage(){
             </table>
           </div>
           <p style={{fontSize:13,color:'#444',marginTop:12}}>{users.length} utilisateurs · Plan Pro — jusqu'à <strong>10 utilisateurs</strong></p>
+        
+          {/* Tableau des permissions */}
+          <div style={{marginTop:32}}>
+            <div style={{fontSize:15,fontWeight:700,color:'#111',marginBottom:4}}>Autorisations par rôle</div>
+            <div style={{fontSize:13,color:'#555',marginBottom:16}}>Définit ce que chaque membre de votre équipe peut faire sur Batizo.</div>
+            <div style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:12,overflow:'hidden'}}>
+              <table style={{width:'100%',borderCollapse:'collapse'}}>
+                <thead>
+                  <tr style={{background:'#f9fafb'}}>
+                    <th style={{padding:'12px 16px',textAlign:'left',fontSize:12,color:'#888',fontWeight:600,borderBottom:'1px solid #e5e7eb',width:'40%'}}>ACTION</th>
+                    <th style={{padding:'12px 16px',textAlign:'center',fontSize:12,color:'#1D9E75',fontWeight:700,borderBottom:'1px solid #e5e7eb'}}>Admin</th>
+                    <th style={{padding:'12px 16px',textAlign:'center',fontSize:12,color:'#2563eb',fontWeight:700,borderBottom:'1px solid #e5e7eb'}}>Utilisateur</th>
+                    <th style={{padding:'12px 16px',textAlign:'center',fontSize:12,color:'#BA7517',fontWeight:700,borderBottom:'1px solid #e5e7eb'}}>Observateur</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    {section:'DEVIS & FACTURES',items:[
+                      {label:'Voir les devis & factures',admin:true,utilisateur:true,observateur:true},
+                      {label:'Créer un devis',admin:true,utilisateur:true,observateur:false},
+                      {label:'Modifier un devis',admin:true,utilisateur:true,observateur:false},
+                      {label:'Dupliquer un devis',admin:true,utilisateur:true,observateur:false},
+                      {label:'Envoyer un devis par email',admin:true,utilisateur:true,observateur:false},
+                      {label:'Créer une facture',admin:true,utilisateur:true,observateur:false},
+                      {label:'Modifier une facture',admin:true,utilisateur:true,observateur:false},
+                      {label:'Envoyer une facture par email',admin:true,utilisateur:true,observateur:false},
+                      {label:'Archiver un chantier',admin:true,utilisateur:true,observateur:false},
+                      {label:'Télécharger PDF',admin:true,utilisateur:true,observateur:true},
+                    ]},
+                    {section:'CLIENTS',items:[
+                      {label:'Voir les clients',admin:true,utilisateur:true,observateur:true},
+                      {label:'Ajouter un client',admin:true,utilisateur:true,observateur:false},
+                      {label:'Modifier un client',admin:true,utilisateur:true,observateur:false},
+                      {label:'Supprimer un client',admin:true,utilisateur:false,observateur:false},
+                    ]},
+                    {section:'BIBLIOTHÈQUE',items:[
+                      {label:'Voir la bibliothèque',admin:true,utilisateur:true,observateur:true},
+                      {label:'Ajouter un ouvrage / matériau',admin:true,utilisateur:true,observateur:false},
+                      {label:'Modifier un ouvrage / matériau',admin:true,utilisateur:true,observateur:false},
+                      {label:'Supprimer un ouvrage / matériau',admin:true,utilisateur:false,observateur:false},
+                    ]},
+                    {section:'ADMINISTRATION',items:[
+                      {label:'Gérer les utilisateurs',admin:true,utilisateur:false,observateur:false},
+                      {label:'Inviter des utilisateurs',admin:true,utilisateur:false,observateur:false},
+                      {label:'Accéder aux paramètres',admin:true,utilisateur:false,observateur:false},
+                      {label:'Modifier les infos entreprise',admin:true,utilisateur:false,observateur:false},
+                      {label:'Voir l\'abonnement',admin:true,utilisateur:false,observateur:false},
+                      {label:'Voir les statistiques',admin:true,utilisateur:true,observateur:true},
+                    ]},
+                  ].map((group,gi)=>(
+                    <>
+                      <tr key={'g'+gi} style={{background:'#f0fdf4'}}>
+                        <td colSpan={4} style={{padding:'8px 16px',fontSize:11,fontWeight:700,color:'#1D9E75',letterSpacing:'0.06em'}}>{group.section}</td>
+                      </tr>
+                      {group.items.map((item,ii)=>(
+                        <tr key={'i'+ii} style={{borderTop:'1px solid #e5e7eb'}}
+                          onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
+                          onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
+                          <td style={{padding:'10px 16px',fontSize:13,color:'#333'}}>{item.label}</td>
+                          <td style={{padding:'10px 16px',textAlign:'center'}}>{item.admin?<span style={{color:'#1D9E75',fontSize:16}}>✓</span>:<span style={{color:'#e5e7eb',fontSize:16}}>✕</span>}</td>
+                          <td style={{padding:'10px 16px',textAlign:'center'}}>{item.utilisateur?<span style={{color:'#2563eb',fontSize:16}}>✓</span>:<span style={{color:'#e5e7eb',fontSize:16}}>✕</span>}</td>
+                          <td style={{padding:'10px 16px',textAlign:'center'}}>{item.observateur?<span style={{color:'#BA7517',fontSize:16}}>✓</span>:<span style={{color:'#e5e7eb',fontSize:16}}>✕</span>}</td>
+                        </tr>
+                      ))}
+                    </>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
