@@ -103,7 +103,7 @@ export default function AbonnementPage(){
               <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',flexWrap:'wrap',gap:16,marginBottom:changerPlan?20:0}}>
                 <div>
                   <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
-                    <span style={{fontSize:22,fontWeight:700,color:'#111'}>Plan Pro</span>
+                    <span style={{fontSize:22,fontWeight:700,color:'#111'}}>Plan Pro</span>
                     <span style={{background:'#f0fdf4',color:G,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20}}>Actif</span>
                   </div>
                   <div style={{fontSize:14,color:'#333',marginBottom:6}}>19 € HT / mois · Renouvellement le <strong>7 mai 2026</strong></div>
