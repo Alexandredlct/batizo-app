@@ -197,7 +197,7 @@ export default function MesInfosPage(){
                   </div>
                   <div style={{display:'flex',gap:8}}>
                     <button style={{padding:'8px 18px',background:G,color:'#fff',border:'none',borderRadius:7,fontSize:13,fontWeight:600,cursor:'pointer'}}>Enregistrer</button>
-                    <button onClick={()=>setShowMdp(false)}style={{padding:'8px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,cursor:'pointer'}}>Annuler</button>
+                    <button onClick={()=>setShowMdp(false)} style={{padding:'8px 14px',background:'#fff',border:'1px solid #333',borderRadius:7,fontSize:13,cursor:'pointer',color:'#111',fontWeight:500}}>Annuler</button>
                   </div>
                 </div>
               )}
