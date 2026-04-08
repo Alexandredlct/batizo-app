@@ -151,7 +151,7 @@ export default function UtilisateursPage(){
                     <td style={{padding:'14px 16px',fontSize:14,fontWeight:500,color:'#111'}}>
                       <div style={{display:'flex',alignItems:'center',gap:8}}>
                         <div style={{width:32,height:32,borderRadius:'50%',background:`${G}22`,color:G,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,flexShrink:0}}>
-                          {u.nom.split(' ').map(n=>n[0]).join('').slice(0,2)}
+                          {u.nom.split(' ').map((n:string)=>n[0]).join('').slice(0,2)}
                         </div>
                         {u.nom}
                         {u.vous&&<span style={{background:'#f0fdf4',color:G,fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:10}}>Vous</span>}
