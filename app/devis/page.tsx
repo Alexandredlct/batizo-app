@@ -350,7 +350,7 @@ export default function DevisPage() {
                                   style={{fontSize:16,fontWeight:700,color:'#111',border:`1px solid ${G}`,borderRadius:6,padding:'2px 8px',outline:'none',minWidth:220,background:'#f0fdf4'}}/>
                               ) : (
                                 <>
-                                  <span style={{fontSize:16,fontWeight:700,color:'#111'}}>{c.client} — {c.titre}</span><span style={{fontSize:12,color:'#888',fontWeight:400,marginLeft:10}}>{fmt(c.montantDevis)} HT devisé · <span style={{color:montantFacture===0?'#aaa':G}}>{fmt(montantFacture)} HT facturé</span></span><span style={{fontSize:12,fontWeight:400,color:'#666',marginLeft:8}}>{fmt(c.montantDevis)} HT · <span style={{color:montantFacture===0?'#aaa':G}}>{fmt(montantFacture)} HT facturé</span></span>
+                                  <span style={{fontSize:16,fontWeight:700,color:'#111'}}>{c.client} — {c.titre}</span><span style={{fontSize:12,color:'#888',fontWeight:400,marginLeft:10,color:'#444',fontWeight:500}}>{fmt(c.montantDevis)} HT devisé · <span style={{color:montantFacture===0?'#888':G,fontWeight:500}}>{fmt(montantFacture)} HT facturé</span></span><span style={{fontSize:12,fontWeight:400,color:'#666',marginLeft:8}}>{fmt(c.montantDevis)} HT · <span style={{color:montantFacture===0?'#aaa':G}}>{fmt(montantFacture)} HT facturé</span></span>
                                   <button onClick={e => { e.stopPropagation(); setEditingTitre(c.id); setEditTitreVal(c.titre) }} title="Modifier le titre"
                                     style={{background:'none',border:'none',cursor:'pointer',color:'#999',padding:2,display:'flex',alignItems:'center',transition:'color 0.15s'}}
                                     onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color=G}
@@ -360,9 +360,7 @@ export default function DevisPage() {
                                 </>
                               )}
                             </div>
-                            <div style={{fontSize:13,color:'#555',marginBottom:4}}>
-                              <strong style={{color:'#111'}}>{fmt(c.montantDevis)} HT</strong> <span style={{color:'#ccc'}}>devisé · </span><strong style={{color:montantFacture===0?'#aaa':G}}>{fmt(montantFacture)} HT</strong> <span style={{color:'#ccc'}}>facturé</span>
-                            </div>
+                            
                             <div style={{display:"flex",alignItems:"center",gap:20,flexWrap:"wrap",marginBottom:4}}>
                             <span style={{display:"flex",alignItems:"center",gap:4,fontSize:13}}><span>📍</span>
                               <a href={mapsUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
