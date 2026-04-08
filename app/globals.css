@@ -24,3 +24,5 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+.devis-row:hover { background: #f0fdf4 !important; cursor: pointer; }
+.client-row:hover { background: #f9fafb !important; cursor: pointer; }
