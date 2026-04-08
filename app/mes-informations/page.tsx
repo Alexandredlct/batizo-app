@@ -14,6 +14,19 @@ export default function MesInfosPage(){
   const[showMdp,setShowMdp]=useState(false)
   const[toast,setToast]=useState(false)
   const[hasChanges,setHasChanges]=useState(false)
+  const[photo,setPhoto]=useState<string|null>(typeof window!=='undefined'?localStorage.getItem('batizo_photo'):null)
+  const handlePhoto=(e:React.ChangeEvent<HTMLInputElement>)=>{
+    const file=e.target.files?.[0]
+    if(!file)return
+    const reader=new FileReader()
+    reader.onload=ev=>{
+      const result=ev.target?.result as string
+      setPhoto(result)
+      localStorage.setItem('batizo_photo',result)
+      setHasChanges(true)
+    }
+    reader.readAsDataURL(file)
+  }
   const[photo,setPhoto]=useState<string|null>(()=>{
     if(typeof window!=='undefined') return localStorage.getItem('batizo_photo')
     return null
@@ -133,7 +146,10 @@ export default function MesInfosPage(){
                 <div>
                   <div style={{fontSize:15,fontWeight:600,color:'#111'}}>Alexandre Delcourt</div>
                   <div style={{fontSize:13,color:'#444'}}>Administrateur · Plan Pro</div>
-                  <div style={{fontSize:12,color:G,cursor:'pointer',marginTop:4}}>Modifier la photo</div>
+                  <label htmlFor="photo-upload" style={{fontSize:12,color:G,cursor:'pointer',marginTop:4,display:'inline-block'}}>
+                    Modifier la photo
+                  </label>
+                  <input type="file" id="photo-upload" accept="image/*" onChange={handlePhoto} style={{display:'none'}}/>
                 </div>
               </div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
