@@ -20,9 +20,9 @@ const navItems = [
 
 const menuItems = [
   { icon: '⚙️', label: 'Paramètres', href: '/parametres' },
-  { icon: '💳', label: 'Abonnement', href: '/abonnement' },
+  { icon: '💳', label: 'Abonnement', href: '/abonnement', badge: 'Pro', badgeColor: '#1D9E75' },
   { icon: '👥', label: 'Utilisateurs', href: '/utilisateurs' },
-  { icon: '🎁', label: 'Parrainage', href: '/parrainage' },
+  { icon: '🎁', label: 'Parrainage', href: '/parrainage', badge: 'Nouveau', badgeColor: '#BA7517' },
   { icon: '👤', label: 'Mes informations', href: '/mes-informations' },
 ]
 
@@ -89,7 +89,7 @@ export default function Sidebar({ activePage }: { activePage: string }) {
                   style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',fontSize:13,color:item.href===`/${activePage}`?G:'#333',fontWeight:item.href===`/${activePage}`?600:400,textDecoration:'none',background:item.href===`/${activePage}`?'#f0fdf4':'none',transition:'background 0.15s'}}
                   onMouseEnter={e => { if(item.href!==`/${activePage}`) (e.currentTarget as HTMLAnchorElement).style.background='#f9fafb' }}
                   onMouseLeave={e => { if(item.href!==`/${activePage}`) (e.currentTarget as HTMLAnchorElement).style.background='none' }}>
-                  <span>{item.icon}</span>{item.label}
+                  <span>{item.icon}</span><span style={{flex:1}}>{item.label}</span>{(item as any).badge && <span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:10,background:`${(item as any).badgeColor}18`,color:(item as any).badgeColor,whiteSpace:'nowrap'}}>{(item as any).badge}</span>}
                 </a>
               ))}
               <div style={{borderTop:`1px solid ${BD}`}}>
