@@ -32,7 +32,7 @@ export default function MesInfosPage(){
   const Field=({label,defaultVal,type='text',full=false}:{label:string,defaultVal:string,type?:string,full?:boolean})=>(
     <div style={{gridColumn:full?'1/-1':'auto'}}>
       <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>{label}</label>
-      <input type={type} defaultValue={defaultVal} style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const,transition:'border-color 0.15s'}}
+      <input type={type} defaultValue={defaultVal} style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const,transition:'border-color 0.15s'}}
         onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
         onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
     </div>
@@ -134,7 +134,7 @@ export default function MesInfosPage(){
                 <Field label="Nom de l'entreprise *" defaultVal="Batizo SAS"/>
                 <div>
                   <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Forme juridique</label>
-                  <select defaultValue="SAS"style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff'}}>
+                  <select defaultValue="SAS"style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
                     <option>SAS</option><option>SARL</option><option>EURL</option><option>Auto-entrepreneur</option>
                   </select>
                 </div>
@@ -157,7 +157,7 @@ export default function MesInfosPage(){
                 <Field label="Ville *" defaultVal="Courbevoie"/>
                 <div>
                   <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Pays</label>
-                  <select defaultValue="France"style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff'}}>
+                  <select defaultValue="France"style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
                     <option>France</option><option>Belgique</option><option>Suisse</option>
                   </select>
                 </div>
@@ -177,22 +177,22 @@ export default function MesInfosPage(){
                   <div style={{fontSize:14,fontWeight:600,color:'#111',marginBottom:3}}>Mot de passe</div>
                   <div style={{fontSize:13,color:'#444'}}>Dernière modification il y a 3 mois</div>
                 </div>
-                <button onClick={()=>setShowMdp(!showMdp)}style={{padding:'7px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,cursor:'pointer'}}>Modifier le mot de passe</button>
+                <button onClick={()=>setShowMdp(!showMdp)}style={{padding:'7px 14px',background:'#fff',border:'1px solid #333',borderRadius:7,fontSize:13,cursor:'pointer',color:'#111',fontWeight:500}}>Modifier le mot de passe</button>
               </div>
               {showMdp&&(
                 <div style={{marginBottom:16,paddingBottom:16,borderBottom:`1px solid ${BD}`}}>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
                     <div style={{gridColumn:'1/-1'}}>
                       <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Mot de passe actuel *</label>
-                      <input type="password"placeholder="••••••••"style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+                      <input type="password"placeholder="••••••••"style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
                     </div>
                     <div>
                       <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Nouveau mot de passe *</label>
-                      <input type="password"placeholder="8 caractères minimum"style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+                      <input type="password"placeholder="8 caractères minimum"style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
                     </div>
                     <div>
                       <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Confirmer le mot de passe *</label>
-                      <input type="password"placeholder="••••••••"style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+                      <input type="password"placeholder="••••••••"style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
                     </div>
                   </div>
                   <div style={{display:'flex',gap:8}}>
