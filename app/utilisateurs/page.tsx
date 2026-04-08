@@ -105,7 +105,7 @@ export default function UtilisateursPage(){
             <div onClick={e=>{e.stopPropagation();setUserMenu(!userMenu)}} style={{display:'flex',alignItems:'center',gap:8,padding:8,borderRadius:8,background:'#f9fafb',cursor:'pointer'}}
               onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
               onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}>
-              <div style={{width:32,height:32,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:700,flexShrink:0}}>A</div>
+              <div style={{width:32,height:32,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:700,flexShrink:0,overflow:'hidden'}}>{photo?<img src={photo} alt="profil" style={{width:'100%',height:'100%',objectFit:'cover'}}/>:'A'}</div>
               <div style={{overflow:'hidden',flex:1}}><div style={{fontSize:12,fontWeight:600,color:'#111'}}>Mon compte</div><div style={{fontSize:12,color:'#555'}}>Batizo</div></div>
               <svg viewBox="0 0 24 24"fill="none"stroke="#aaa"strokeWidth="2"style={{width:14,height:14,transform:userMenu?'rotate(180deg)':'',transition:'transform 0.2s'}}><polyline points="6 9 12 15 18 9"/></svg>
             </div>

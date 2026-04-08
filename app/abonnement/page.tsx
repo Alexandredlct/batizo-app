@@ -1,4 +1,5 @@
 'use client'
+import { usePhoto } from '../context/PhotoContext'
 import Sidebar from '../components/Sidebar'
 import { useState } from 'react'
 const G='#1D9E75',AM='#BA7517',RD='#E24B4A',BD='#e5e7eb'
@@ -10,6 +11,7 @@ const NavIcon=({id}:{id:string})=>{
 }
 export default function AbonnementPage(){
   const[collapsed,setCollapsed]=useState(false)
+  const{photo}=usePhoto()
   const[userMenu,setUserMenu]=useState(false)
   const[changerPlan,setChangerPlan]=useState(false)
   const[modifierCarte,setModifierCarte]=useState(false)
@@ -68,7 +70,7 @@ export default function AbonnementPage(){
             <div onClick={e=>{e.stopPropagation();setUserMenu(!userMenu)}} style={{display:'flex',alignItems:'center',gap:8,padding:8,borderRadius:8,background:'#f9fafb',cursor:'pointer',transition:'background 0.15s'}}
               onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
               onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}>
-              <div style={{width:32,height:32,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:700,flexShrink:0}}>A</div>
+              <div style={{width:32,height:32,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:700,flexShrink:0,overflow:'hidden'}}>{photo?<img src={photo} alt="profil" style={{width:'100%',height:'100%',objectFit:'cover'}}/>:'A'}</div>
               <div style={{overflow:'hidden',flex:1}}>
                 <div style={{fontSize:12,fontWeight:600,color:'#111',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>Mon compte</div>
                 <div style={{fontSize:12,color:'#555'}}>Batizo</div>
