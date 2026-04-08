@@ -42,7 +42,7 @@ export default function MesInfosPage(){
       <div style={{width:sw,minWidth:sw,height:'100vh',background:'#fff',borderRight:`1px solid ${BD}`,display:'flex',flexDirection:'column',transition:'width 0.2s',overflow:'hidden',flexShrink:0}}>
         <div style={{padding:'16px 14px',borderBottom:`1px solid ${BD}`,minHeight:60,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
           {!collapsed&&<a href="/dashboard"style={{fontSize:'18px',fontWeight:'800',color:'#111',textDecoration:'none'}}>Bati<span style={{color:G}}>zo</span></a>}
-          <button onClick={()=>setCollapsed(!collapsed)}style={{background:'none',border:'none',cursor:'pointer',color:'#888',padding:4,borderRadius:6,marginLeft:collapsed?'auto':0}}>
+          <button onClick={()=>setCollapsed(!collapsed)}style={{background:'none',border:'none',cursor:'pointer',color:'#333',padding:4,borderRadius:6,marginLeft:collapsed?'auto':0}}>
             <svg viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2"style={{width:18,height:18}}><line x1="3"y1="12"x2="21"y2="12"/><line x1="3"y1="6"x2="21"y2="6"/><line x1="3"y1="18"x2="21"y2="18"/></svg>
           </button>
         </div>
@@ -63,7 +63,7 @@ export default function MesInfosPage(){
               onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
               onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}>
               <div style={{width:32,height:32,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:700,flexShrink:0}}>A</div>
-              <div style={{overflow:'hidden',flex:1}}><div style={{fontSize:12,fontWeight:600,color:'#111'}}>Mon compte</div><div style={{fontSize:12,color:'#555'}}>Batizo</div></div>
+              <div style={{overflow:'hidden',flex:1}}><div style={{fontSize:12,fontWeight:600,color:'#111'}}>Mon compte</div><div style={{fontSize:12,color:'#333'}}>Batizo</div></div>
               <svg viewBox="0 0 24 24"fill="none"stroke="#aaa"strokeWidth="2"style={{width:14,height:14,transform:userMenu?'rotate(180deg)':'',transition:'transform 0.2s'}}><polyline points="6 9 12 15 18 9"/></svg>
             </div>
             {userMenu&&(
@@ -102,7 +102,7 @@ export default function MesInfosPage(){
 
           {/* Infos personnelles */}
           <div style={{marginBottom:24}}>
-            <div style={{fontSize:13,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Informations personnelles</div>
+            <div style={{fontSize:13,fontWeight:600,color:'#333',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Informations personnelles</div>
             <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,padding:'20px 24px'}}>
               <div style={{display:'flex',alignItems:'center',gap:20,marginBottom:20,flexWrap:'wrap' as const}}>
                 <div style={{position:'relative'}}>
@@ -128,7 +128,7 @@ export default function MesInfosPage(){
 
           {/* Infos entreprise */}
           <div style={{marginBottom:24}}>
-            <div style={{fontSize:13,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Informations entreprise</div>
+            <div style={{fontSize:13,fontWeight:600,color:'#333',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Informations entreprise</div>
             <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,padding:'20px 24px'}}>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
                 <Field label="Nom de l'entreprise *" defaultVal="Batizo SAS"/>
@@ -149,7 +149,7 @@ export default function MesInfosPage(){
 
           {/* Adresse */}
           <div style={{marginBottom:24}}>
-            <div style={{fontSize:13,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Adresse de l'entreprise</div>
+            <div style={{fontSize:13,fontWeight:600,color:'#333',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Adresse de l'entreprise</div>
             <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,padding:'20px 24px'}}>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:14}}>
                 <Field label="Adresse (numéro et voie) *" defaultVal="130 rue de Normandie" full/>
@@ -170,11 +170,11 @@ export default function MesInfosPage(){
 
           {/* Sécurité */}
           <div style={{marginBottom:24}}>
-            <div style={{fontSize:13,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Sécurité</div>
+            <div style={{fontSize:13,fontWeight:600,color:'#333',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Sécurité</div>
             <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,padding:'20px 24px'}}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',paddingBottom:16,borderBottom:`1px solid ${BD}`,marginBottom:16,flexWrap:'wrap' as const,gap:12}}>
                 <div>
-                  <div style={{fontSize:14,fontWeight:600,marginBottom:3}}>Mot de passe</div>
+                  <div style={{fontSize:14,fontWeight:600,color:'#111',marginBottom:3}}>Mot de passe</div>
                   <div style={{fontSize:13,color:'#444'}}>Dernière modification il y a 3 mois</div>
                 </div>
                 <button onClick={()=>setShowMdp(!showMdp)}style={{padding:'7px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,cursor:'pointer'}}>Modifier le mot de passe</button>
@@ -203,7 +203,7 @@ export default function MesInfosPage(){
               )}
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap' as const,gap:12}}>
                 <div>
-                  <div style={{fontSize:14,fontWeight:600,marginBottom:3}}>Double authentification (2FA)</div>
+                  <div style={{fontSize:14,fontWeight:600,color:'#111',marginBottom:3}}>Double authentification (2FA)</div>
                   <div style={{fontSize:13,color:'#444'}}>Sécurisez votre compte avec une vérification en deux étapes</div>
                 </div>
                 <div onClick={()=>setTwoFA(!twoFA)}style={{width:44,height:24,borderRadius:12,background:twoFA?G:'#d1d5db',cursor:'pointer',position:'relative',transition:'background 0.2s'}}>

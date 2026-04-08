@@ -81,7 +81,7 @@ export default function DashboardPage() {
         <div style={{flex:1,overflowY:'auto',padding:24}}>
           <div style={{marginBottom:24}}>
             <h2 style={{fontSize:20,fontWeight:700,margin:'0 0 4px',color:'#111'}}>Bonjour {prenom} 👋</h2>
-            <p style={{fontSize:14,color:'#666',margin:0}}>Voici un résumé de votre activité — Avril 2026</p>
+            <p style={{fontSize:14,color:'#111',margin:0}}>Voici un résumé de votre activité — Avril 2026</p>
           </div>
 
           <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:12,marginBottom:20}}>

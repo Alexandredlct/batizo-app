@@ -240,10 +240,10 @@ export default function DevisPage() {
           {/* Recherche */}
           <div style={{display:'flex',gap:8,marginBottom:20}}>
             <div style={{flex:1,position:'relative'}}>
-              <svg style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)'}} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <svg style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)'}} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Client, numéro, adresse, vendeur, montant, statut…"
                 style={{width:'100%',padding:'9px 36px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box'}}/>
-              {search && <button onClick={() => setSearch('')} style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:18,lineHeight:1}}>×</button>}
+              {search && <button onClick={() => setSearch('')} style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#555',fontSize:18,lineHeight:1}}>×</button>}
             </div>
             <button onClick={() => setShowFiltre(!showFiltre)}
               style={{display:'flex',alignItems:'center',gap:6,padding:'9px 16px',border:`1px solid ${showFiltre?G:BD}`,borderRadius:8,background:showFiltre?'#f0fdf4':'#fff',color:showFiltre?G:'#555',fontSize:13,cursor:'pointer'}}>
@@ -258,7 +258,7 @@ export default function DevisPage() {
                 <div style={{fontSize:12,fontWeight:600,color:'#888',marginBottom:8,textTransform:'uppercase',letterSpacing:'0.05em'}}>Période</div>
                 <div style={{display:'flex',alignItems:'center',gap:8}}>
                   <input type="date" style={{padding:'7px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none'}}/>
-                  <span style={{color:'#aaa'}}>→</span>
+                  <span style={{color:'#555'}}>→</span>
                   <input type="date" style={{padding:'7px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none'}}/>
                 </div>
               </div>
@@ -424,8 +424,8 @@ export default function DevisPage() {
                                   onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background=''}>
                                   <td style={{padding:'10px 16px'}}>
                                     {d.type==='devis'
-                                      ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                                      : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>}
+                                      ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                      : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>}
                                   </td>
                                   <td style={{padding:'10px 16px',fontSize:13,fontWeight:500}}>
                                     {/* Numéro cliquable → preview */}
@@ -447,7 +447,7 @@ export default function DevisPage() {
                                   </td>
                                   <td style={{padding:'10px 16px',textAlign:'center',position:'relative'}}>
                                     <button onClick={e => { e.stopPropagation(); setActionMenu(actionMenu===`${c.id}-${di}` ? null : `${c.id}-${di}`) }}
-                                      style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:18,lineHeight:1,padding:'2px 4px',borderRadius:4,transition:'all 0.15s'}}
+                                      style={{background:'none',border:'none',cursor:'pointer',color:'#555',fontSize:18,lineHeight:1,padding:'2px 4px',borderRadius:4,transition:'all 0.15s'}}
                                       onMouseEnter={e => { const b=e.currentTarget as HTMLButtonElement; b.style.color='#333'; b.style.background='#f0f0f0' }}
                                       onMouseLeave={e => { const b=e.currentTarget as HTMLButtonElement; b.style.color='#aaa'; b.style.background='none' }}>⋯</button>
                                     {actionMenu===`${c.id}-${di}` && (
@@ -634,7 +634,7 @@ export default function DevisPage() {
               </div>
             </div>
 
-            <div style={{fontSize:11,color:'#aaa',textAlign:'center'}}>
+            <div style={{fontSize:11,color:'#555',textAlign:'center'}}>
               Batizo SAS — RCS Nanterre — TVA Intracommunautaire FR XX XXX XXX XXX
             </div>
           </div>
