@@ -10,14 +10,14 @@ const NavIcon=({id}:{id:string})=>{
   return<svg viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2"strokeLinecap="round"style={{width:17,height:17,flexShrink:0}}><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
 }
 const initUsers:any[]=[
-  {nom:'Alexandre Delcourt',email:'a.delcourt@batizo.fr',depuis:'01/03/2024',role:'admin',vous:true,statut:'actif'},
+  {nom:'Alexandre Delcourt',email:'a.delcourt@batizo.fr',depuis:'01/03/2024',role:'proprietaire',vous:true,statut:'actif'},
   {nom:'Emma Strano',email:'e.strano@batizo.fr',depuis:'04/09/2024',role:'utilisateur',vous:false,statut:'actif'},
   {nom:'Ysaline Bernard',email:'y.bernard@batizo.fr',depuis:'15/01/2025',role:'utilisateur',vous:false,statut:'actif'},
   {nom:'Xavier Concy',email:'x.concy@batizo.fr',depuis:'03/03/2025',role:'observateur',vous:false,statut:'actif'},
   {nom:'Thomas Giraud',email:'t.giraud@batizo.fr',depuis:'10/01/2026',role:'utilisateur',vous:false,statut:'actif'},
 ]
-const roleLabels:Record<string,string>={admin:'Admin',utilisateur:'Utilisateur',observateur:'Observateur',revoque:"Révoquer l'accès"}
-const roleColors:Record<string,string>={admin:G,utilisateur:'#2563eb',observateur:AM,revoque:RD}
+const roleLabels:Record<string,string>={proprietaire:'Propriétaire',admin:'Admin',utilisateur:'Utilisateur',observateur:'Observateur',revoque:"Révoquer l'accès"}
+const roleColors:Record<string,string>={proprietaire:'#7c3aed',admin:G,utilisateur:'#2563eb',observateur:AM,revoque:RD}
 export default function UtilisateursPage(){
   const[collapsed,setCollapsed]=useState(false)
   const[userMenu,setUserMenu]=useState(false)
@@ -29,9 +29,10 @@ export default function UtilisateursPage(){
   const[editPerms,setEditPerms]=useState(false)
   const estProprietaire = true // À connecter à Supabase plus tard
   const[perms,setPerms]=useState<Record<string,Record<string,boolean>>>({
-    admin:{voir_devis:true,creer_devis:true,modifier_devis:true,dupliquer:true,envoyer_devis:true,creer_facture:true,modifier_facture:true,envoyer_facture:true,archiver:true,pdf:true,voir_clients:true,ajouter_client:true,modifier_client:true,supprimer_client:true,voir_biblio:true,ajouter_biblio:true,modifier_biblio:true,supprimer_biblio:true,gerer_users:true,inviter:true,parametres:true,infos_entreprise:true,abonnement:true,stats:true},
-    utilisateur:{voir_devis:true,creer_devis:true,modifier_devis:true,dupliquer:true,envoyer_devis:true,creer_facture:true,modifier_facture:true,envoyer_facture:true,archiver:true,pdf:true,voir_clients:true,ajouter_client:true,modifier_client:true,supprimer_client:false,voir_biblio:true,ajouter_biblio:true,modifier_biblio:true,supprimer_biblio:false,gerer_users:false,inviter:false,parametres:false,infos_entreprise:false,abonnement:false,stats:true},
-    observateur:{voir_devis:true,creer_devis:false,modifier_devis:false,dupliquer:false,envoyer_devis:false,creer_facture:false,modifier_facture:false,envoyer_facture:false,archiver:false,pdf:true,voir_clients:true,ajouter_client:false,modifier_client:false,supprimer_client:false,voir_biblio:true,ajouter_biblio:false,modifier_biblio:false,supprimer_biblio:false,gerer_users:false,inviter:false,parametres:false,infos_entreprise:false,abonnement:false,stats:true},
+    proprietaire:{voir_devis:true,creer_devis:true,modifier_devis:true,dupliquer:true,envoyer_devis:true,creer_facture:true,modifier_facture:true,envoyer_facture:true,archiver:true,pdf:true,voir_clients:true,ajouter_client:true,modifier_client:true,supprimer_client:true,voir_biblio:true,ajouter_biblio:true,modifier_biblio:true,supprimer_biblio:true,gerer_users:true,inviter:true,parametres:true,infos_entreprise:true,abonnement:true,transfert:true,stats:true},
+    admin:{voir_devis:true,creer_devis:true,modifier_devis:true,dupliquer:true,envoyer_devis:true,creer_facture:true,modifier_facture:true,envoyer_facture:true,archiver:true,pdf:true,voir_clients:true,ajouter_client:true,modifier_client:true,supprimer_client:true,voir_biblio:true,ajouter_biblio:true,modifier_biblio:true,supprimer_biblio:true,gerer_users:true,inviter:true,parametres:true,infos_entreprise:false,abonnement:false,transfert:false,stats:true},
+    utilisateur:{voir_devis:true,creer_devis:true,modifier_devis:true,dupliquer:true,envoyer_devis:true,creer_facture:true,modifier_facture:true,envoyer_facture:true,archiver:true,pdf:true,voir_clients:true,ajouter_client:true,modifier_client:true,supprimer_client:false,voir_biblio:true,ajouter_biblio:true,modifier_biblio:true,supprimer_biblio:false,gerer_users:false,inviter:false,parametres:false,infos_entreprise:false,abonnement:false,transfert:false,stats:true},
+    observateur:{voir_devis:true,creer_devis:false,modifier_devis:false,dupliquer:false,envoyer_devis:false,creer_facture:false,modifier_facture:false,envoyer_facture:false,archiver:false,pdf:true,voir_clients:true,ajouter_client:false,modifier_client:false,supprimer_client:false,voir_biblio:true,ajouter_biblio:false,modifier_biblio:false,supprimer_biblio:false,gerer_users:false,inviter:false,parametres:false,infos_entreprise:false,abonnement:false,transfert:false,stats:true},
   })
   const togglePerm=(role:string,perm:string)=>{
     if(!estProprietaire||!editPerms) return
@@ -229,6 +230,7 @@ export default function UtilisateursPage(){
                 <thead>
                   <tr style={{background:'#f9fafb'}}>
                     <th style={{padding:'12px 16px',textAlign:'left' as const,fontSize:12,color:'#888',fontWeight:600,borderBottom:'1px solid #e5e7eb',width:'40%'}}>ACTION</th>
+                    <th style={{padding:'12px 16px',textAlign:'center' as const,fontSize:12,color:'#7c3aed',fontWeight:700,borderBottom:'1px solid #e5e7eb'}}>Propriétaire</th>
                     <th style={{padding:'12px 16px',textAlign:'center' as const,fontSize:12,color:'#1D9E75',fontWeight:700,borderBottom:'1px solid #e5e7eb'}}>Admin</th>
                     <th style={{padding:'12px 16px',textAlign:'center' as const,fontSize:12,color:'#2563eb',fontWeight:700,borderBottom:'1px solid #e5e7eb'}}>Utilisateur</th>
                     <th style={{padding:'12px 16px',textAlign:'center' as const,fontSize:12,color:'#BA7517',fontWeight:700,borderBottom:'1px solid #e5e7eb'}}>Observateur</th>
@@ -266,6 +268,7 @@ export default function UtilisateursPage(){
                       {label:'Accéder aux paramètres',key:'parametres'},
                       {label:"Modifier les infos entreprise",key:'infos_entreprise'},
                       {label:"Voir l'abonnement",key:'abonnement'},
+                      {label:'Transférer la propriété',key:'transfert'},
                       {label:'Voir les statistiques',key:'stats'},
                     ]},
                   ].map((group,gi)=>(
@@ -278,14 +281,14 @@ export default function UtilisateursPage(){
                           onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
                           onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
                           <td style={{padding:'10px 16px',fontSize:13,color:'#333'}}>{item.label}</td>
-                          {['admin','utilisateur','observateur'].map(role=>(
+                          {['proprietaire','admin','utilisateur','observateur'].map(role=>(
                             <td key={role} style={{padding:'10px 16px',textAlign:'center' as const}}>
                               <span
-                                onClick={()=>togglePerm(role,item.key)}
+                                onClick={()=>role!=='proprietaire'&&togglePerm(role,item.key)}
                                 style={{
                                   fontSize:18,
                                   cursor:editPerms&&estProprietaire?'pointer':'default',
-                                  color:perms[role][item.key]?(role==='admin'?'#1D9E75':role==='utilisateur'?'#2563eb':'#BA7517'):'#d1d5db',
+                                  color:perms[role][item.key]?(role==='proprietaire'?'#7c3aed':role==='admin'?'#1D9E75':role==='utilisateur'?'#2563eb':'#BA7517'):'#d1d5db',
                                   transition:'color 0.15s',
                                   display:'inline-block',
                                   transform:editPerms?'scale(1.2)':'scale(1)',
