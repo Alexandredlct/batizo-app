@@ -255,34 +255,7 @@ export default function UtilisateursPage(){
 
           
           {/* Transfert propriété */}
-          {estProprietaire && (
-            <div style={{marginTop:16,background:'#fff',border:'1px solid #e5e7eb',borderRadius:12,padding:'18px 20px'}}>
-              <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',flexWrap:'wrap' as const,gap:16}}>
-                <div>
-                  <div style={{fontSize:14,fontWeight:700,color:'#111',marginBottom:4}}>🔑 Transférer la propriété du compte</div>
-                  <div style={{fontSize:13,color:'#555',lineHeight:1.6,maxWidth:400}}>
-                    Transmettez les droits de propriétaire à un autre membre actif de votre équipe. Vous deviendrez Admin et perdrez l'accès aux fonctions réservées au propriétaire.
-                  </div>
-                </div>
-                <div style={{display:'flex',gap:8,alignItems:'center',flexShrink:0}}>
-                  <select
-                    onChange={e=>{const idx=parseInt(e.target.value);if(idx>=0)setTransfertCible({nom:users[idx].nom,idx});else setTransfertCible(null)}}
-                    style={{padding:'8px 12px',border:'1px solid #e5e7eb',borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111',minWidth:180}}>
-                    <option value="-1">Choisir un membre…</option>
-                    {users.filter(u=>!u.vous&&u.statut==='actif').map((u,i)=>(
-                      <option key={i} value={users.indexOf(u)}>{u.nom} — {roleLabels[u.role]||u.role}</option>
-                    ))}
-                  </select>
-                  <button
-                    onClick={()=>{if(transfertCible)setShowTransfert(true)}}
-                    disabled={!transfertCible}
-                    style={{padding:'8px 16px',background:transfertCible?'#E24B4A':'#f3f4f6',color:transfertCible?'#fff':'#aaa',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:transfertCible?'pointer':'not-allowed',transition:'all 0.15s'}}>
-                    Transférer
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          
 
           {/* Tableau des permissions */}
           <div style={{marginTop:32}}>
