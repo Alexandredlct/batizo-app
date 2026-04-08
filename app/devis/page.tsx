@@ -69,6 +69,8 @@ export default function DevisPage() {
   const [docMenu, setDocMenu] = useState<string|null>(null)
   const [actionMenu, setActionMenu] = useState<string|null>(null)
   const [collapsed, setCollapsed] = useState(false)
+  const [editingTitre, setEditingTitre] = useState<string|null>(null)
+  const [editTitreVal, setEditTitreVal] = useState('')
   const sw = collapsed ? 64 : 230
 
   const toggle = (id: string) => setExpanded(p => ({...p, [id]: !p[id]}))
@@ -93,6 +95,11 @@ export default function DevisPage() {
       if (docType === 'devis') newStatutChantier = newStatut
       return {...c, docs: newDocs, statut: newStatutChantier}
     }))
+  }
+
+  const saveTitre = (id: string) => {
+    if (editTitreVal.trim()) setChantiers(p => p.map(c => c.id === id ? {...c, titre: editTitreVal.trim()} : c))
+    setEditingTitre(null)
   }
 
   const getMontantFacture = (c: Chantier) => c.docs.filter(d => d.type === 'facture' && d.statut === 'payee').reduce((s, d) => s + d.montant, 0)
@@ -212,7 +219,7 @@ export default function DevisPage() {
               <svg style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)'}} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input value={search} onChange={e => setSearch(e.target.value)}
                 placeholder="Client, numéro, adresse, vendeur, montant, statut…"
-                style={{width:'100%',padding:'9px 36px 9px 36px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box'}}/>
+                style={{width:'100%',padding:'9px 36px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box'}}/>
               {search && <button onClick={() => setSearch('')} style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:18,lineHeight:1}}>×</button>}
             </div>
             <button onClick={() => setShowFiltre(!showFiltre)}
@@ -222,7 +229,6 @@ export default function DevisPage() {
             </button>
           </div>
 
-          {/* Filtres avancés */}
           {showFiltre && (
             <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,padding:'1.25rem',marginBottom:16,display:'flex',gap:24,flexWrap:'wrap',alignItems:'flex-end'}}>
               <div>
@@ -243,7 +249,7 @@ export default function DevisPage() {
             </div>
           )}
 
-          {/* Liste par mois */}
+          {/* Liste */}
           {moisList.map(mois => {
             const items = filtered.filter(c => c.mois === mois)
             if (items.length === 0) return null
@@ -261,6 +267,7 @@ export default function DevisPage() {
 
                 {items.map(c => {
                   const montantFacture = getMontantFacture(c)
+                  const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(c.adresse)}`
                   return (
                     <div key={c.id} style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,marginBottom:8,overflow:'visible',position:'relative',transition:'box-shadow 0.15s'}}
                       onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.boxShadow='0 2px 12px rgba(29,158,117,0.1)'}
@@ -270,17 +277,64 @@ export default function DevisPage() {
                         onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
                         onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background=''}>
                         <div style={{display:'flex',alignItems:'flex-start',gap:12,flex:1,minWidth:0}}>
-                          <span style={{color:G,fontSize:11,marginTop:3,flexShrink:0,display:'inline-block',transition:'transform 0.2s',transform:expanded[c.id]?'rotate(90deg)':'rotate(0deg)'}}>▶</span>
-                          <div>
-                            <div style={{fontSize:14,fontWeight:700,marginBottom:4,color:'#111'}}>{c.client} — {c.titre}</div>
-                            <div style={{fontSize:12,color:'#666',marginBottom:2}}>
-                              Total devisé : <strong>{fmt(c.montantDevis)} HT</strong> · Total facturé : <strong style={{color:montantFacture===0?'#aaa':G}}>{fmt(montantFacture)} HT</strong>
+                          <span style={{color:G,fontSize:11,marginTop:4,flexShrink:0,display:'inline-block',transition:'transform 0.2s',transform:expanded[c.id]?'rotate(90deg)':'rotate(0deg)'}}>▶</span>
+                          <div style={{minWidth:0}}>
+                            {/* Titre éditable */}
+                            <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:6}}>
+                              {editingTitre === c.id ? (
+                                <input autoFocus value={editTitreVal}
+                                  onChange={e => setEditTitreVal(e.target.value)}
+                                  onBlur={() => saveTitre(c.id)}
+                                  onKeyDown={e => { if(e.key==='Enter') saveTitre(c.id); if(e.key==='Escape') setEditingTitre(null) }}
+                                  onClick={e => e.stopPropagation()}
+                                  style={{fontSize:14,fontWeight:700,color:'#111',border:`1px solid ${G}`,borderRadius:6,padding:'2px 8px',outline:'none',minWidth:200,background:'#f0fdf4'}}/>
+                              ) : (
+                                <>
+                                  <span style={{fontSize:14,fontWeight:700,color:'#111'}}>{c.client} — {c.titre}</span>
+                                  <button onClick={e => { e.stopPropagation(); setEditingTitre(c.id); setEditTitreVal(c.titre) }}
+                                    title="Modifier le titre"
+                                    style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',padding:2,display:'flex',alignItems:'center',flexShrink:0,transition:'color 0.15s'}}
+                                    onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color=G}
+                                    onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color='#ccc'}>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                  </button>
+                                </>
+                              )}
                             </div>
-                            <div style={{fontSize:12,color:'#888'}}>📍 {c.adresse} · 📞 {c.tel}</div>
-                            <div style={{fontSize:12,color:'#888'}}>👤 Vendeur : <strong style={{color:'#555'}}>{c.vendeur}</strong></div>
+                            {/* Montants */}
+                            <div style={{fontSize:13,color:'#555',marginBottom:5}}>
+                              Total devisé : <strong style={{color:'#111'}}>{fmt(c.montantDevis)} HT</strong>
+                              <span style={{margin:'0 6px',color:'#ccc'}}>·</span>
+                              Total facturé : <strong style={{color:montantFacture===0?'#aaa':G}}>{fmt(montantFacture)} HT</strong>
+                            </div>
+                            {/* Adresse cliquable */}
+                            <div style={{fontSize:13,marginBottom:3,display:'flex',alignItems:'center',gap:4}}>
+                              <span style={{fontSize:14}}>📍</span>
+                              <a href={mapsUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+                                style={{color:'#555',textDecoration:'none',borderBottom:'1px dashed #ccc',transition:'color 0.15s,borderColor 0.15s'}}
+                                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color=G; (e.currentTarget as HTMLAnchorElement).style.borderBottomColor=G }}
+                                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color='#555'; (e.currentTarget as HTMLAnchorElement).style.borderBottomColor='#ccc' }}>
+                                {c.adresse}
+                              </a>
+                            </div>
+                            {/* Téléphone cliquable */}
+                            <div style={{fontSize:13,marginBottom:3,display:'flex',alignItems:'center',gap:4}}>
+                              <span style={{fontSize:14}}>📞</span>
+                              <a href={`tel:${c.tel.replace(/\s/g,'')}`} onClick={e => e.stopPropagation()}
+                                style={{color:'#555',textDecoration:'none',borderBottom:'1px dashed #ccc',transition:'color 0.15s,borderColor 0.15s'}}
+                                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color=G; (e.currentTarget as HTMLAnchorElement).style.borderBottomColor=G }}
+                                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color='#555'; (e.currentTarget as HTMLAnchorElement).style.borderBottomColor='#ccc' }}>
+                                {c.tel}
+                              </a>
+                            </div>
+                            {/* Vendeur */}
+                            <div style={{fontSize:13,display:'flex',alignItems:'center',gap:4}}>
+                              <span style={{fontSize:14}}>👤</span>
+                              <span style={{color:'#888'}}>Vendeur : <strong style={{color:'#555'}}>{c.vendeur}</strong></span>
+                            </div>
                           </div>
                         </div>
-                        <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}} onClick={e => e.stopPropagation()}>
+                        <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0,marginLeft:16}} onClick={e => e.stopPropagation()}>
                           <span style={{background:`${statutColors[c.statut]}18`,color:statutColors[c.statut],padding:'3px 10px',borderRadius:20,fontSize:11,fontWeight:700}}>{statutLabels[c.statut]}</span>
                           <div style={{display:'inline-flex',alignItems:'center',gap:4}}>
                             <button onClick={e => archiver(c.id, e)}
