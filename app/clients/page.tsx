@@ -100,6 +100,10 @@ export default function ClientsPage(){
   const[notes,setNotes]=useState<Record<string,{text:string,date:string}[]>>({})
   const[toast,setToast]=useState('')
   const[deleteConfirm,setDeleteConfirm]=useState<string|null>(null)
+  const[enChargeMenu,setEnChargeMenu]=useState<string|null>(null)
+  const[deletedClient,setDeletedClient]=useState<Client|null>(null)
+  const[showUndoToast,setShowUndoToast]=useState(false)
+  const[undoTimer,setUndoTimer]=useState<any>(null)
   const[importErrors,setImportErrors]=useState<string[]>([])
   const[showImport,setShowImport]=useState(false)
   const[tri,setTri]=useState<'nom'|'caTotal'|'nbDevis'|'derniereActivite'>('nom')
@@ -167,10 +171,24 @@ export default function ClientsPage(){
   }
 
   const supprimer=(id:string)=>{
+    const client=clients.find(c=>c.id===id)
+    if(!client)return
     setClients(p=>p.filter(c=>c.id!==id))
     setDeleteConfirm(null)
     if(panel==='view'&&selectedId===id) closePanel()
-    showToast('Client supprimé')
+    setDeletedClient(client)
+    setShowUndoToast(true)
+    if(undoTimer)clearTimeout(undoTimer)
+    const t=setTimeout(()=>{setShowUndoToast(false);setDeletedClient(null)},5000)
+    setUndoTimer(t)
+  }
+  const annulerSuppression=()=>{
+    if(!deletedClient)return
+    setClients(p=>[...p,deletedClient])
+    setShowUndoToast(false)
+    setDeletedClient(null)
+    clearTimeout(undoTimer)
+    showToast('Client restauré')
   }
 
   const ajouterNote=(clientId:string)=>{
@@ -246,7 +264,7 @@ export default function ClientsPage(){
   )
 
   return(
-    <div style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}}>
+    <div style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}} onClick={()=>setEnChargeMenu(null)}>
       <Sidebar activePage="clients"/>
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
 
@@ -368,7 +386,7 @@ export default function ClientsPage(){
                     onClick={()=>openView(client)}>
                     <td style={{padding:'12px 16px'}}>
                       <div style={{display:'flex',alignItems:'center',gap:10}}>
-                        <div style={{width:34,height:34,borderRadius:'50%',background:client.type==='professionnel'?'#eff6ff':'#f0fdf4',color:client.type==='professionnel'?'#2563eb':G,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,flexShrink:0}}>
+                        <div style={{width:34,height:34,borderRadius:'50%',background:client.type==='professionnel'?'#eff6ff':'#fff7ed',color:client.type==='professionnel'?'#2563eb':'#ea580c',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,flexShrink:0}}>
                           {client.prenom[0]}{client.nom[0]}
                         </div>
                         <div>
@@ -379,7 +397,7 @@ export default function ClientsPage(){
                           )}
                           {client.tags&&<div style={{display:'flex',gap:4,marginTop:2,flexWrap:'wrap' as const}}>
                             {client.tags.split(',').filter(t=>t.trim()).map((t,i)=>(
-                              <span key={i} style={{fontSize:10,padding:'1px 5px',background:'#f0fdf4',color:G,borderRadius:8,fontWeight:600}}>{t.trim()}</span>
+                              <span key={i} style={{fontSize:10,padding:'1px 5px',background:'#f3f4f6',color:'#555',borderRadius:8,fontWeight:600}}>{t.trim()}</span>
                             ))}
                           </div>}
                         </div>
@@ -410,17 +428,41 @@ export default function ClientsPage(){
                     <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{client.tel}</td>
                     <td style={{padding:'12px 16px',fontSize:13,color:'#555'}}>{client.adresseFactVille}</td>
                     <td style={{padding:'12px 16px',fontSize:13,fontWeight:600,color:'#111',textAlign:'center' as const}}>{client.nbDevis}</td>
-                    <td style={{padding:'12px 16px',fontSize:13,fontWeight:600,color:G}}>{fmt(client.caTotal)}</td>
+                    <td style={{padding:'12px 16px',fontSize:13,fontWeight:600,color:'#111'}}>{fmt(client.caTotal)}</td>
                     <td style={{padding:'12px 16px',fontSize:12,color:'#888'}}>{client.derniereActivite}</td>
-                    <td style={{padding:'12px 16px'}}>
-                      {client.enCharge?(
-                        <div style={{display:'flex',alignItems:'center',gap:6}}>
-                          <div style={{width:24,height:24,borderRadius:'50%',background:G+'22',color:G,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,flexShrink:0}}>
-                            {client.enCharge.split(' ').map((n:string)=>n[0]).join('').slice(0,2)}
+                    <td style={{padding:'12px 16px'}} onClick={e=>e.stopPropagation()}>
+                      <div style={{position:'relative'}}>
+                        <div onClick={()=>setEnChargeMenu(enChargeMenu===client.id?null:client.id)}
+                          style={{display:'inline-flex',alignItems:'center',gap:6,cursor:'pointer',padding:'4px 8px',borderRadius:8,transition:'background 0.15s'}}
+                          onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f3f4f6'}
+                          onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                          <div style={{width:26,height:26,borderRadius:'50%',background:'#f0f4ff',color:'#2563eb',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,flexShrink:0}}>
+                            {client.enCharge?client.enCharge.split(' ').map((n:string)=>n[0]).join('').slice(0,2):'?'}
                           </div>
-                          <span style={{fontSize:12,color:'#333'}}>{client.enCharge.split(' ')[0]}</span>
+                          <span style={{fontSize:12,color:'#333'}}>{client.enCharge?client.enCharge.split(' ')[0]:'Assigner'}</span>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
                         </div>
-                      ):<span style={{fontSize:11,color:'#888'}}>—</span>}
+                        {enChargeMenu===client.id&&(
+                          <div style={{position:'absolute',top:'110%',left:0,background:'#fff',border:'1px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 16px rgba(0,0,0,0.12)',zIndex:200,minWidth:180,overflow:'hidden'}}>
+                            <div style={{padding:'8px 12px',fontSize:11,color:'#888',fontWeight:600,borderBottom:'1px solid #f3f4f6'}}>ASSIGNER À</div>
+                            {['',  ...MEMBRES_EQUIPE].map(m=>(
+                              <div key={m||'none'} onClick={()=>{setClients(p=>p.map(cl=>cl.id===client.id?{...cl,enCharge:m}:cl));setEnChargeMenu(null)}}
+                                style={{padding:'9px 14px',fontSize:13,cursor:'pointer',display:'flex',alignItems:'center',gap:8,color:client.enCharge===m?G:'#333',background:client.enCharge===m?'#f0fdf4':'',fontWeight:client.enCharge===m?600:400,transition:'background 0.1s'}}
+                                onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                                onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=client.enCharge===m?'#f0fdf4':''}>
+                                {m?(
+                                  <>
+                                    <div style={{width:22,height:22,borderRadius:'50%',background:'#f0f4ff',color:'#2563eb',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:700}}>
+                                      {m.split(' ').map((n:string)=>n[0]).join('').slice(0,2)}
+                                    </div>
+                                    {m}
+                                  </>
+                                ):<><span style={{color:'#aaa'}}>— </span>Non assigné</>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td style={{padding:'12px 16px'}}>
                       {(historiqueCommunications[client.id]||[]).length>0?(
@@ -811,6 +853,14 @@ export default function ClientsPage(){
               <button onClick={()=>supprimer(deleteConfirm)} style={{flex:1,padding:11,background:RD,color:'#fff',border:'none',borderRadius:8,fontSize:14,fontWeight:600,cursor:'pointer'}}>Supprimer</button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toast annuler suppression */}
+      {showUndoToast&&(
+        <div style={{position:'fixed',bottom:80,left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',color:'#fff',borderRadius:10,padding:'12px 20px',zIndex:9999,display:'flex',alignItems:'center',gap:12,boxShadow:'0 4px 20px rgba(0,0,0,0.3)'}}>
+          <span style={{fontSize:13}}>Client supprimé</span>
+          <button onClick={annulerSuppression} style={{padding:'5px 14px',background:G,color:'#fff',border:'none',borderRadius:6,fontSize:12,fontWeight:700,cursor:'pointer'}}>Annuler</button>
         </div>
       )}
 
