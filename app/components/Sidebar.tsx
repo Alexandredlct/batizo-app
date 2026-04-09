@@ -30,12 +30,56 @@ const menuItems = [
 
 export default function Sidebar({ activePage }: { activePage: string }) {
   const [collapsed, setCollapsed] = useState(false)
+  const [searchGlobal, setSearchGlobal] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
   const [userMenu, setUserMenu] = useState(false)
   const [prenom, setPrenom] = useState('')
   
 
   const [entreprise, setEntreprise] = useState('Batizo')
   const { photo } = usePhoto()
+
+  const searchData = [
+    // Clients
+    {cat:'Clients',icon:'👤',label:'Jean Dupont',sub:'Dupont Immobilier SAS · Paris',href:'/clients'},
+    {cat:'Clients',icon:'👤',label:'Sophie Martin',sub:'Particulier · Courbevoie',href:'/clients'},
+    {cat:'Clients',icon:'👤',label:'Karim Mansouri',sub:'Mansouri Promotion SARL · Paris',href:'/clients'},
+    {cat:'Clients',icon:'👤',label:'Alice Bernard',sub:'SCI Famille Bernard · Levallois',href:'/clients'},
+    // Devis
+    {cat:'Devis',icon:'📄',label:'DEV-2024-089',sub:'Rénovation bureau 3ème étage · 42 000 €',href:'/devis'},
+    {cat:'Devis',icon:'📄',label:'DEV-2024-085',sub:'Rénovation immeuble 12 lots · 95 000 €',href:'/devis'},
+    {cat:'Devis',icon:'📄',label:'DEV-2024-091',sub:'Rénovation salle de bain · 12 400 €',href:'/devis'},
+    // Matériaux
+    {cat:'Matériaux',icon:'🧱',label:'Parquet chêne massif 12mm',sub:'28 €/m² · Marge 59%',href:'/bibliotheque'},
+    {cat:'Matériaux',icon:'🧱',label:'Carrelage 60x60 grès cérame',sub:'32 €/m² · Marge 62%',href:'/bibliotheque'},
+    {cat:'Matériaux',icon:'🧱',label:'Peinture murale mate',sub:'4 €/m² · Marge 82%',href:'/bibliotheque'},
+    {cat:'Matériaux',icon:'🧱',label:'Tableau électrique 13 disjoncteurs',sub:'180 €/u · Marge 63%',href:'/bibliotheque'},
+    // Ouvrages
+    {cat:'Ouvrages',icon:'🔨',label:'Pose parquet complet 45m²',sub:'103 €/m² · Marge 58%',href:'/bibliotheque'},
+    {cat:'Ouvrages',icon:'🔨',label:'Installation tableau électrique',sub:'850 €/u · Marge 62%',href:'/bibliotheque'},
+    // Main d\'oeuvre
+    {cat:'Main d\'oeuvre',icon:'👷',label:'Électricien qualifié',sub:'65 €/h · Marge 54%',href:'/bibliotheque'},
+    {cat:'Main d\'oeuvre',icon:'👷',label:'Plombier qualifié',sub:'70 €/h · Marge 46%',href:'/bibliotheque'},
+    // Pages
+    {cat:'Pages',icon:'⚙️',label:'Paramètres',sub:'Configuration de votre compte',href:'/parametres'},
+    {cat:'Pages',icon:'💳',label:'Abonnement',sub:'Gérer votre plan',href:'/abonnement'},
+    {cat:'Pages',icon:'👥',label:'Utilisateurs',sub:'Gérer votre équipe',href:'/utilisateurs'},
+    {cat:'Pages',icon:'🎁',label:'Parrainage',sub:'Inviter des amis',href:'/parrainage'},
+  ]
+
+  const searchResults = searchGlobal.length >= 2
+    ? searchData.filter(item =>
+        item.label.toLowerCase().includes(searchGlobal.toLowerCase()) ||
+        item.sub.toLowerCase().includes(searchGlobal.toLowerCase()) ||
+        item.cat.toLowerCase().includes(searchGlobal.toLowerCase())
+      ).slice(0, 8)
+    : []
+
+  const groupedResults = searchResults.reduce((acc:any, item) => {
+    if(!acc[item.cat]) acc[item.cat] = []
+    acc[item.cat].push(item)
+    return acc
+  }, {})
   const sw = collapsed ? 64 : 230
 
   useEffect(() => {
@@ -52,6 +96,11 @@ export default function Sidebar({ activePage }: { activePage: string }) {
 
   return (
     <>
+    {/* Barre recherche globale — overlay */}
+    {searchOpen&&(
+      <div onClick={()=>{setSearchOpen(false);setSearchGlobal('')}}
+        style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.3)',zIndex:998}}/>
+    )}
     <div onClick={() => setUserMenu(false)} style={{width:sw,minWidth:sw,height:'100vh',background:'#fff',borderRight:`1px solid ${BD}`,display:'flex',flexDirection:'column',transition:'width 0.2s',overflow:'hidden',flexShrink:0}}>
       <div style={{padding:'16px 14px',borderBottom:`1px solid ${BD}`,minHeight:60,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         {!collapsed && <a href="/dashboard" style={{fontSize:'18px',fontWeight:'800',color:'#111',textDecoration:'none'}}>Bati<span style={{color:G}}>zo</span></a>}
