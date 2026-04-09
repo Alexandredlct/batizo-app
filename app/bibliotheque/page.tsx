@@ -29,11 +29,13 @@ type Materiau = {
   id:string; nom:string; description:string; unite:Unite; tva:Tva
   debourse:number; prixFacture:number; categorie:string
   notes?:string; tags?:string; uniteCustom?:string
+  prixFournisseur?:number; coeffMarge?:number; fournisseur?:string
 }
 type MainOeuvre = {
   id:string; nom:string; description:string; unite:Unite; tva:Tva
   debourse:number; prixFacture:number; categorie:string
   notes?:string; tags?:string; uniteCustom?:string
+  prixFournisseur?:number; coeffMarge?:number; fournisseur?:string
 }
 type LigneOuvrage = { type:'materiau'|'mo'; id:string; nom:string; qte:number; pu:number }
 type Ouvrage = {
@@ -41,6 +43,7 @@ type Ouvrage = {
   debourse:number; prixFacture:number; categorie:string
   lignes:LigneOuvrage[]
   notes?:string; tags?:string; uniteCustom?:string
+  prixFournisseur?:number; coeffMarge?:number; fournisseur?:string
 }
 
 const initMateriaux:Materiau[] = [
@@ -309,6 +312,13 @@ export default function BibliothequePage() {
             <div style={{height:'100%',width:`${Math.min(m,100)}%`,background:margeColor(m),borderRadius:4,transition:'width 0.3s'}}></div>
           </div>
         </div>
+        {/* Prix fournisseur */}
+        {item.prixFournisseur&&(
+          <div style={{fontSize:11,color:'#888',marginTop:4}}>
+            Prix fournisseur : <strong style={{color:'#555'}}>{fmt(item.prixFournisseur)}</strong>
+            {item.coeffMarge&&<span style={{marginLeft:6,color:G,fontWeight:600}}>× {item.coeffMarge} (coeff)</span>}
+          </div>
+        )}
         {/* Tags */}
         {item.tags&&(
           <div style={{display:'flex',gap:4,flexWrap:'wrap' as const,marginTop:6}}>
@@ -513,6 +523,58 @@ export default function BibliothequePage() {
                   onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
               </div>
             </div>
+
+            {/* Prix fournisseur + coeff */}
+            <div style={{borderTop:`1px solid ${BD}`,paddingTop:12,marginTop:4}}>
+              <div style={{fontSize:12,fontWeight:600,color:'#555',marginBottom:10}}>Prix fournisseur & coefficient</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:10}}>
+                <div>
+                  <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Prix fournisseur HT</label>
+                  <input type="number" value={form.prixFournisseur||''} min={0}
+                    onChange={e=>{
+                      const pf=parseFloat(e.target.value)||0
+                      const coeff=form.coeffMarge||1
+                      setForm((p:any)=>({...p,prixFournisseur:pf,debourse:pf,prixFacture:Math.round(pf*coeff*100)/100}))
+                    }}
+                    placeholder="Ex: 28"
+                    style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}
+                    onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor='#2563eb'}
+                    onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+                </div>
+                <div>
+                  <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>
+                    Coefficient de marge
+                    {form.coeffMarge&&<span style={{fontSize:11,color:G,marginLeft:6,fontWeight:600}}>= {Math.round((1-1/form.coeffMarge)*100)}% marge</span>}
+                  </label>
+                  <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                    <input type="number" value={form.coeffMarge||''} min={1} step={0.05}
+                      onChange={e=>{
+                        const coeff=parseFloat(e.target.value)||1
+                        const pf=form.prixFournisseur||form.debourse||0
+                        setForm((p:any)=>({...p,coeffMarge:coeff,prixFacture:Math.round(pf*coeff*100)/100}))
+                      }}
+                      placeholder="Ex: 1.40"
+                      style={{flex:1,padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}
+                      onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+                      onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+                  </div>
+                  {/* Raccourcis coefficients */}
+                  <div style={{display:'flex',gap:4,marginTop:6,flexWrap:'wrap' as const}}>
+                    {[[1.25,'25%'],[1.40,'40%'],[1.50,'50%'],[1.67,'60%'],[2,'100%']].map(([coeff,label])=>(
+                      <button key={String(label)} type="button"
+                        onClick={()=>{
+                          const pf=form.prixFournisseur||form.debourse||0
+                          setForm((p:any)=>({...p,coeffMarge:coeff,prixFacture:Math.round(Number(pf)*Number(coeff)*100)/100}))
+                        }}
+                        style={{padding:'3px 8px',fontSize:11,border:`1px solid ${form.coeffMarge===coeff?G:BD}`,borderRadius:12,background:form.coeffMarge===coeff?'#f0fdf4':'#fff',color:form.coeffMarge===coeff?G:'#555',cursor:'pointer',fontWeight:600}}>
+                        ×{coeff} ({label})
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Calcul marge */}
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:8}}>
               <span style={{fontSize:13,color:'#555'}}>Marge calculée</span>
