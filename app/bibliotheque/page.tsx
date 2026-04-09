@@ -168,6 +168,8 @@ export default function BibliothequePage() {
   const[form,setForm]=useState<any>({})
   const[deleteConfirm,setDeleteConfirm]=useState<string|null>(null)
   const[showBiblioMat,setShowBiblioMat]=useState(false)
+  const[searchBiblioMat,setSearchBiblioMat]=useState('')
+  const[searchBiblioMO,setSearchBiblioMO]=useState('')
   const[showBiblioMO,setShowBiblioMO]=useState(false)
   const[toast,setToast]=useState('')
   const[categories,setCategories]=useState<Categorie[]>(DEFAULT_CATEGORIES)
@@ -400,7 +402,7 @@ export default function BibliothequePage() {
     const newLignes=[...(form.lignes||[]),ligne]
     const debAuto=newLignes.reduce((s:number,l:LigneOuvrage)=>s+l.qte*l.pu,0)
     setForm((p:any)=>({...p,lignes:newLignes,debourse:debAuto,description:p.description+(p.description?'\n':'')+item.nom+' - '+item.description}))
-    setShowBiblioMat(false);setShowBiblioMO(false)
+    setShowBiblioMat(false);setShowBiblioMO(false);setSearchBiblioMat('');setSearchBiblioMO('')
   }
 
   const updateLigne=(idx:number,field:string,val:any)=>{
@@ -469,7 +471,14 @@ export default function BibliothequePage() {
               onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>🗑</button>
           </div>
         </div>
-        <div style={{fontSize:14,fontWeight:700,color:'#111',marginBottom:4,lineHeight:1.3}}>{item.nom}</div>
+        <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:4,flexWrap:'wrap' as const}}>
+          <div style={{fontSize:14,fontWeight:700,color:'#111',lineHeight:1.3}}>{item.nom}</div>
+          {!statsUtilisation.find(s=>s.nom===item.nom)&&(
+            <span style={{fontSize:9,fontWeight:700,padding:'2px 6px',borderRadius:8,background:'#fef2f2',color:'#E24B4A',border:'1px solid #fca5a5',flexShrink:0}}>
+              Non utilisé
+            </span>
+          )}
+        </div>
         {item.description&&<div style={{fontSize:12,color:'#777',marginBottom:8,lineHeight:1.4}} dangerouslySetInnerHTML={{__html:item.description}}/>}
         <div style={{fontSize:12,color:'#888',marginBottom:10}}>{item.unite} · TVA {item.tva}</div>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:8}}>
@@ -492,12 +501,7 @@ export default function BibliothequePage() {
             <div style={{height:'100%',width:`${Math.min(m,100)}%`,background:margeColor(m),borderRadius:4,transition:'width 0.3s'}}></div>
           </div>
         </div>
-        {/* Badge non utilisé */}
-        {!statsUtilisation.find(s=>s.nom===item.nom)&&(
-          <div style={{position:'absolute',top:10,right:10,fontSize:9,fontWeight:700,padding:'2px 6px',borderRadius:8,background:'#fef2f2',color:'#E24B4A',border:'1px solid #fca5a5'}}>
-            Non utilisé
-          </div>
-        )}
+        {/* Badge non utilisé — inline sous le titre */}
         {/* Utilisation */}
         {(()=>{const stat=statsUtilisation.find(s=>s.nom===item.nom);return stat?(
           <div style={{fontSize:11,color:'#888',marginTop:4,display:'flex',alignItems:'center',gap:4}}>
@@ -1057,11 +1061,17 @@ export default function BibliothequePage() {
 
       {/* Sélecteur matériaux */}
       {showBiblioMat&&(
-        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowBiblioMat(false)}>
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>{setShowBiblioMat(false);setSearchBiblioMat('')}}>
           <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:14,padding:24,maxWidth:480,width:'90%',maxHeight:'70vh',overflow:'hidden',display:'flex',flexDirection:'column'}}>
             <div style={{fontSize:15,fontWeight:700,color:'#111',marginBottom:14}}>Choisir un matériau</div>
+            <div style={{marginBottom:10}}>
+              <input value={searchBiblioMat} onChange={e=>setSearchBiblioMat(e.target.value)}
+                placeholder="Rechercher un matériau..."
+                autoFocus
+                style={{width:'100%',padding:'8px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
+            </div>
             <div style={{overflowY:'auto',flex:1,display:'flex',flexDirection:'column',gap:8}}>
-              {materiaux.map(m=>(
+              {materiaux.filter(m=>!searchBiblioMat||m.nom.toLowerCase().includes(searchBiblioMat.toLowerCase())||m.categorie.toLowerCase().includes(searchBiblioMat.toLowerCase())).map(m=>(
                 <div key={m.id} onClick={()=>ajouterLigne('materiau',m)}
                   style={{padding:'10px 14px',border:`1px solid ${BD}`,borderRadius:8,cursor:'pointer',transition:'all 0.15s'}}
                   onMouseEnter={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor=G;d.style.background='#f0fdf4'}}
@@ -1085,11 +1095,17 @@ export default function BibliothequePage() {
 
       {/* Sélecteur MO */}
       {showBiblioMO&&(
-        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowBiblioMO(false)}>
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>{setShowBiblioMO(false);setSearchBiblioMO('')}}>
           <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:14,padding:24,maxWidth:480,width:'90%',maxHeight:'70vh',overflow:'hidden',display:'flex',flexDirection:'column'}}>
             <div style={{fontSize:15,fontWeight:700,color:'#111',marginBottom:14}}>Choisir une main d'oeuvre</div>
+            <div style={{marginBottom:10}}>
+              <input value={searchBiblioMO} onChange={e=>setSearchBiblioMO(e.target.value)}
+                placeholder="Rechercher une main d'oeuvre..."
+                autoFocus
+                style={{width:'100%',padding:'8px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
+            </div>
             <div style={{overflowY:'auto',flex:1,display:'flex',flexDirection:'column',gap:8}}>
-              {mo.map(m=>(
+              {mo.filter(m=>!searchBiblioMO||m.nom.toLowerCase().includes(searchBiblioMO.toLowerCase())||m.categorie.toLowerCase().includes(searchBiblioMO.toLowerCase())).map(m=>(
                 <div key={m.id} onClick={()=>ajouterLigne('mo',m)}
                   style={{padding:'10px 14px',border:`1px solid ${BD}`,borderRadius:8,cursor:'pointer',transition:'all 0.15s'}}
                   onMouseEnter={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor=AM;d.style.background='#fffbeb'}}
