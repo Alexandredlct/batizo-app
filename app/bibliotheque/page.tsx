@@ -174,6 +174,81 @@ export default function BibliothequePage() {
   const[showCatModal,setShowCatModal]=useState(false)
   const[newCatNom,setNewCatNom]=useState('')
   const[newCatCouleur,setNewCatCouleur]=useState('#1D9E75')
+  const telechargerModele=(type:string)=>{
+    const headers=['Nom','Description','Categorie','Unite','TVA','Debourse HT','Prix Facture HT','Fournisseur','Lien Fournisseur']
+    const exemples={
+      materiaux:[
+        ['Parquet chene massif 12mm','Parquet chene massif finition huilee','Parquet','m2','20%','28','68','Point P','https://www.pointp.fr'],
+        ['Carrelage 60x60','Carrelage grand format rectifie','Carrelage','m2','20%','32','85','Leroy Merlin',''],
+      ],
+      mo:[
+        ['Electricien qualifie','Taux horaire charge electricien','Electricite','h','20%','45','65','',''],
+        ['Plombier qualifie','Taux horaire charge plombier','Plomberie','h','20%','48','70','',''],
+      ],
+      ouvrages:[
+        ['Pose parquet complet','Fourniture et pose parquet chene','Parquet','m2','10%','43','103','',''],
+        ['Installation tableau electrique','Fourniture et pose tableau 13 disj','Electricite','u','20%','360','850','',''],
+      ],
+    }
+    const rows=[headers,...(exemples[type as keyof typeof exemples]||exemples.materiaux)]
+    const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n')
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'})
+    const url=URL.createObjectURL(blob)
+    const a=document.createElement('a')
+    a.href=url;a.download=`batizo-modele-${type}.csv`;a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const parseImport=(e:React.ChangeEvent<HTMLInputElement>)=>{
+    const file=e.target.files?.[0]
+    if(!file)return
+    const reader=new FileReader()
+    reader.onload=ev=>{
+      const text=ev.target?.result as string
+      const lines=text.split('\n').filter(l=>l.trim())
+      const errors:string[]=[]
+      const items:any[]=[]
+      const headers=lines[0].split(',').map(h=>h.replace(/"/g,'').trim().toLowerCase())
+      
+      for(let i=1;i<lines.length;i++){
+        const vals=lines[i].split(',').map(v=>v.replace(/"/g,'').trim())
+        if(vals.length<6){errors.push(`Ligne ${i+1}: colonnes manquantes`);continue}
+        
+        const nom=vals[headers.indexOf('nom')]||vals[0]
+        const description=vals[headers.indexOf('description')]||vals[1]||''
+        const categorie=vals[headers.indexOf('categorie')]||vals[2]||'Autre'
+        const unite=vals[headers.indexOf('unite')]||vals[3]||'u'
+        const tva=vals[headers.indexOf('tva')]||vals[4]||'20%'
+        const debourse=parseFloat(vals[headers.indexOf('debourse ht')]||vals[headers.indexOf('debourse')]||vals[5])||0
+        const prixFacture=parseFloat(vals[headers.indexOf('prix facture ht')]||vals[headers.indexOf('prix facture')]||vals[6])||0
+        const fournisseur=vals[headers.indexOf('fournisseur')]||vals[7]||''
+        const lienFournisseur=vals[headers.indexOf('lien fournisseur')]||vals[8]||''
+        
+        if(!nom){errors.push(`Ligne ${i+1}: nom manquant`);continue}
+        
+        items.push({nom,description,categorie,unite,tva,debourse,prixFacture,fournisseur,lienFournisseur,
+          id:Math.random().toString(36).slice(2,8),
+          lignes:[],historiquePrix:[{date:new Date().toLocaleDateString('fr-FR'),prix:debourse,note:'Import'}]
+        })
+      }
+      
+      setImportPreview(items)
+      setImportErrors(errors)
+    }
+    reader.readAsText(file,'UTF-8')
+    e.target.value=''
+  }
+
+  const confirmerImport=()=>{
+    if(importType==='materiaux') setMateriaux(p=>[...p,...importPreview])
+    else if(importType==='mo') setMO(p=>[...p,...importPreview])
+    else setOuvrages(p=>[...p,...importPreview])
+    setShowImport(false)
+    setImportPreview([])
+    setImportErrors([])
+    showToast(`${importPreview.length} éléments importés avec succès`)
+  }
+
   const handlePhotoItem=(e:React.ChangeEvent<HTMLInputElement>)=>{
     const file=e.target.files?.[0]
     if(!file)return
@@ -212,6 +287,10 @@ export default function BibliothequePage() {
   const genId=()=>Math.random().toString(36).slice(2,8)
 
   const[showHistorique,setShowHistorique]=useState<{item:any,type:PanelType}|null>(null)
+  const[showImport,setShowImport]=useState(false)
+  const[importPreview,setImportPreview]=useState<any[]>([])
+  const[importType,setImportType]=useState<Tab>('materiaux')
+  const[importErrors,setImportErrors]=useState<string[]>([])
 
   const save=()=>{
     if(!form.nom?.trim()){showToast('Le nom est obligatoire');return}
@@ -684,11 +763,11 @@ export default function BibliothequePage() {
               style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>
               🏷 Catégories
             </button>
-            <label style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>
+            <button onClick={()=>setShowImport(true)}
+              style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Importer Excel
-              <input type="file" accept=".xlsx,.xls,.csv" style={{display:'none'}} onChange={()=>showToast('Import Excel disponible avec Supabase')}/>
-            </label>
+              Importer CSV
+            </button>
             <button onClick={()=>openAdd(tab==='ouvrages'?'ouvrage':tab==='materiaux'?'materiau':'mo')}
               style={{padding:'8px 16px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>
               + Ajouter
@@ -826,6 +905,98 @@ export default function BibliothequePage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal import CSV */}
+      {showImport&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>{setShowImport(false);setImportPreview([]);setImportErrors([])}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:600,width:'90%',maxHeight:'85vh',display:'flex',flexDirection:'column',gap:16,overflow:'hidden'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Importer depuis CSV</div>
+              <button onClick={()=>{setShowImport(false);setImportPreview([]);setImportErrors([])}} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
+            </div>
+
+            {/* Étape 1 — Télécharger modèle */}
+            <div style={{background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:10,padding:'14px 16px'}}>
+              <div style={{fontSize:13,fontWeight:600,color:'#111',marginBottom:8}}>Étape 1 — Télécharger le modèle</div>
+              <p style={{fontSize:12,color:'#555',marginBottom:10}}>Téléchargez le modèle CSV correspondant, remplissez-le et réimportez-le.</p>
+              <div style={{display:'flex',gap:8,flexWrap:'wrap' as const}}>
+                {[['materiaux','Matériaux'],['mo','Main d\'oeuvre'],['ouvrages','Ouvrages']].map(([t,label])=>(
+                  <button key={t} onClick={()=>telechargerModele(t)}
+                    style={{padding:'6px 14px',background:'#fff',border:'1px solid #bbf7d0',borderRadius:7,fontSize:12,fontWeight:600,color:G,cursor:'pointer'}}>
+                    ⬇ Modèle {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Étape 2 — Choisir type + fichier */}
+            <div>
+              <div style={{fontSize:13,fontWeight:600,color:'#111',marginBottom:10}}>Étape 2 — Importer votre fichier</div>
+              <div style={{display:'flex',gap:10,alignItems:'center',marginBottom:10}}>
+                <select value={importType} onChange={e=>setImportType(e.target.value as Tab)}
+                  style={{padding:'8px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
+                  <option value="materiaux">Matériaux</option>
+                  <option value="mo">Main d'oeuvre</option>
+                  <option value="ouvrages">Ouvrages</option>
+                </select>
+                <label style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:G,color:'#fff',border:'none',borderRadius:7,fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Choisir un fichier CSV
+                  <input type="file" accept=".csv,.txt" onChange={parseImport} style={{display:'none'}}/>
+                </label>
+              </div>
+            </div>
+
+            {/* Erreurs */}
+            {importErrors.length>0&&(
+              <div style={{background:'#fef2f2',border:'1px solid #fca5a5',borderRadius:8,padding:'10px 14px'}}>
+                <div style={{fontSize:12,fontWeight:600,color:RD,marginBottom:4}}>⚠️ {importErrors.length} erreur(s) détectée(s)</div>
+                {importErrors.slice(0,3).map((e,i)=><div key={i} style={{fontSize:11,color:'#555'}}>{e}</div>)}
+              </div>
+            )}
+
+            {/* Aperçu */}
+            {importPreview.length>0&&(
+              <div style={{flex:1,overflowY:'auto'}}>
+                <div style={{fontSize:13,fontWeight:600,color:'#111',marginBottom:8}}>
+                  Aperçu — {importPreview.length} élément(s) à importer
+                </div>
+                <table style={{width:'100%',borderCollapse:'collapse'}}>
+                  <thead><tr style={{background:'#f9fafb'}}>
+                    {['Nom','Catégorie','Unité','Déboursé','Prix facturé','Marge'].map(h=>(
+                      <th key={h} style={{padding:'8px 10px',textAlign:'left' as const,fontSize:11,color:'#888',fontWeight:600,borderBottom:`1px solid ${BD}`}}>{h}</th>
+                    ))}
+                  </tr></thead>
+                  <tbody>
+                    {importPreview.slice(0,10).map((item,i)=>{
+                      const m=item.prixFacture>0?Math.round((item.prixFacture-item.debourse)/item.prixFacture*100):0
+                      return(
+                        <tr key={i} style={{borderBottom:`1px solid ${BD}`}}>
+                          <td style={{padding:'8px 10px',fontSize:12,color:'#111',fontWeight:500}}>{item.nom}</td>
+                          <td style={{padding:'8px 10px',fontSize:12,color:'#555'}}>{item.categorie}</td>
+                          <td style={{padding:'8px 10px',fontSize:12,color:'#555'}}>{item.unite}</td>
+                          <td style={{padding:'8px 10px',fontSize:12,color:'#555'}}>{item.debourse} €</td>
+                          <td style={{padding:'8px 10px',fontSize:12,fontWeight:600,color:'#111'}}>{item.prixFacture} €</td>
+                          <td style={{padding:'8px 10px'}}>
+                            <span style={{fontSize:11,fontWeight:700,color:margeColor(m)}}>{m}%</span>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                    {importPreview.length>10&&(
+                      <tr><td colSpan={6} style={{padding:'8px 10px',fontSize:12,color:'#888',textAlign:'center' as const}}>...et {importPreview.length-10} autres</td></tr>
+                    )}
+                  </tbody>
+                </table>
+                <button onClick={confirmerImport}
+                  style={{width:'100%',marginTop:14,padding:'12px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:14,fontWeight:600,cursor:'pointer'}}>
+                  ✓ Confirmer l'import ({importPreview.length} éléments)
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
