@@ -54,10 +54,10 @@ export default function DashboardPage() {
   ]
 
   const actions = [
-    {l:'Nouveau devis', e:'📄'},
-    {l:'Nouvelle facture', e:'🧾'},
-    {l:'Nouveau client', e:'👤'},
-    {l:'Ajouter matériau', e:'📦'},
+    {l:'Nouveau devis', e:'📄', href:'/devis'},
+    {l:'Nouvelle facture', e:'🧾', href:'/devis'},
+    {l:'Nouveau client', e:'👤', href:'/clients?new=1'},
+    {l:'Ajouter matériau', e:'📦', href:'/bibliotheque'},
     {l:'Ajouter ouvrage', e:'🔨'},
     {l:"Ajouter main d'œuvre", e:'👷'},
     {l:'Voir les impayés', e:'⚠️'},
@@ -153,7 +153,7 @@ export default function DashboardPage() {
             <div style={{fontSize:14,fontWeight:700,marginBottom:12,color:'#111'}}>Actions rapides</div>
             <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
               {actions.map(a => (
-                <button key={a.l} style={{display:'flex',alignItems:'center',gap:8,padding:'10px 16px',background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',color:'#333',whiteSpace:'nowrap'}}>
+                <button key={a.l} onClick={()=>{if((a as any).href) window.location.href=(a as any).href}} style={{display:'flex',alignItems:'center',gap:8,padding:'10px 16px',background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',color:'#333',whiteSpace:'nowrap'}}>
                   {a.e} {a.l}
                 </button>
               ))}

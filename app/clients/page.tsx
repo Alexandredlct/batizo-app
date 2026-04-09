@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 
 const G='#1D9E75',AM='#BA7517',RD='#E24B4A',BD='#e5e7eb'
@@ -95,6 +95,11 @@ export default function ClientsPage(){
   const[filtreEnCharge,setFiltreEnCharge]=useState<string>('tous')
 
   const showToast=(msg:string)=>{setToast(msg);setTimeout(()=>setToast(''),3000)}
+
+  useEffect(()=>{
+    const params=new URLSearchParams(window.location.search)
+    if(params.get('new')==='1') openAdd()
+  },[])
   const genId=()=>'c'+Math.random().toString(36).slice(2,8)
   const toggleTri=(t:typeof tri)=>{if(tri===t)setTriDir(d=>d==='asc'?'desc':'asc');else{setTri(t);setTriDir('asc')}}
 
