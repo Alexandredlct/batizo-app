@@ -1,4 +1,5 @@
 'use client'
+import SearchBar from '../components/SearchBar'
 import Sidebar from '../components/Sidebar'
 import { useState } from 'react'
 
@@ -192,7 +193,7 @@ export default function DevisPage() {
       {/* MAIN */}
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
         <div style={{height:60,background:'#fff',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 24px',flexShrink:0}}>
-          <div style={{fontSize:16,fontWeight:700,color:'#111'}}>Devis & Factures</div>
+          <div style={{fontSize:16,fontWeight:700,color:'#111',flexShrink:0}}>Devis & Factures</div><SearchBar/>
           <div style={{display:'flex',gap:10}}>
             <button style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer'}}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>

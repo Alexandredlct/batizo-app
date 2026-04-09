@@ -1,4 +1,5 @@
 'use client'
+import SearchBar from '../components/SearchBar'
 import Sidebar from '../components/Sidebar'
 import React from 'react'
 import { useEffect, useState } from 'react'
@@ -71,7 +72,7 @@ export default function DashboardPage() {
       {/* MAIN */}
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
         <div style={{height:60,background:'#fff',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 24px',flexShrink:0}}>
-          <div style={{fontSize:16,fontWeight:700,color:'#111'}}>Tableau de bord</div>
+          <div style={{fontSize:16,fontWeight:700,color:'#111',flexShrink:0}}>Tableau de bord</div><SearchBar/>
           <div style={{display:'flex',gap:10}}>
             <button style={{padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer'}}>+ Nouveau client</button>
             <button style={{padding:'8px 16px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>+ Nouveau devis</button>

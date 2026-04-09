@@ -1,4 +1,5 @@
 'use client'
+import SearchBar from '../components/SearchBar'
 import React from 'react'
 import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
@@ -848,7 +849,7 @@ export default function BibliothequePage() {
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
         {/* Topbar */}
         <div style={{height:60,background:'#fff',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 24px',flexShrink:0}}>
-          <div style={{fontSize:16,fontWeight:700,color:'#111'}}>Bibliothèque</div>
+          <div style={{fontSize:16,fontWeight:700,color:'#111',flexShrink:0}}>Bibliothèque</div><SearchBar/>
           <div style={{display:'flex',gap:8}}>
             <button onClick={()=>setShowStats(true)}
               style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>

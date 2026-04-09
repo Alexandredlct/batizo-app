@@ -1,4 +1,5 @@
 'use client'
+import SearchBar from '../components/SearchBar'
 import Sidebar from '../components/Sidebar'
 import { useState, useEffect } from 'react'
 import { usePhoto } from '../context/PhotoContext'
@@ -113,7 +114,7 @@ export default function MesInfosPage(){
 
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
         <div style={{height:60,background:'#fff',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 24px',flexShrink:0}}>
-          <div style={{fontSize:16,fontWeight:700,color:'#111'}}>Mes informations</div>
+          <div style={{fontSize:16,fontWeight:700,color:'#111',flexShrink:0}}>Mes informations</div><SearchBar/>
           <button onClick={save}style={{padding:'8px 18px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>{hasChanges && <span style={{position:'absolute',top:-4,right:-4,width:10,height:10,background:'#BA7517',borderRadius:'50%',border:'2px solid #fff'}}></span>}Enregistrer les modifications</button>
         </div>
         <div style={{flex:1,overflowY:'auto',padding:24,maxWidth:900}}>

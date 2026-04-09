@@ -1,4 +1,5 @@
 'use client'
+import SearchBar from '../components/SearchBar'
 import { usePhoto } from '../context/PhotoContext'
 import Sidebar from '../components/Sidebar'
 import { useState } from 'react'
@@ -107,7 +108,7 @@ export default function AbonnementPage(){
 
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
         <div style={{height:60,background:'#fff',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',padding:'0 24px',flexShrink:0}}>
-          <div style={{fontSize:16,fontWeight:700,color:'#111'}}>Abonnement</div>
+          <div style={{fontSize:16,fontWeight:700,color:'#111',flexShrink:0}}>Abonnement</div><SearchBar/>
         </div>
         <div style={{flex:1,overflowY:'auto',padding:24,maxWidth:900}}>
 

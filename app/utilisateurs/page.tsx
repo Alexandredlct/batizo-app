@@ -1,4 +1,5 @@
 'use client'
+import SearchBar from '../components/SearchBar'
 import { usePhoto } from '../context/PhotoContext'
 import React from 'react'
 import Sidebar from '../components/Sidebar'
@@ -138,7 +139,7 @@ export default function UtilisateursPage(){
 
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
         <div style={{height:60,background:'#fff',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 24px',flexShrink:0}}>
-          <div style={{fontSize:16,fontWeight:700,color:'#111'}}>Utilisateurs</div>
+          <div style={{fontSize:16,fontWeight:700,color:'#111',flexShrink:0}}>Utilisateurs</div><SearchBar/>
           <button onClick={()=>setShowForm(!showForm)} style={{padding:'8px 16px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>+ Ajouter un utilisateur</button>
         </div>
         <div style={{flex:1,overflowY:'auto',padding:24,maxWidth:900}}>
