@@ -1,4 +1,5 @@
 'use client'
+import SupportWidget from './SupportWidget'
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { usePhoto } from '../context/PhotoContext'
@@ -50,6 +51,7 @@ export default function Sidebar({ activePage }: { activePage: string }) {
   const initiales = prenom ? prenom[0].toUpperCase() : 'A'
 
   return (
+    <>
     <div onClick={() => setUserMenu(false)} style={{width:sw,minWidth:sw,height:'100vh',background:'#fff',borderRight:`1px solid ${BD}`,display:'flex',flexDirection:'column',transition:'width 0.2s',overflow:'hidden',flexShrink:0}}>
       <div style={{padding:'16px 14px',borderBottom:`1px solid ${BD}`,minHeight:60,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         {!collapsed && <a href="/dashboard" style={{fontSize:'18px',fontWeight:'800',color:'#111',textDecoration:'none'}}>Bati<span style={{color:G}}>zo</span></a>}
@@ -119,5 +121,7 @@ export default function Sidebar({ activePage }: { activePage: string }) {
         </div>
       )}
     </div>
+    <SupportWidget prenom={prenom}/>
+    </>
   )
 }
