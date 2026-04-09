@@ -92,6 +92,7 @@ export default function ClientsPage(){
   const[deletedClient,setDeletedClient]=useState<Client|null>(null)
   const[showUndoToast,setShowUndoToast]=useState(false)
   const[importPreview,setImportPreview]=useState<any[]>([])
+  const[filtreEnCharge,setFiltreEnCharge]=useState<string>('tous')
 
   const showToast=(msg:string)=>{setToast(msg);setTimeout(()=>setToast(''),3000)}
   const genId=()=>'c'+Math.random().toString(36).slice(2,8)
@@ -111,7 +112,7 @@ export default function ClientsPage(){
   const filtered=clients.filter(c=>{
     const q=search.toLowerCase()
     const ms=!search||c.nom.toLowerCase().includes(q)||c.prenom.toLowerCase().includes(q)||c.email.toLowerCase().includes(q)||c.tel.includes(q)||(c.raisonSociale||'').toLowerCase().includes(q)||(c.adresseFactVille||'').toLowerCase().includes(q)||(c.tags||'').toLowerCase().includes(q)
-    return ms&&(filtre==='tous'||c.type===filtre)&&(filtreStatut==='tous'||c.statut===filtreStatut)
+    return ms&&(filtre==='tous'||c.type===filtre)&&(filtreStatut==='tous'||c.statut===filtreStatut)&&(filtreEnCharge==='tous'||c.enCharge===filtreEnCharge)
   })
 
   const openAdd=()=>{setForm(emptyClient());setAdresseSame(true);setSelectedId(null);setPanel('add')}
@@ -120,6 +121,15 @@ export default function ClientsPage(){
   const closePanel=()=>{setPanel(null);setSelectedId(null);setForm({})}
 
   const save=()=>{
+    // Détection doublons email/tel
+    const doublonEmail=form.email&&clients.find(cl=>cl.email===form.email&&cl.id!==selectedId)
+    const doublonTel=form.tel&&clients.find(cl=>cl.tel===form.tel&&cl.id!==selectedId)
+    if(doublonEmail){
+      if(!confirm(`⚠️ Un client avec cet email existe déjà : ${doublonEmail.prenom} ${doublonEmail.nom}\nVoulez-vous quand même continuer ?`)) return
+    }
+    if(doublonTel&&!doublonEmail){
+      if(!confirm(`⚠️ Un client avec ce téléphone existe déjà : ${doublonTel.prenom} ${doublonTel.nom}\nVoulez-vous quand même continuer ?`)) return
+    }
     if(!form.nom?.trim()||!form.prenom?.trim()){showToast('Nom et prénom obligatoires');return}
     const f={...form}
     if(adresseSame){f.adresseChantierLine1=f.adresseFactLine1;f.adresseChantierVille=f.adresseFactVille;f.adresseChantierCp=f.adresseFactCp}
@@ -248,6 +258,12 @@ export default function ClientsPage(){
                 {f==='tous'?`Tous (${clients.length})`:f==='particulier'?`Particuliers (${clients.filter(c=>c.type==='particulier').length})`:`Pros (${clients.filter(c=>c.type==='professionnel').length})`}
               </button>
             ))}
+            <select value={filtreEnCharge} onChange={e=>setFiltreEnCharge(e.target.value)}
+              style={{padding:'6px 10px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
+              <option value="tous">Tous les responsables</option>
+              {MEMBRES.map(m=><option key={m}>{m}</option>)}
+              <option value="">Non assigné</option>
+            </select>
             <div style={{flex:1,position:'relative',minWidth:200}}>
               <svg style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)'}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher..."
@@ -492,8 +508,28 @@ export default function ClientsPage(){
                 <F label="Nom" field="nom" placeholder="Dupont" required/>
               </div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                <F label="Email" field="email" placeholder="jean@exemple.fr" type="email"/>
-                <F label="Téléphone" field="tel" placeholder="06 12 34 56 78" type="tel"/>
+                <div>
+                <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:4}}>Email</label>
+                <input type="email" value={form.email||''} onChange={e=>setForm((p:any)=>({...p,email:e.target.value}))} placeholder="jean@exemple.fr"
+                  style={{width:'100%',padding:'8px 11px',border:`1px solid ${form.email&&clients.find(cl=>cl.email===form.email&&cl.id!==selectedId)?RD:BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}
+                  onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=form.email&&clients.find(cl=>cl.email===form.email&&cl.id!==selectedId)?RD:G}
+                  onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=form.email&&clients.find(cl=>cl.email===form.email&&cl.id!==selectedId)?RD:BD}/>
+                {form.email&&(()=>{const d=clients.find(cl=>cl.email===form.email&&cl.id!==selectedId);return d?(
+                  <div style={{fontSize:11,color:RD,marginTop:3,display:'flex',alignItems:'center',gap:4}}>
+                    ⚠️ Email déjà utilisé par {d.prenom} {d.nom}
+                  </div>
+                ):null})()}
+              </div>
+                <div>
+                <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:4}}>Téléphone</label>
+                <input type="tel" value={form.tel||''} onChange={e=>setForm((p:any)=>({...p,tel:e.target.value}))} placeholder="06 12 34 56 78"
+                  style={{width:'100%',padding:'8px 11px',border:`1px solid ${form.tel&&clients.find(cl=>cl.tel===form.tel&&cl.id!==selectedId)?RD:BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
+                {form.tel&&(()=>{const d=clients.find(cl=>cl.tel===form.tel&&cl.id!==selectedId);return d?(
+                  <div style={{fontSize:11,color:RD,marginTop:3,display:'flex',alignItems:'center',gap:4}}>
+                    ⚠️ Téléphone déjà utilisé par {d.prenom} {d.nom}
+                  </div>
+                ):null})()}
+              </div>
               </div>
 
               <Sep title="Adresse de facturation"/>
