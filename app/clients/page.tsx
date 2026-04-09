@@ -299,7 +299,7 @@ export default function ClientsPage(){
                 {label:'Total clients',val:clients.length,color:'#111',sub:null},
                 {label:'Professionnels',val:clients.filter(c=>c.type==='professionnel').length,color:'#2563eb',sub:null},
                 {label:'Particuliers',val:clients.filter(c=>c.type==='particulier').length,color:AM,sub:null},
-                {label:'CA cette année',val:caAnnee.toLocaleString('fr-FR')+' €',color:G,sub:{variation,precedent:caAnneePrecedente}},
+                {label:'CA cette année HT',val:caAnnee.toLocaleString('fr-FR')+' €',color:G,sub:{variation,precedent:caAnneePrecedente}},
               ]
             })().map(s=>(
               <div key={s.label} style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px'}}>
@@ -327,14 +327,7 @@ export default function ClientsPage(){
               </button>
             ))}
           </div>
-          <div style={{display:'flex',gap:6}}>
-            {([['tous','Tous'],['actif','Actif'],['prospect','Prospect'],['inactif','Inactif']] as const).map(([f,label])=>(
-              <button key={f} onClick={()=>setFiltreStatut(f)}
-                style={{padding:'5px 12px',borderRadius:20,border:`1px solid ${filtreStatut===f?(f==='actif'?G:f==='prospect'?AM:f==='inactif'?'#888':G):BD}`,background:filtreStatut===f?(f==='actif'?'#f0fdf4':f==='prospect'?'#fffbeb':f==='inactif'?'#f9fafb':'#f0fdf4'):'#fff',color:filtreStatut===f?(f==='actif'?G:f==='prospect'?AM:f==='inactif'?'#888':G):'#555',fontSize:12,fontWeight:filtreStatut===f?600:400,cursor:'pointer'}}>
-                {label}
-              </button>
-            ))}
-          </div>
+          
           {(['tous','particulier','professionnel'] as const).map(f=>(
               <button key={f} onClick={()=>setFiltre(f)}
                 style={{padding:'7px 16px',borderRadius:20,border:`1px solid ${filtre===f?G:BD}`,background:filtre===f?'#f0fdf4':'#fff',color:filtre===f?G:'#555',fontSize:13,fontWeight:filtre===f?600:400,cursor:'pointer'}}>
@@ -363,7 +356,7 @@ export default function ClientsPage(){
                     {label:'Téléphone',key:''},
                     {label:'Ville',key:''},
                     {label:'Devis',key:'nbDevis'},
-                    {label:'CA total',key:'caTotal'},
+                    {label:'CA total HT',key:'caTotal'},
                     {label:'Dernière activité',key:'derniereActivite'},
                     {label:'En charge',key:''},
                     {label:'Communications',key:''},
@@ -386,9 +379,7 @@ export default function ClientsPage(){
                     onClick={()=>openView(client)}>
                     <td style={{padding:'12px 16px'}}>
                       <div style={{display:'flex',alignItems:'center',gap:10}}>
-                        <div style={{width:34,height:34,borderRadius:'50%',background:client.type==='professionnel'?'#eff6ff':'#fff7ed',color:client.type==='professionnel'?'#2563eb':'#ea580c',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,flexShrink:0}}>
-                          {client.prenom[0]}{client.nom[0]}
-                        </div>
+                        
                         <div>
                           <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{client.civilite} {client.prenom} {client.nom}</div>
                           {client.raisonSociale&&<div style={{fontSize:11,color:'#888'}}>{client.raisonSociale}</div>}
@@ -417,13 +408,7 @@ export default function ClientsPage(){
                         {client.statut==='actif'?'Actif':client.statut==='prospect'?'Prospect':'Inactif'}
                       </span>
                     </td>
-                    <td style={{padding:'12px 16px'}}>
-                      <span style={{fontSize:11,fontWeight:700,padding:'3px 9px',borderRadius:12,
-                        background:client.statut==='actif'?'#f0fdf4':client.statut==='prospect'?'#fffbeb':'#f9fafb',
-                        color:client.statut==='actif'?G:client.statut==='prospect'?AM:'#888'}}>
-                        {client.statut==='actif'?'Actif':client.statut==='prospect'?'Prospect':'Inactif'}
-                      </span>
-                    </td>
+                    
                     <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{client.email}</td>
                     <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{client.tel}</td>
                     <td style={{padding:'12px 16px',fontSize:13,color:'#555'}}>{client.adresseFactVille}</td>
@@ -644,9 +629,7 @@ export default function ClientsPage(){
             {/* Header fiche */}
             <div style={{padding:'16px 20px',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
               <div style={{display:'flex',alignItems:'center',gap:12}}>
-                <div style={{width:40,height:40,borderRadius:'50%',background:selectedClient.type==='professionnel'?'#eff6ff':'#f0fdf4',color:selectedClient.type==='professionnel'?'#2563eb':G,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,fontWeight:700}}>
-                  {selectedClient.prenom[0]}{selectedClient.nom[0]}
-                </div>
+                
                 <div>
                   <div style={{fontSize:15,fontWeight:700,color:'#111'}}>{selectedClient.civilite} {selectedClient.prenom} {selectedClient.nom}</div>
                   {selectedClient.raisonSociale&&<div style={{fontSize:12,color:'#888'}}>{selectedClient.raisonSociale}</div>}
