@@ -57,9 +57,9 @@ export default function DashboardPage() {
     {l:'Nouveau devis', e:'📄', href:'/devis'},
     {l:'Nouvelle facture', e:'🧾', href:'/devis'},
     {l:'Nouveau client', e:'👤', href:'/clients?new=1'},
-    {l:'Ajouter matériau', e:'📦', href:'/bibliotheque'},
-    {l:'Ajouter ouvrage', e:'🔨'},
-    {l:"Ajouter main d'œuvre", e:'👷'},
+    {l:'Ajouter matériau', e:'📦', href:'/bibliotheque?new=materiau'},
+    {l:'Ajouter ouvrage', e:'🔨', href:'/bibliotheque?new=ouvrage'},
+    {l:"Ajouter main d'œuvre", e:'👷', href:'/bibliotheque?new=mo'},
     {l:'Voir les impayés', e:'⚠️'},
   ]
 
