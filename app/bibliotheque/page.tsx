@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 
 const G='#1D9E75', AM='#BA7517', RD='#E24B4A', BD='#e5e7eb'
@@ -293,6 +293,14 @@ export default function BibliothequePage() {
   const catColor=(nom:string)=>categories.find(c=>c.nom===nom)?.couleur||'#888'
 
   const showToast=(msg:string)=>{setToast(msg);setTimeout(()=>setToast(''),3000)}
+
+  useEffect(()=>{
+    const params=new URLSearchParams(window.location.search)
+    const newType=params.get('new')
+    if(newType==='materiau'){setTab('materiaux');openAdd('materiau')}
+    else if(newType==='ouvrage'){setTab('ouvrages');openAdd('ouvrage')}
+    else if(newType==='mo'){setTab('mo');openAdd('mo')}
+  },[])
 
   const openAdd=(type:PanelType)=>{
     setPanelType(type)
