@@ -110,7 +110,7 @@ export default function InscriptionPage() {
               {/* Code parrainage */}
               <div>
                 <div onClick={()=>setShowParrainage(!showParrainage)}
-                  style={{display:'flex',alignItems:'center',gap:6,fontSize:13,color:'#1D9E75',cursor:'pointer',marginBottom:showParrainage?8:0 as number,userSelect:'none' as const}}>
+                  style={{display:'flex',alignItems:'center',gap:6,fontSize:13,color:'#333',cursor:'pointer',marginBottom:showParrainage?8:0 as number,userSelect:'none' as const}}>
                   <span style={{fontSize:14}}>{showParrainage?'▼':'▶'}</span>
                   Vous avez un code de parrainage ?
                 </div>
