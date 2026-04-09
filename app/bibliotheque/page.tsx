@@ -1,4 +1,5 @@
 'use client'
+import React from 'react'
 import { useState } from 'react'
 import Sidebar from '../components/Sidebar'
 
@@ -15,16 +16,19 @@ type Tva = string
 type Materiau = {
   id:string; nom:string; description:string; unite:Unite; tva:Tva
   debourse:number; prixFacture:number; categorie:string
+  notes?:string; tags?:string; uniteCustom?:string
 }
 type MainOeuvre = {
   id:string; nom:string; description:string; unite:Unite; tva:Tva
   debourse:number; prixFacture:number; categorie:string
+  notes?:string; tags?:string; uniteCustom?:string
 }
 type LigneOuvrage = { type:'materiau'|'mo'; id:string; nom:string; qte:number; pu:number }
 type Ouvrage = {
   id:string; nom:string; description:string; unite:Unite; tva:Tva
   debourse:number; prixFacture:number; categorie:string
   lignes:LigneOuvrage[]
+  notes?:string; tags?:string; uniteCustom?:string
 }
 
 const initMateriaux:Materiau[] = [
@@ -55,9 +59,80 @@ type Tab = 'ouvrages'|'materiaux'|'mo'
 type PanelMode = 'add'|'edit'|null
 type PanelType = 'ouvrage'|'materiau'|'mo'
 
-const emptyMat = ():Omit<Materiau,'id'> => ({nom:'',description:'',unite:'u',tva:'20%',debourse:0,prixFacture:0,categorie:'Autre'})
-const emptyMO = ():Omit<MainOeuvre,'id'> => ({nom:'',description:'',unite:'h',tva:'20%',debourse:0,prixFacture:0,categorie:'Autre'})
-const emptyOuvrage = ():Omit<Ouvrage,'id'> => ({nom:'',description:'',unite:'u',tva:'20%',debourse:0,prixFacture:0,categorie:'Autre',lignes:[]})
+const emptyMat = ():Omit<Materiau,'id'> => ({nom:'',description:'',unite:'u',tva:'20%',debourse:0,prixFacture:0,categorie:'Autre',notes:'',tags:'',uniteCustom:''})
+const emptyMO = ():Omit<MainOeuvre,'id'> => ({nom:'',description:'',unite:'h',tva:'20%',debourse:0,prixFacture:0,categorie:'Autre',notes:'',tags:'',uniteCustom:''})
+const emptyOuvrage = ():Omit<Ouvrage,'id'> => ({nom:'',description:'',unite:'u',tva:'20%',debourse:0,prixFacture:0,categorie:'Autre',lignes:[],notes:'',tags:'',uniteCustom:''})
+
+
+// Mini éditeur de texte riche
+const RichEditor=({value,onChange,placeholder}:{value:string,onChange:(v:string)=>void,placeholder?:string})=>{
+  const ref = React.useRef<HTMLDivElement>(null)
+  const[showColorPicker,setShowColorPicker]=React.useState(false)
+  const[fontSize,setFontSize]=React.useState('14')
+  const colors=['#111111','#E24B4A','#1D9E75','#2563eb','#BA7517','#7c3aed','#888888']
+
+  const exec=(cmd:string,val?:string)=>{
+    document.execCommand(cmd,false,val)
+    if(ref.current) onChange(ref.current.innerHTML)
+    ref.current?.focus()
+  }
+
+  const BtnTool=({onClick,active,title,children}:{onClick:()=>void,active?:boolean,title:string,children:any})=>(
+    <button type="button" onClick={onClick} title={title}
+      style={{padding:'4px 7px',border:`1px solid ${active?'#1D9E75':'#e5e7eb'}`,borderRadius:5,background:active?'#f0fdf4':'#fff',cursor:'pointer',fontSize:12,fontWeight:600,color:active?'#1D9E75':'#444',transition:'all 0.1s',minWidth:26,display:'flex',alignItems:'center',justifyContent:'center'}}>
+      {children}
+    </button>
+  )
+
+  return(
+    <div style={{border:'1px solid #e5e7eb',borderRadius:8,overflow:'visible',background:'#fff'}}
+      onFocus={e=>(e.currentTarget as HTMLDivElement).style.borderColor='#1D9E75'}
+      onBlur={e=>(e.currentTarget as HTMLDivElement).style.borderColor='#e5e7eb'}>
+      {/* Barre outils */}
+      <div style={{display:'flex',gap:4,padding:'6px 8px',borderBottom:'1px solid #f3f4f6',flexWrap:'wrap' as const,alignItems:'center',background:'#f9fafb',borderRadius:'8px 8px 0 0'}}>
+        <BtnTool onClick={()=>exec('bold')} title="Gras"><strong>G</strong></BtnTool>
+        <BtnTool onClick={()=>exec('italic')} title="Italique"><em>I</em></BtnTool>
+        <BtnTool onClick={()=>exec('underline')} title="Souligné"><u>S</u></BtnTool>
+        <div style={{width:1,height:18,background:'#e5e7eb',margin:'0 2px'}}/>
+        <div style={{display:'flex',alignItems:'center',gap:4}}>
+          <button type="button" onClick={()=>exec('fontSize','2')} title="Petit" style={{padding:'3px 6px',border:'1px solid #e5e7eb',borderRadius:5,background:'#fff',cursor:'pointer',fontSize:10,color:'#444'}}>A</button>
+          <button type="button" onClick={()=>exec('fontSize','3')} title="Normal" style={{padding:'3px 6px',border:'1px solid #e5e7eb',borderRadius:5,background:'#fff',cursor:'pointer',fontSize:13,color:'#444'}}>A</button>
+          <button type="button" onClick={()=>exec('fontSize','5')} title="Grand" style={{padding:'3px 6px',border:'1px solid #e5e7eb',borderRadius:5,background:'#fff',cursor:'pointer',fontSize:16,color:'#444',fontWeight:600}}>A</button>
+        </div>
+        <div style={{width:1,height:18,background:'#e5e7eb',margin:'0 2px'}}/>
+        <div style={{position:'relative'}}>
+          <button type="button" onClick={()=>setShowColorPicker(!showColorPicker)} title="Couleur du texte"
+            style={{padding:'4px 8px',border:'1px solid #e5e7eb',borderRadius:5,background:'#fff',cursor:'pointer',fontSize:12,display:'flex',alignItems:'center',gap:4}}>
+            A <span style={{width:10,height:4,background:'#E24B4A',borderRadius:2,display:'inline-block'}}/>
+          </button>
+          {showColorPicker&&(
+            <div style={{position:'absolute',top:'110%',left:0,background:'#fff',border:'1px solid #e5e7eb',borderRadius:8,padding:8,display:'flex',gap:6,zIndex:999,boxShadow:'0 4px 12px rgba(0,0,0,0.1)'}}>
+              {colors.map(col=>(
+                <button key={col} type="button" onClick={()=>{exec('foreColor',col);setShowColorPicker(false)}}
+                  style={{width:20,height:20,borderRadius:'50%',background:col,border:'2px solid #fff',cursor:'pointer',boxShadow:'0 0 0 1px #e5e7eb'}}/>
+              ))}
+            </div>
+          )}
+        </div>
+        <div style={{width:1,height:18,background:'#e5e7eb',margin:'0 2px'}}/>
+        <BtnTool onClick={()=>exec('justifyLeft')} title="Gauche">⬅</BtnTool>
+        <BtnTool onClick={()=>exec('justifyCenter')} title="Centrer">⬛</BtnTool>
+        <BtnTool onClick={()=>exec('justifyRight')} title="Droite">➡</BtnTool>
+        <div style={{width:1,height:18,background:'#e5e7eb',margin:'0 2px'}}/>
+        <BtnTool onClick={()=>exec('insertUnorderedList')} title="Liste">• —</BtnTool>
+      </div>
+      {/* Zone de texte */}
+      <div
+        ref={ref}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={()=>{if(ref.current)onChange(ref.current.innerHTML)}}
+        dangerouslySetInnerHTML={{__html:value||''}}
+        data-placeholder={placeholder||'Rédigez votre description...'}
+        style={{minHeight:100,padding:'10px 12px',fontSize:13,color:'#111',outline:'none',lineHeight:1.6,fontFamily:'system-ui,sans-serif'}}/>
+    </div>
+  )
+}
 
 export default function BibliothequePage() {
   const[tab,setTab]=useState<Tab>('ouvrages')
@@ -207,6 +282,14 @@ export default function BibliothequePage() {
             <div style={{height:'100%',width:`${Math.min(m,100)}%`,background:margeColor(m),borderRadius:4,transition:'width 0.3s'}}></div>
           </div>
         </div>
+        {/* Tags */}
+        {item.tags&&(
+          <div style={{display:'flex',gap:4,flexWrap:'wrap' as const,marginTop:6}}>
+            {item.tags.split(',').filter((t:string)=>t.trim()).map((tag:string,i:number)=>(
+              <span key={i} style={{fontSize:10,padding:'1px 6px',background:'#f0fdf4',color:'#1D9E75',borderRadius:10,fontWeight:600}}>{tag.trim()}</span>
+            ))}
+          </div>
+        )}
         {/* Lignes ouvrage */}
         {type==='ouvrage'&&item.lignes?.length>0&&(
           <div style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${BD}`}}>
@@ -280,6 +363,11 @@ export default function BibliothequePage() {
                 style={{width:'100%',padding:'9px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,outline:'none',background:'#fff',color:'#111'}}>
                 {unites.map(u=><option key={u}>{u}</option>)}
               </select>
+              {form.unite==='Personnalisé'&&(
+                <input value={form.uniteCustom||''} onChange={e=>setForm((p:any)=>({...p,uniteCustom:e.target.value}))}
+                  placeholder="Ex: kg, palette, jour..."
+                  style={{width:'100%',marginTop:6,padding:'7px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
+              )}
             </div>
             <div>
               <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>TVA</label>
@@ -293,11 +381,34 @@ export default function BibliothequePage() {
           {/* Description */}
           <div>
             <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Description</label>
-            <textarea value={form.description||''} onChange={e=>setForm((p:any)=>({...p,description:e.target.value}))}
-              rows={2} placeholder="Détail de l'élément..."
-              style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',resize:'vertical' as const,fontFamily:'system-ui,sans-serif',color:'#111',boxSizing:'border-box' as const}}
-              onFocus={e=>(e.currentTarget as HTMLTextAreaElement).style.borderColor=G}
-              onBlur={e=>(e.currentTarget as HTMLTextAreaElement).style.borderColor=BD}/>
+            <RichEditor value={form.description||''} onChange={v=>setForm((p:any)=>({...p,description:v}))} placeholder="Détail de l'élément..."/>
+          </div>
+
+          {/* Notes internes */}
+          <div>
+            <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>
+              🔒 Notes internes <span style={{fontSize:11,color:'#888',fontWeight:400}}>(jamais visible sur le devis)</span>
+            </label>
+            <textarea value={form.notes||''} onChange={e=>setForm((p:any)=>({...p,notes:e.target.value}))}
+              rows={2} placeholder="Ex: Fournisseur Leroy Merlin, délai 3 jours, réf LM-2847..."
+              style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,outline:'none',resize:'vertical' as const,fontFamily:'system-ui,sans-serif',color:'#555',background:'#fffbeb',boxSizing:'border-box' as const}}/>
+          </div>
+
+          {/* Tags */}
+          <div>
+            <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>
+              🏷 Tags <span style={{fontSize:11,color:'#888',fontWeight:400}}>(séparés par des virgules)</span>
+            </label>
+            <input value={form.tags||''} onChange={e=>setForm((p:any)=>({...p,tags:e.target.value}))}
+              placeholder="Ex: urgent, stock, nouveau fournisseur"
+              style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
+            {form.tags&&(
+              <div style={{display:'flex',gap:6,flexWrap:'wrap' as const,marginTop:6}}>
+                {form.tags.split(',').filter((t:string)=>t.trim()).map((tag:string,i:number)=>(
+                  <span key={i} style={{fontSize:11,padding:'2px 8px',background:'#f0fdf4',color:'#1D9E75',borderRadius:12,fontWeight:600}}>{tag.trim()}</span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Composition ouvrage */}
