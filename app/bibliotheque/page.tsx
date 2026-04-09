@@ -288,6 +288,17 @@ export default function BibliothequePage() {
 
   const[showHistorique,setShowHistorique]=useState<{item:any,type:PanelType}|null>(null)
   const[showImport,setShowImport]=useState(false)
+  const[showStats,setShowStats]=useState(false)
+  const statsUtilisation = [
+    {nom:'Pose parquet complet 45m²',type:'ouvrage',categorie:'Parquet',utilisations:24,caGenere:12480,margeAvg:58},
+    {nom:'Installation tableau électrique',type:'ouvrage',categorie:'Électricité',utilisations:18,caGenere:15300,margeAvg:62},
+    {nom:'Parquet chêne massif 12mm',type:'materiau',categorie:'Parquet',utilisations:31,caGenere:9520,margeAvg:59},
+    {nom:'Électricien qualifié',type:'mo',categorie:'Électricité',utilisations:42,caGenere:8190,margeAvg:54},
+    {nom:'Peinture murale mate',type:'materiau',categorie:'Peinture',utilisations:28,caGenere:4620,margeAvg:82},
+    {nom:'Carrelage 60x60 grès cérame',type:'materiau',categorie:'Carrelage',utilisations:15,caGenere:7225,margeAvg:62},
+    {nom:'Plombier qualifié',type:'mo',categorie:'Plomberie',utilisations:19,caGenere:4760,margeAvg:46},
+    {nom:'Robinetterie mitigeur',type:'materiau',categorie:'Plomberie',utilisations:11,caGenere:3080,margeAvg:57},
+  ]
   const[importPreview,setImportPreview]=useState<any[]>([])
   const[importType,setImportType]=useState<Tab>('materiaux')
   const[importErrors,setImportErrors]=useState<string[]>([])
@@ -426,6 +437,13 @@ export default function BibliothequePage() {
             <div style={{height:'100%',width:`${Math.min(m,100)}%`,background:margeColor(m),borderRadius:4,transition:'width 0.3s'}}></div>
           </div>
         </div>
+        {/* Utilisation */}
+        {(()=>{const stat=statsUtilisation.find(s=>s.nom===item.nom);return stat?(
+          <div style={{fontSize:11,color:'#888',marginTop:4,display:'flex',alignItems:'center',gap:4}}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Utilisé <strong style={{color:G}}>{stat.utilisations}x</strong> · CA généré : <strong style={{color:'#111'}}>{stat.caGenere.toLocaleString('fr-FR')} €</strong>
+          </div>
+        ):null})()}
         {/* Lien fournisseur */}
         {item.lienFournisseur&&(
           <a href={item.lienFournisseur} target="_blank" rel="noreferrer"
@@ -759,6 +777,10 @@ export default function BibliothequePage() {
         <div style={{height:60,background:'#fff',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 24px',flexShrink:0}}>
           <div style={{fontSize:16,fontWeight:700,color:'#111'}}>Bibliothèque</div>
           <div style={{display:'flex',gap:8}}>
+            <button onClick={()=>setShowStats(true)}
+              style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>
+              📊 Statistiques
+            </button>
             <button onClick={()=>setShowCatModal(true)}
               style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>
               🏷 Catégories
@@ -904,6 +926,83 @@ export default function BibliothequePage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal statistiques */}
+      {showStats&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowStats(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:680,width:'90%',maxHeight:'85vh',display:'flex',flexDirection:'column',gap:16,overflow:'hidden'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div>
+                <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Statistiques d'utilisation</div>
+                <div style={{fontSize:12,color:'#888',marginTop:2}}>Basé sur les 3 derniers mois · Données indicatives</div>
+              </div>
+              <button onClick={()=>setShowStats(false)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
+            </div>
+
+            {/* KPIs */}
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
+              {[
+                {label:'Total utilisations',val:statsUtilisation.reduce((s,i)=>s+i.utilisations,0),color:'#111'},
+                {label:'CA total généré',val:statsUtilisation.reduce((s,i)=>s+i.caGenere,0).toLocaleString('fr-FR')+' €',color:G},
+                {label:'Marge moyenne',val:Math.round(statsUtilisation.reduce((s,i)=>s+i.margeAvg,0)/statsUtilisation.length)+'%',color:G},
+                {label:'Éléments actifs',val:statsUtilisation.length,color:'#2563eb'},
+              ].map(k=>(
+                <div key={k.label} style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:10,padding:'12px 14px'}}>
+                  <div style={{fontSize:10,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:4}}>{k.label}</div>
+                  <div style={{fontSize:18,fontWeight:700,color:k.color}}>{k.val}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Top utilisations */}
+            <div style={{flex:1,overflowY:'auto'}}>
+              <div style={{fontSize:13,fontWeight:600,color:'#111',marginBottom:10}}>Classement par utilisation</div>
+              <table style={{width:'100%',borderCollapse:'collapse'}}>
+                <thead><tr style={{background:'#f9fafb'}}>
+                  {['#','Élément','Type','Catégorie','Utilisations','CA généré','Marge moy.'].map(h=>(
+                    <th key={h} style={{padding:'8px 12px',textAlign:'left' as const,fontSize:11,color:'#888',fontWeight:600,borderBottom:`1px solid ${BD}`}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {[...statsUtilisation].sort((a,b)=>b.utilisations-a.utilisations).map((s,i)=>(
+                    <tr key={i} style={{borderBottom:`1px solid ${BD}`}}
+                      onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
+                      onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
+                      <td style={{padding:'10px 12px',fontSize:13,fontWeight:700,color:i<3?G:'#888'}}>
+                        {i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`}
+                      </td>
+                      <td style={{padding:'10px 12px',fontSize:13,fontWeight:500,color:'#111'}}>{s.nom}</td>
+                      <td style={{padding:'10px 12px'}}>
+                        <span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:10,
+                          background:s.type==='ouvrage'?'#f0fdf4':s.type==='materiau'?'#eff6ff':'#fffbeb',
+                          color:s.type==='ouvrage'?G:s.type==='materiau'?'#2563eb':AM}}>
+                          {s.type==='ouvrage'?'Ouvrage':s.type==='materiau'?'Matériau':'MO'}
+                        </span>
+                      </td>
+                      <td style={{padding:'10px 12px',fontSize:12,color:'#555'}}>{s.categorie}</td>
+                      <td style={{padding:'10px 12px'}}>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <div style={{flex:1,height:4,background:'#f3f4f6',borderRadius:4,overflow:'hidden',minWidth:60}}>
+                            <div style={{height:'100%',width:`${s.utilisations/statsUtilisation[0].utilisations*100}%`,background:G,borderRadius:4}}/>
+                          </div>
+                          <span style={{fontSize:12,fontWeight:700,color:'#111',minWidth:20}}>{s.utilisations}</span>
+                        </div>
+                      </td>
+                      <td style={{padding:'10px 12px',fontSize:12,fontWeight:600,color:'#111'}}>{s.caGenere.toLocaleString('fr-FR')} €</td>
+                      <td style={{padding:'10px 12px'}}>
+                        <span style={{fontSize:12,fontWeight:700,color:margeColor(s.margeAvg)}}>{s.margeAvg}%</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{marginTop:12,padding:'10px 14px',background:'#fffbeb',border:'1px solid #fde68a',borderRadius:8,fontSize:12,color:'#92400e'}}>
+                💡 Ces statistiques seront calculées automatiquement depuis vos vrais devis une fois Supabase connecté.
+              </div>
             </div>
           </div>
         </div>
