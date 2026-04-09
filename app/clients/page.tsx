@@ -410,12 +410,21 @@ export default function ClientsPage(){
                     </td>
                     
                     <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{client.email}</td>
-                    <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{client.tel}</td>
+                    <td style={{padding:'12px 16px'}}>
+                      {client.tel?(
+                        <a href={`tel:${client.tel.replace(/\s/g,'')}`}
+                          style={{fontSize:13,color:'#2563eb',textDecoration:'none',display:'flex',alignItems:'center',gap:4}}
+                          onClick={e=>e.stopPropagation()}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 .94h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.11 8.5a16 16 0 006.39 6.39l1.02-1.14a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+                          {client.tel}
+                        </a>
+                      ):<span style={{fontSize:13,color:'#888'}}>—</span>}
+                    </td>
                     <td style={{padding:'12px 16px',fontSize:13,color:'#555'}}>{client.adresseFactVille}</td>
                     <td style={{padding:'12px 16px',fontSize:13,fontWeight:600,color:'#111',textAlign:'center' as const}}>{client.nbDevis}</td>
                     <td style={{padding:'12px 16px',fontSize:13,fontWeight:600,color:'#111'}}>{fmt(client.caTotal)}</td>
                     <td style={{padding:'12px 16px',fontSize:12,color:'#888'}}>{client.derniereActivite}</td>
-                    <td style={{padding:'12px 16px'}} onClick={e=>e.stopPropagation()}>
+                    <td style={{padding:'12px 16px',overflow:'visible'}} onClick={e=>e.stopPropagation()}>
                       <div style={{position:'relative'}}>
                         <div onClick={()=>setEnChargeMenu(enChargeMenu===client.id?null:client.id)}
                           style={{display:'inline-flex',alignItems:'center',gap:6,cursor:'pointer',padding:'4px 8px',borderRadius:8,transition:'background 0.15s'}}
@@ -509,17 +518,7 @@ export default function ClientsPage(){
                   ))}
                 </div>
               </div>
-              <div style={{marginBottom:12}}>
-                <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:6}}>Statut</label>
-                <div style={{display:'flex',gap:8}}>
-                  {([['actif','✅ Actif',G],['prospect','🔍 Prospect',AM],['inactif','⏸ Inactif','#888']] as const).map(([s,label,col])=>(
-                    <button key={s} onClick={()=>setForm((p:any)=>({...p,statut:s}))}
-                      style={{flex:1,padding:'8px',border:`2px solid ${form.statut===s?col:BD}`,borderRadius:8,background:form.statut===s?col+'18':'#fff',color:form.statut===s?col:'#555',fontSize:12,fontWeight:form.statut===s?600:400,cursor:'pointer'}}>
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              
               {(['particulier','professionnel'] as const).map(t=>(
                     <button key={t} onClick={()=>setForm((p:any)=>({...p,type:t}))}
                       style={{flex:1,padding:'9px',border:`2px solid ${form.type===t?G:BD}`,borderRadius:8,background:form.type===t?'#f0fdf4':'#fff',color:form.type===t?G:'#555',fontSize:13,fontWeight:form.type===t?600:400,cursor:'pointer',transition:'all 0.15s'}}>
@@ -680,7 +679,13 @@ export default function ClientsPage(){
                 <div style={{display:'flex',flexDirection:'column',gap:6}}>
                   {[
                     {label:'Email',val:selectedClient.email},
-                    {label:'Téléphone',val:selectedClient.tel},
+                    {label:'Téléphone',val:selectedClient.tel?(
+                      <a href={`tel:${selectedClient.tel.replace(/\s/g,'')}`}
+                        style={{color:'#2563eb',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:4}}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 .94h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.11 8.5a16 16 0 006.39 6.39l1.02-1.14a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+                        {selectedClient.tel}
+                      </a>
+                    ):null},
                     {label:'Adresse fact.',val:`${selectedClient.adresseFactLine1||''} ${selectedClient.adresseFactCp||''} ${selectedClient.adresseFactVille||''}`},
                     {label:'Chantier',val:(
                       <div style={{display:'flex',alignItems:'center',gap:8}}>
