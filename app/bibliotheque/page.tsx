@@ -8,7 +8,19 @@ const G='#1D9E75', AM='#BA7517', RD='#E24B4A', BD='#e5e7eb'
 const UNITES_MAT = ['u','ens','m²','ml','m³','Mois','Fft','Forf','Personnalisé']
 const UNITES_MO = ['h','u','ens','m²','ml','m³','Mois','Fft','Forf','Personnalisé']
 const TVA_OPTIONS = ['20%','10%','5.5%','0%']
-const CATEGORIES = ['Électricité','Plomberie','Carrelage','Peinture','Parquet','Menuiserie','Maçonnerie','Plâtrerie','Couverture','Autre']
+const DEFAULT_CATEGORIES = [
+  {nom:'Électricité',couleur:'#2563eb'},
+  {nom:'Plomberie',couleur:'#0891b2'},
+  {nom:'Carrelage',couleur:'#7c3aed'},
+  {nom:'Peinture',couleur:'#dc2626'},
+  {nom:'Parquet',couleur:'#92400e'},
+  {nom:'Menuiserie',couleur:'#065f46'},
+  {nom:'Maçonnerie',couleur:'#374151'},
+  {nom:'Plâtrerie',couleur:'#6b7280'},
+  {nom:'Couverture',couleur:'#1D9E75'},
+  {nom:'Autre',couleur:'#888888'},
+]
+type Categorie = {nom:string; couleur:string}
 
 type Unite = string
 type Tva = string
@@ -149,6 +161,21 @@ export default function BibliothequePage() {
   const[showBiblioMat,setShowBiblioMat]=useState(false)
   const[showBiblioMO,setShowBiblioMO]=useState(false)
   const[toast,setToast]=useState('')
+  const[categories,setCategories]=useState<Categorie[]>(DEFAULT_CATEGORIES)
+  const[showCatModal,setShowCatModal]=useState(false)
+  const[newCatNom,setNewCatNom]=useState('')
+  const[newCatCouleur,setNewCatCouleur]=useState('#1D9E75')
+  const ajouterCategorie=()=>{
+    if(!newCatNom.trim())return
+    if(categories.find(c=>c.nom===newCatNom.trim()))return
+    setCategories(p=>[...p,{nom:newCatNom.trim(),couleur:newCatCouleur}])
+    setNewCatNom('');setNewCatCouleur('#1D9E75')
+  }
+  const supprimerCategorie=(nom:string)=>{
+    if(['Autre'].includes(nom))return
+    setCategories(p=>p.filter(c=>c.nom!==nom))
+  }
+  const catColor=(nom:string)=>categories.find(c=>c.nom===nom)?.couleur||'#888'
 
   const showToast=(msg:string)=>{setToast(msg);setTimeout(()=>setToast(''),3000)}
 
@@ -243,7 +270,7 @@ export default function BibliothequePage() {
         onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.boxShadow='0 2px 12px rgba(0,0,0,0.08)'}
         onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.boxShadow=''}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
-          <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:20,background:`${G}15`,color:G}}>{item.categorie}</span>
+          <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:20,background:`${catColor(item.categorie)}18`,color:catColor(item.categorie)}}>{item.categorie}</span>
           <div style={{display:'flex',gap:4}}>
             <button onClick={()=>dupliquer(type,item)} title="Dupliquer"
               style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:14,padding:3,borderRadius:4,transition:'color 0.15s'}}
@@ -354,7 +381,7 @@ export default function BibliothequePage() {
               <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Catégorie</label>
               <select value={form.categorie||'Autre'} onChange={e=>setForm((p:any)=>({...p,categorie:e.target.value}))}
                 style={{width:'100%',padding:'9px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,outline:'none',background:'#fff',color:'#111'}}>
-                {CATEGORIES.map(c=><option key={c}>{c}</option>)}
+                {categories.map(c=><option key={c.nom}>{c.nom}</option>)}
               </select>
             </div>
             <div>
@@ -509,6 +536,10 @@ export default function BibliothequePage() {
         <div style={{height:60,background:'#fff',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 24px',flexShrink:0}}>
           <div style={{fontSize:16,fontWeight:700,color:'#111'}}>Bibliothèque</div>
           <div style={{display:'flex',gap:8}}>
+            <button onClick={()=>setShowCatModal(true)}
+              style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>
+              🏷 Catégories
+            </button>
             <label style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Importer Excel
@@ -560,7 +591,7 @@ export default function BibliothequePage() {
             <select value={catFiltre} onChange={e=>setCatFiltre(e.target.value)}
               style={{padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111',minWidth:160}}>
               <option value="">Toutes catégories</option>
-              {CATEGORIES.map(c=><option key={c}>{c}</option>)}
+              {categories.map(c=><option key={c.nom}>{c.nom}</option>)}
             </select>
           </div>
 
@@ -650,6 +681,57 @@ export default function BibliothequePage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal catégories */}
+      {showCatModal&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowCatModal(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:480,width:'90%',maxHeight:'80vh',display:'flex',flexDirection:'column',gap:16}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Gérer les catégories</div>
+              <button onClick={()=>setShowCatModal(false)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
+            </div>
+            {/* Liste catégories existantes */}
+            <div style={{overflowY:'auto',flex:1,display:'flex',flexDirection:'column',gap:6}}>
+              {categories.map((cat,i)=>(
+                <div key={i} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'8px 12px',border:'1px solid #e5e7eb',borderRadius:8,background:'#f9fafb'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:10}}>
+                    <div style={{width:14,height:14,borderRadius:'50%',background:cat.couleur,flexShrink:0}}/>
+                    <span style={{fontSize:13,color:'#111',fontWeight:500}}>{cat.nom}</span>
+                  </div>
+                  <div style={{display:'flex',alignItems:'center',gap:8}}>
+                    <input type="color" value={cat.couleur}
+                      onChange={e=>setCategories(p=>p.map((c,j)=>j===i?{...c,couleur:e.target.value}:c))}
+                      style={{width:24,height:24,border:'none',cursor:'pointer',background:'none',padding:0}}/>
+                    {cat.nom!=='Autre'&&(
+                      <button onClick={()=>supprimerCategorie(cat.nom)}
+                        style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:16}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#E24B4A'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>×</button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Ajouter nouvelle catégorie */}
+            <div style={{borderTop:'1px solid #e5e7eb',paddingTop:14}}>
+              <div style={{fontSize:13,fontWeight:600,color:'#111',marginBottom:10}}>Nouvelle catégorie</div>
+              <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                <input value={newCatNom} onChange={e=>setNewCatNom(e.target.value)}
+                  placeholder="Nom de la catégorie..."
+                  onKeyDown={e=>e.key==='Enter'&&ajouterCategorie()}
+                  style={{flex:1,padding:'8px 12px',border:'1px solid #e5e7eb',borderRadius:7,fontSize:13,outline:'none',color:'#111'}}/>
+                <input type="color" value={newCatCouleur} onChange={e=>setNewCatCouleur(e.target.value)}
+                  title="Choisir une couleur"
+                  style={{width:36,height:36,border:'1px solid #e5e7eb',borderRadius:7,cursor:'pointer',padding:2}}/>
+                <button onClick={ajouterCategorie}
+                  style={{padding:'8px 16px',background:'#1D9E75',color:'#fff',border:'none',borderRadius:7,fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                  Ajouter
+                </button>
+              </div>
             </div>
           </div>
         </div>
