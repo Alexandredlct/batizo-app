@@ -31,6 +31,7 @@ type Materiau = {
   notes?:string; tags?:string; uniteCustom?:string
   prixFournisseur?:number; coeffMarge?:number; fournisseur?:string
   photo?:string; lienFournisseur?:string
+  historiquePrix?:{date:string;prix:number;note?:string}[]
 }
 type MainOeuvre = {
   id:string; nom:string; description:string; unite:Unite; tva:Tva
@@ -38,6 +39,7 @@ type MainOeuvre = {
   notes?:string; tags?:string; uniteCustom?:string
   prixFournisseur?:number; coeffMarge?:number; fournisseur?:string
   photo?:string; lienFournisseur?:string
+  historiquePrix?:{date:string;prix:number;note?:string}[]
 }
 type LigneOuvrage = { type:'materiau'|'mo'; id:string; nom:string; qte:number; pu:number }
 type Ouvrage = {
@@ -47,6 +49,7 @@ type Ouvrage = {
   notes?:string; tags?:string; uniteCustom?:string
   prixFournisseur?:number; coeffMarge?:number; fournisseur?:string
   photo?:string; lienFournisseur?:string
+  historiquePrix?:{date:string;prix:number;note?:string}[]
 }
 
 const initMateriaux:Materiau[] = [
@@ -208,14 +211,27 @@ export default function BibliothequePage() {
 
   const genId=()=>Math.random().toString(36).slice(2,8)
 
+  const[showHistorique,setShowHistorique]=useState<{item:any,type:PanelType}|null>(null)
+
   const save=()=>{
     if(!form.nom?.trim()){showToast('Le nom est obligatoire');return}
+    const today=new Date().toLocaleDateString('fr-FR')
     if(panelType==='materiau'){
-      if(panel==='edit') setMateriaux(p=>p.map(m=>m.id===editId?{...form,id:editId}:m))
-      else setMateriaux(p=>[...p,{...form,id:genId()}])
+      if(panel==='edit'){
+        const ancien=materiaux.find(m=>m.id===editId)
+        const histo=ancien?.debourse!==form.debourse
+          ?[...(form.historiquePrix||[]),{date:today,prix:ancien?.debourse||0,note:'Mise à jour prix'}]
+          :(form.historiquePrix||[])
+        setMateriaux(p=>p.map(m=>m.id===editId?{...form,id:editId,historiquePrix:histo}:m))
+      } else setMateriaux(p=>[...p,{...form,id:genId(),historiquePrix:[{date:today,prix:form.debourse,note:'Création'}]}])
     } else if(panelType==='mo'){
-      if(panel==='edit') setMO(p=>p.map(m=>m.id===editId?{...form,id:editId}:m))
-      else setMO(p=>[...p,{...form,id:genId()}])
+      if(panel==='edit'){
+        const ancien=mo.find(m=>m.id===editId)
+        const histo=ancien?.debourse!==form.debourse
+          ?[...(form.historiquePrix||[]),{date:today,prix:ancien?.debourse||0,note:'Mise à jour prix'}]
+          :(form.historiquePrix||[])
+        setMO(p=>p.map(m=>m.id===editId?{...form,id:editId,historiquePrix:histo}:m))
+      } else setMO(p=>[...p,{...form,id:genId(),historiquePrix:[{date:today,prix:form.debourse,note:'Création'}]}])
     } else {
       // recalculer debourse depuis les lignes
       const debAuto = form.lignes?.reduce((s:number,l:LigneOuvrage)=>s+l.qte*l.pu,0)||form.debourse
@@ -298,6 +314,10 @@ export default function BibliothequePage() {
               style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:14,padding:3,borderRadius:4,transition:'color 0.15s'}}
               onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=G}
               onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>✏️</button>
+            <button onClick={()=>setShowHistorique({item,type})} title="Historique prix"
+              style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:14,padding:3,borderRadius:4,transition:'color 0.15s'}}
+              onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=AM}
+              onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>📈</button>
             <button onClick={()=>setDeleteConfirm(item.id)} title="Supprimer"
               style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:14,padding:3,borderRadius:4,transition:'color 0.15s'}}
               onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=RD}
@@ -806,6 +826,70 @@ export default function BibliothequePage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal historique prix */}
+      {showHistorique&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowHistorique(null)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:480,width:'90%',maxHeight:'80vh',display:'flex',flexDirection:'column',gap:16}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div>
+                <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Historique des prix</div>
+                <div style={{fontSize:12,color:'#888',marginTop:2}}>{showHistorique.item.nom}</div>
+              </div>
+              <button onClick={()=>setShowHistorique(null)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
+            </div>
+            {/* Prix actuel */}
+            <div style={{background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:10,padding:'12px 16px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div>
+                <div style={{fontSize:11,color:'#888',marginBottom:2}}>Prix actuel (déboursé)</div>
+                <div style={{fontSize:20,fontWeight:700,color:'#111'}}>{fmt(showHistorique.item.debourse)}</div>
+              </div>
+              <div style={{textAlign:'right' as const}}>
+                <div style={{fontSize:11,color:'#888',marginBottom:2}}>Prix facturé</div>
+                <div style={{fontSize:16,fontWeight:600,color:G}}>{fmt(showHistorique.item.prixFacture)}</div>
+              </div>
+            </div>
+            {/* Tableau historique */}
+            {(showHistorique.item.historiquePrix||[]).length>0?(
+              <div style={{overflowY:'auto',flex:1}}>
+                <table style={{width:'100%',borderCollapse:'collapse'}}>
+                  <thead><tr style={{background:'#f9fafb'}}>
+                    <th style={{padding:'8px 12px',textAlign:'left' as const,fontSize:12,color:'#888',fontWeight:600,borderBottom:'1px solid #e5e7eb'}}>Date</th>
+                    <th style={{padding:'8px 12px',textAlign:'right' as const,fontSize:12,color:'#888',fontWeight:600,borderBottom:'1px solid #e5e7eb'}}>Prix</th>
+                    <th style={{padding:'8px 12px',textAlign:'left' as const,fontSize:12,color:'#888',fontWeight:600,borderBottom:'1px solid #e5e7eb'}}>Note</th>
+                    <th style={{padding:'8px 12px',textAlign:'right' as const,fontSize:12,color:'#888',fontWeight:600,borderBottom:'1px solid #e5e7eb'}}>Évolution</th>
+                  </tr></thead>
+                  <tbody>
+                    {[...(showHistorique.item.historiquePrix||[])].reverse().map((h:{date:string;prix:number;note?:string},i:number,arr:{date:string;prix:number;note?:string}[])=>{
+                      const prev=arr[i+1]
+                      const evolution=prev?((h.prix-prev.prix)/prev.prix*100):0
+                      return(
+                        <tr key={i} style={{borderBottom:'1px solid #f3f4f6'}}>
+                          <td style={{padding:'10px 12px',fontSize:13,color:'#555'}}>{h.date}</td>
+                          <td style={{padding:'10px 12px',fontSize:13,fontWeight:600,color:'#111',textAlign:'right' as const}}>{fmt(h.prix)}</td>
+                          <td style={{padding:'10px 12px',fontSize:12,color:'#888'}}>{h.note||'—'}</td>
+                          <td style={{padding:'10px 12px',textAlign:'right' as const}}>
+                            {prev?(
+                              <span style={{fontSize:12,fontWeight:600,color:evolution>0?RD:evolution<0?G:'#888'}}>
+                                {evolution>0?'+':''}{evolution.toFixed(1)}%
+                              </span>
+                            ):<span style={{fontSize:12,color:'#888'}}>—</span>}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ):(
+              <div style={{textAlign:'center' as const,padding:'2rem',color:'#888',fontSize:13}}>
+                Aucun historique disponible.<br/>
+                <span style={{fontSize:12}}>Les modifications de prix seront enregistrées ici.</span>
+              </div>
+            )}
           </div>
         </div>
       )}
