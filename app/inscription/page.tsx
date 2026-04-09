@@ -8,6 +8,8 @@ export default function InscriptionPage() {
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [teamSize, setTeamSize] = useState('solo')
+  const [showParrainage, setShowParrainage] = useState(false)
+  const [codeParrainage, setCodeParrainage] = useState('')
   const [form, setForm] = useState({
     prenom: '', nom: '', email: '', telephone: '',
     password: '', entreprise: '', metier: 'Multi-corps',
@@ -63,7 +65,7 @@ export default function InscriptionPage() {
   }
 
   const green = '#1D9E75'
-  const inputStyle = {width:'100%',padding:'10px 12px',border:'1px solid #e5e7eb',borderRadius:'8px',fontSize:'14px',outline:'none',boxSizing:'border-box' as const}
+  const inputStyle = {width:'100%',padding:'10px 12px',border:'1px solid #999',borderRadius:'8px',fontSize:'14px',outline:'none',boxSizing:'border-box' as const}
 
   return (
     <div style={{minHeight:'100vh',background:'linear-gradient(135deg,#f0fdf4 0%,#e8f5e9 100%)',display:'flex',alignItems:'center',justifyContent:'center',padding:'2rem',fontFamily:'system-ui,sans-serif'}}>
@@ -84,8 +86,8 @@ export default function InscriptionPage() {
           <div style={{width:'28px',height:'28px',borderRadius:'50%',background: step >= 2 ? green : '#e5e7eb',color: step >= 2 ? '#fff' : '#999',fontSize:'12px',fontWeight:'700',display:'flex',alignItems:'center',justifyContent:'center'}}>2</div>
         </div>
         {step === 1 && (
-          <div style={{background:'#fff',borderRadius:'16px',padding:'2rem',boxShadow:'0 4px 24px rgba(0,0,0,0.08)',border:'1px solid #e5e7eb'}}>
-            <div style={{fontSize:'13px',fontWeight:'700',marginBottom:'1.25rem',color:'#888',textTransform:'uppercase',letterSpacing:'0.04em'}}>Étape 1 — Vos informations</div>
+          <div style={{background:'#fff',borderRadius:'16px',padding:'2rem',boxShadow:'0 4px 24px rgba(0,0,0,0.08)',border:'1px solid #999'}}>
+            <div style={{fontSize:'13px',fontWeight:'700',marginBottom:'1.25rem',color:'#444',textTransform:'uppercase',letterSpacing:'0.04em'}}>Étape 1 — Vos informations</div>
             <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px'}}>
                 <div><label style={{display:'block',fontSize:'13px',fontWeight:'500',marginBottom:'6px'}}>Prénom *</label><input style={inputStyle} placeholder="Alexandre" value={form.prenom} onChange={e => setForm({...form, prenom: e.target.value})}/></div>
@@ -102,17 +104,41 @@ export default function InscriptionPage() {
                 <div style={{height:'4px',background:'#e5e7eb',borderRadius:'2px',marginTop:'6px',overflow:'hidden'}}>
                   <div style={{height:'100%',width:strength.width,background:strength.color,borderRadius:'2px',transition:'all 0.3s'}}></div>
                 </div>
-                {strength.label && <div style={{fontSize:'11px',color:'#888',marginTop:'3px'}}>{strength.label}</div>}
+                {strength.label && <div style={{fontSize:'11px',color:'#444',marginTop:'3px'}}>{strength.label}</div>}
               </div>
               {error && <p style={{color:'#e53e3e',fontSize:'13px',margin:0}}>{error}</p>}
+              {/* Code parrainage */}
+              <div>
+                <div onClick={()=>setShowParrainage(!showParrainage)}
+                  style={{display:'flex',alignItems:'center',gap:6,fontSize:13,color:'#1D9E75',cursor:'pointer',marginBottom:showParrainage?8:0 as number,userSelect:'none' as const}}>
+                  <span style={{fontSize:14}}>{showParrainage?'▼':'▶'}</span>
+                  Vous avez un code de parrainage ?
+                </div>
+                {showParrainage&&(
+                  <div>
+                    <input value={codeParrainage} onChange={e=>setCodeParrainage(e.target.value.toUpperCase())}
+                      placeholder="Ex: BAT-ABC123"
+                      maxLength={12}
+                      style={{width:'100%',padding:'10px 12px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box',letterSpacing:'0.05em',fontWeight:500}}
+                      onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor='#1D9E75'}
+                      onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor='#999'}/>
+                    {codeParrainage.length>0&&(
+                      <div style={{fontSize:11,color:'#1D9E75',marginTop:4,display:'flex',alignItems:'center',gap:4}}>
+                        ✓ Code appliqué — votre parrain recevra une récompense
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <button onClick={handleNext} style={{width:'100%',padding:'12px',background:green,color:'#fff',border:'none',borderRadius:'8px',fontSize:'15px',fontWeight:'600',cursor:'pointer'}}>Continuer →</button>
               <div style={{textAlign:'center',fontSize:'13px',color:'#666'}}>Déjà un compte ?{' '}<a href="/login" style={{color:green,fontWeight:'600',textDecoration:'none'}}>Se connecter</a></div>
             </div>
           </div>
         )}
         {step === 2 && (
-          <div style={{background:'#fff',borderRadius:'16px',padding:'2rem',boxShadow:'0 4px 24px rgba(0,0,0,0.08)',border:'1px solid #e5e7eb'}}>
-            <div style={{fontSize:'13px',fontWeight:'700',marginBottom:'1.25rem',color:'#888',textTransform:'uppercase',letterSpacing:'0.04em'}}>Étape 2 — Votre entreprise</div>
+          <div style={{background:'#fff',borderRadius:'16px',padding:'2rem',boxShadow:'0 4px 24px rgba(0,0,0,0.08)',border:'1px solid #999'}}>
+            <div style={{fontSize:'13px',fontWeight:'700',marginBottom:'1.25rem',color:'#444',textTransform:'uppercase',letterSpacing:'0.04em'}}>Étape 2 — Votre entreprise</div>
             <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
               <div><label style={{display:'block',fontSize:'13px',fontWeight:'500',marginBottom:'6px'}}>Nom de l'entreprise *</label><input style={inputStyle} placeholder="RENOBAT SAS" value={form.entreprise} onChange={e => setForm({...form, entreprise: e.target.value})}/></div>
               <div>
@@ -142,14 +168,14 @@ export default function InscriptionPage() {
               </label>
               {error && <p style={{color:'#e53e3e',fontSize:'13px',margin:0}}>{error}</p>}
               <div style={{display:'flex',gap:'8px'}}>
-                <button onClick={() => { setStep(1); setError('') }} style={{padding:'12px 16px',background:'#fff',color:'#555',border:'1px solid #e5e7eb',borderRadius:'8px',fontSize:'14px',cursor:'pointer'}}>← Retour</button>
+                <button onClick={() => { setStep(1); setError('') }} style={{padding:'12px 16px',background:'#fff',color:'#555',border:'1px solid #999',borderRadius:'8px',fontSize:'14px',cursor:'pointer'}}>← Retour</button>
                 <button onClick={handleSubmit} disabled={loading} style={{flex:1,padding:'12px',background:green,color:'#fff',border:'none',borderRadius:'8px',fontSize:'15px',fontWeight:'600',cursor:'pointer'}}>{loading ? 'Création...' : '🚀 Créer mon compte gratuit'}</button>
               </div>
             </div>
           </div>
         )}
         <div style={{textAlign:'center',marginTop:'1.5rem'}}>
-          <a href="/" style={{fontSize:'13px',color:'#999',textDecoration:'none'}}>← Retour à l'accueil</a>
+          <a href="/" style={{fontSize:'13px',color:'#555',textDecoration:'none'}}>← Retour à l'accueil</a>
         </div>
       </div>
     </div>

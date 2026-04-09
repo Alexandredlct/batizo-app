@@ -32,12 +32,12 @@ export default function LoginPage() {
           <h1 style={{fontSize:'22px',fontWeight:'700',margin:'0 0 6px'}}>Bon retour 👋</h1>
           <p style={{fontSize:'14px',color:'#666',margin:0}}>Connectez-vous à votre espace Batizo</p>
         </div>
-        <div style={{background:'#fff',borderRadius:'16px',padding:'2rem',boxShadow:'0 4px 24px rgba(0,0,0,0.08)',border:'1px solid #e5e7eb'}}>
+        <div style={{background:'#fff',borderRadius:'16px',padding:'2rem',boxShadow:'0 4px 24px rgba(0,0,0,0.08)',border:'1px solid #999'}}>
           <div style={{display:'flex',flexDirection:'column',gap:'14px'}}>
             <div>
               <label style={{display:'block',fontSize:'13px',fontWeight:'500',marginBottom:'6px'}}>Adresse email</label>
               <input type="email" placeholder="vous@email.fr" value={email} onChange={e => setEmail(e.target.value)}
-                style={{width:'100%',padding:'10px 12px',border:'1px solid #e5e7eb',borderRadius:'8px',fontSize:'14px',outline:'none',boxSizing:'border-box'}}/>
+                style={{width:'100%',padding:'10px 12px',border:'1px solid #999',borderRadius:'8px',fontSize:'14px',outline:'none',boxSizing:'border-box'}}/>
             </div>
             <div>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'6px'}}>
@@ -50,7 +50,7 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  style={{width:'100%',padding:'10px 40px 10px 12px',border:'1px solid #e5e7eb',borderRadius:'8px',fontSize:'14px',outline:'none',boxSizing:'border-box'}}
+                  style={{width:'100%',padding:'10px 40px 10px 12px',border:'1px solid #999',borderRadius:'8px',fontSize:'14px',outline:'none',boxSizing:'border-box'}}
                 />
                 <button
                   type="button"
@@ -81,7 +81,7 @@ export default function LoginPage() {
           </div>
         </div>
         <div style={{textAlign:'center',marginTop:'1.5rem'}}>
-          <a href="/" style={{fontSize:'13px',color:'#999',textDecoration:'none'}}>← Retour à l'accueil</a>
+          <a href="/" style={{fontSize:'13px',color:'#555',textDecoration:'none'}}>← Retour à l'accueil</a>
         </div>
       </div>
     </div>
