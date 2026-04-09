@@ -174,6 +174,28 @@ export default function BibliothequePage() {
   const[showCatModal,setShowCatModal]=useState(false)
   const[newCatNom,setNewCatNom]=useState('')
   const[newCatCouleur,setNewCatCouleur]=useState('#1D9E75')
+  const exporterCSV=(type:Tab)=>{
+    const items=type==='materiaux'?materiaux:type==='mo'?mo:ouvrages
+    const headers=['Nom','Description','Categorie','Unite','TVA','Debourse HT','Prix Facture HT','Fournisseur','Lien Fournisseur','Tags','Notes']
+    const rows=items.map(i=>[
+      i.nom,
+      (i.description||'').replace(/<[^>]+>/g,''),
+      i.categorie,i.unite,i.tva,
+      i.debourse,i.prixFacture,
+      (i as any).fournisseur||'',
+      (i as any).lienFournisseur||'',
+      (i as any).tags||'',
+      (i as any).notes||''
+    ])
+    const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,"'")}"`).join(',')).join('\n')
+    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'})
+    const url=URL.createObjectURL(blob)
+    const a=document.createElement('a')
+    a.href=url;a.download=`batizo-export-${type}-${new Date().toLocaleDateString('fr-FR').replace(/\//g,'-')}.csv`;a.click()
+    URL.revokeObjectURL(url)
+    showToast(`${items.length} éléments exportés`)
+  }
+
   const telechargerModele=(type:string)=>{
     const headers=['Nom','Description','Categorie','Unite','TVA','Debourse HT','Prix Facture HT','Fournisseur','Lien Fournisseur']
     const exemples={
@@ -289,6 +311,13 @@ export default function BibliothequePage() {
   const[showHistorique,setShowHistorique]=useState<{item:any,type:PanelType}|null>(null)
   const[showImport,setShowImport]=useState(false)
   const[showStats,setShowStats]=useState(false)
+  const[deletedItems,setDeletedItems]=useState<{item:any,type:PanelType}[]>([])
+  const[showUndoToast,setShowUndoToast]=useState(false)
+  const[undoTimer,setUndoTimer]=useState<any>(null)
+  const[vue,setVue]=useState<'grille'|'liste'>('grille')
+  const[tri,setTri]=useState<'nom'|'marge'|'prix'|'debourse'>('nom')
+  const[triDir,setTriDir]=useState<'asc'|'desc'>('asc')
+  const toggleTri=(t:typeof tri)=>{if(tri===t)setTriDir(d=>d==='asc'?'desc':'asc');else{setTri(t);setTriDir('asc')}}
   const statsUtilisation = [
     {nom:'Pose parquet complet 45m²',type:'ouvrage',categorie:'Parquet',utilisations:24,caGenere:12480,margeAvg:58},
     {nom:'Installation tableau électrique',type:'ouvrage',categorie:'Électricité',utilisations:18,caGenere:15300,margeAvg:62},
@@ -342,11 +371,28 @@ export default function BibliothequePage() {
   }
 
   const supprimer=(type:PanelType,id:string)=>{
+    const item=type==='materiau'?materiaux.find(m=>m.id===id):type==='mo'?mo.find(m=>m.id===id):ouvrages.find(o=>o.id===id)
+    if(!item)return
     if(type==='materiau') setMateriaux(p=>p.filter(m=>m.id!==id))
     else if(type==='mo') setMO(p=>p.filter(m=>m.id!==id))
     else setOuvrages(p=>p.filter(o=>o.id!==id))
     setDeleteConfirm(null)
-    showToast('Supprimé')
+    setDeletedItems(p=>[...p,{item,type}])
+    setShowUndoToast(true)
+    if(undoTimer)clearTimeout(undoTimer)
+    const t=setTimeout(()=>{setShowUndoToast(false);setDeletedItems([])},5000)
+    setUndoTimer(t)
+  }
+  const annulerSuppression=()=>{
+    const last=deletedItems[deletedItems.length-1]
+    if(!last)return
+    if(last.type==='materiau') setMateriaux(p=>[...p,last.item])
+    else if(last.type==='mo') setMO(p=>[...p,last.item])
+    else setOuvrages(p=>[...p,last.item])
+    setDeletedItems(p=>p.slice(0,-1))
+    setShowUndoToast(false)
+    clearTimeout(undoTimer)
+    showToast('Restauré avec succès')
   }
 
   const ajouterLigne=(type:'materiau'|'mo',item:any)=>{
@@ -368,16 +414,25 @@ export default function BibliothequePage() {
     setForm((p:any)=>({...p,lignes:newLignes,debourse:debAuto}))
   }
 
+  const trier=(items:any[])=>[...items].sort((a,b)=>{
+    let va=0,vb=0
+    if(tri==='nom') return triDir==='asc'?a.nom.localeCompare(b.nom):b.nom.localeCompare(a.nom)
+    if(tri==='marge'){va=marge(a.debourse,a.prixFacture);vb=marge(b.debourse,b.prixFacture)}
+    if(tri==='prix'){va=a.prixFacture;vb=b.prixFacture}
+    if(tri==='debourse'){va=a.debourse;vb=b.debourse}
+    return triDir==='asc'?va-vb:vb-va
+  })
+
   const filtered=(items:any[])=>items.filter(i=>{
     const q=search.toLowerCase()
-    const matchSearch=!search||i.nom.toLowerCase().includes(q)||i.description?.toLowerCase().includes(q)||i.categorie?.toLowerCase().includes(q)
+    const matchSearch=!search||i.nom.toLowerCase().includes(q)||i.description?.toLowerCase().includes(q)||i.categorie?.toLowerCase().includes(q)||i.tags?.toLowerCase().includes(q)||i.notes?.toLowerCase().includes(q)
     const matchCat=!catFiltre||i.categorie===catFiltre
     return matchSearch&&matchCat
   })
 
-  const fOuvrages=filtered(ouvrages)
-  const fMats=filtered(materiaux)
-  const fMO=filtered(mo)
+  const fOuvrages=trier(filtered(ouvrages))
+  const fMats=trier(filtered(materiaux))
+  const fMO=trier(filtered(mo))
 
   const margeMoyenne=(items:any[])=>items.length?Math.round(items.reduce((s,i)=>s+marge(i.debourse,i.prixFacture),0)/items.length):0
 
@@ -415,7 +470,7 @@ export default function BibliothequePage() {
           </div>
         </div>
         <div style={{fontSize:14,fontWeight:700,color:'#111',marginBottom:4,lineHeight:1.3}}>{item.nom}</div>
-        {item.description&&<div style={{fontSize:12,color:'#777',marginBottom:8,lineHeight:1.4}}>{item.description}</div>}
+        {item.description&&<div style={{fontSize:12,color:'#777',marginBottom:8,lineHeight:1.4}} dangerouslySetInnerHTML={{__html:item.description}}/>}
         <div style={{fontSize:12,color:'#888',marginBottom:10}}>{item.unite} · TVA {item.tva}</div>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:8}}>
           <div>
@@ -437,6 +492,12 @@ export default function BibliothequePage() {
             <div style={{height:'100%',width:`${Math.min(m,100)}%`,background:margeColor(m),borderRadius:4,transition:'width 0.3s'}}></div>
           </div>
         </div>
+        {/* Badge non utilisé */}
+        {!statsUtilisation.find(s=>s.nom===item.nom)&&(
+          <div style={{position:'absolute',top:10,right:10,fontSize:9,fontWeight:700,padding:'2px 6px',borderRadius:8,background:'#fef2f2',color:'#E24B4A',border:'1px solid #fca5a5'}}>
+            Non utilisé
+          </div>
+        )}
         {/* Utilisation */}
         {(()=>{const stat=statsUtilisation.find(s=>s.nom===item.nom);return stat?(
           <div style={{fontSize:11,color:'#888',marginTop:4,display:'flex',alignItems:'center',gap:4}}>
@@ -785,6 +846,11 @@ export default function BibliothequePage() {
               style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>
               🏷 Catégories
             </button>
+            <button onClick={()=>exporterCSV(tab)}
+              style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Exporter CSV
+            </button>
             <button onClick={()=>setShowImport(true)}
               style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -833,34 +899,148 @@ export default function BibliothequePage() {
                 style={{width:'100%',padding:'9px 12px 9px 36px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const,color:'#111'}}/>
               {search&&<button onClick={()=>setSearch('')} style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:18}}>×</button>}
             </div>
-            <select value={catFiltre} onChange={e=>setCatFiltre(e.target.value)}
+<select value={catFiltre} onChange={e=>setCatFiltre(e.target.value)}
               style={{padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111',minWidth:160}}>
               <option value="">Toutes catégories</option>
-              {categories.map(c=><option key={c.nom}>{c.nom}</option>)}
+              {categories.map(cat=><option key={cat.nom}>{cat.nom}</option>)}
             </select>
+            {/* Tri */}
+            <select value={tri} onChange={e=>{setTri(e.target.value as typeof tri);setTriDir('asc')}}
+              style={{padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
+              <option value="nom">Trier : Nom</option>
+              <option value="marge">Trier : Marge</option>
+              <option value="prix">Trier : Prix facturé</option>
+              <option value="debourse">Trier : Déboursé</option>
+            </select>
+            <button onClick={()=>setTriDir(d=>d==='asc'?'desc':'asc')}
+              title={triDir==='asc'?'Croissant':'Décroissant'}
+              style={{padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,background:'#fff',cursor:'pointer',fontSize:14,color:'#555'}}>
+              {triDir==='asc'?'↑':'↓'}
+            </button>
+            {/* Vue */}
+            <div style={{display:'flex',border:`1px solid ${BD}`,borderRadius:8,overflow:'hidden'}}>
+              <button onClick={()=>setVue('grille')} title="Grille"
+                style={{padding:'9px 12px',background:vue==='grille'?'#f0fdf4':'#fff',border:'none',cursor:'pointer',color:vue==='grille'?G:'#555',borderRight:`1px solid ${BD}`}}>
+                ⊞
+              </button>
+              <button onClick={()=>setVue('liste')} title="Liste"
+                style={{padding:'9px 12px',background:vue==='liste'?'#f0fdf4':'#fff',border:'none',cursor:'pointer',color:vue==='liste'?G:'#555'}}>
+                ☰
+              </button>
+            </div>
           </div>
 
           {/* Grille */}
           {tab==='ouvrages'&&(
             fOuvrages.length===0
               ?<div style={{textAlign:'center',padding:'3rem',color:'#888'}}>Aucun ouvrage{search?' pour cette recherche':''}</div>
-              :<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:14}}>
-                {fOuvrages.map(o=><Carte key={o.id} type="ouvrage" item={o}/>)}
-              </div>
+              :vue==='grille'
+                ?<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:14}}>
+                  {fOuvrages.map(o=><Carte key={o.id} type="ouvrage" item={o}/>)}
+                </div>
+                :<div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,overflow:'hidden'}}>
+                  <table style={{width:'100%',borderCollapse:'collapse'}}>
+                    <thead><tr style={{background:'#f9fafb'}}>
+                      {[['nom','Nom'],['','Catégorie'],['','Unité'],['debourse','Déboursé'],['prix','Prix facturé'],['marge','Marge'],['','Actions']].map(([k,h])=>(
+                        <th key={h} onClick={()=>k&&toggleTri(k as typeof tri)}
+                          style={{padding:'10px 16px',textAlign:'left' as const,fontSize:12,color:tri===k?G:'#888',fontWeight:600,borderBottom:`1px solid ${BD}`,cursor:k?'pointer':'default',userSelect:'none' as const}}>
+                          {h}{tri===k?(triDir==='asc'?' ↑':' ↓'):''}
+                        </th>
+                      ))}
+                    </tr></thead>
+                    <tbody>{fOuvrages.map(o=>{const m=marge(o.debourse,o.prixFacture);return(
+                      <tr key={o.id} style={{borderBottom:`1px solid ${BD}`}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
+                        <td style={{padding:'10px 16px'}}><div style={{display:'flex',alignItems:'center',gap:8}}>{o.photo&&<img src={o.photo} alt="" style={{width:32,height:32,borderRadius:6,objectFit:'cover'}}/>}<div><div style={{fontSize:13,fontWeight:600,color:'#111'}}>{o.nom}</div>{o.tags&&<div style={{fontSize:11,color:'#888'}}>{o.tags}</div>}</div></div></td>
+                        <td style={{padding:'10px 16px'}}><span style={{padding:'2px 8px',borderRadius:12,background:`${catColor(o.categorie)}18`,color:catColor(o.categorie),fontSize:11,fontWeight:600}}>{o.categorie}</span></td>
+                        <td style={{padding:'10px 16px',fontSize:12,color:'#555'}}>{o.unite}</td>
+                        <td style={{padding:'10px 16px',fontSize:13,color:'#555'}}>{fmt(o.debourse)}</td>
+                        <td style={{padding:'10px 16px',fontSize:13,fontWeight:700,color:'#111'}}>{fmt(o.prixFacture)}</td>
+                        <td style={{padding:'10px 16px'}}><span style={{fontSize:12,fontWeight:700,color:margeColor(m)}}>{m}%</span></td>
+                        <td style={{padding:'10px 16px'}}><div style={{display:'flex',gap:4}}>
+                          <button onClick={()=>dupliquer('ouvrage',o)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>📋</button>
+                          <button onClick={()=>openEdit('ouvrage',o)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>✏️</button>
+                          <button onClick={()=>setDeleteConfirm(o.id)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>🗑</button>
+                        </div></td>
+                      </tr>
+                    )})}</tbody>
+                  </table>
+                </div>
           )}
           {tab==='materiaux'&&(
             fMats.length===0
               ?<div style={{textAlign:'center',padding:'3rem',color:'#888'}}>Aucun matériau{search?' pour cette recherche':''}</div>
-              :<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:14}}>
-                {fMats.map(m=><Carte key={m.id} type="materiau" item={m}/>)}
-              </div>
+              :vue==='grille'
+                ?<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:14}}>
+                  {fMats.map(m=><Carte key={m.id} type="materiau" item={m}/>)}
+                </div>
+                :<div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,overflow:'hidden'}}>
+                  <table style={{width:'100%',borderCollapse:'collapse'}}>
+                    <thead><tr style={{background:'#f9fafb'}}>
+                      {[['nom','Nom'],['','Catégorie'],['','Unité'],['debourse','Déboursé'],['prix','Prix facturé'],['marge','Marge'],['','Actions']].map(([k,h])=>(
+                        <th key={h} onClick={()=>k&&toggleTri(k as typeof tri)}
+                          style={{padding:'10px 16px',textAlign:'left' as const,fontSize:12,color:tri===k?G:'#888',fontWeight:600,borderBottom:`1px solid ${BD}`,cursor:k?'pointer':'default',userSelect:'none' as const}}>
+                          {h}{tri===k?(triDir==='asc'?' ↑':' ↓'):''}
+                        </th>
+                      ))}
+                    </tr></thead>
+                    <tbody>{fMats.map(mat=>{const m=marge(mat.debourse,mat.prixFacture);return(
+                      <tr key={mat.id} style={{borderBottom:`1px solid ${BD}`}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
+                        <td style={{padding:'10px 16px'}}><div style={{display:'flex',alignItems:'center',gap:8}}>{mat.photo&&<img src={mat.photo} alt="" style={{width:32,height:32,borderRadius:6,objectFit:'cover'}}/>}<div><div style={{fontSize:13,fontWeight:600,color:'#111'}}>{mat.nom}</div>{mat.tags&&<div style={{fontSize:11,color:'#888'}}>{mat.tags}</div>}</div></div></td>
+                        <td style={{padding:'10px 16px'}}><span style={{padding:'2px 8px',borderRadius:12,background:`${catColor(mat.categorie)}18`,color:catColor(mat.categorie),fontSize:11,fontWeight:600}}>{mat.categorie}</span></td>
+                        <td style={{padding:'10px 16px',fontSize:12,color:'#555'}}>{mat.unite}</td>
+                        <td style={{padding:'10px 16px',fontSize:13,color:'#555'}}>{fmt(mat.debourse)}</td>
+                        <td style={{padding:'10px 16px',fontSize:13,fontWeight:700,color:'#111'}}>{fmt(mat.prixFacture)}</td>
+                        <td style={{padding:'10px 16px'}}><span style={{fontSize:12,fontWeight:700,color:margeColor(m)}}>{m}%</span></td>
+                        <td style={{padding:'10px 16px'}}><div style={{display:'flex',gap:4}}>
+                          <button onClick={()=>dupliquer('materiau',mat)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>📋</button>
+                          <button onClick={()=>openEdit('materiau',mat)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>✏️</button>
+                          <button onClick={()=>setDeleteConfirm(mat.id)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>🗑</button>
+                        </div></td>
+                      </tr>
+                    )})}</tbody>
+                  </table>
+                </div>
           )}
           {tab==='mo'&&(
             fMO.length===0
               ?<div style={{textAlign:'center',padding:'3rem',color:'#888'}}>Aucune main d\'oeuvre{search?' pour cette recherche':''}</div>
-              :<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:14}}>
-                {fMO.map(m=><Carte key={m.id} type="mo" item={m}/>)}
-              </div>
+              :vue==='grille'
+                ?<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:14}}>
+                  {fMO.map(m=><Carte key={m.id} type="mo" item={m}/>)}
+                </div>
+                :<div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,overflow:'hidden'}}>
+                  <table style={{width:'100%',borderCollapse:'collapse'}}>
+                    <thead><tr style={{background:'#f9fafb'}}>
+                      {[['nom','Nom'],['','Catégorie'],['','Unité'],['debourse','Déboursé'],['prix','Prix facturé'],['marge','Marge'],['','Actions']].map(([k,h])=>(
+                        <th key={h} onClick={()=>k&&toggleTri(k as typeof tri)}
+                          style={{padding:'10px 16px',textAlign:'left' as const,fontSize:12,color:tri===k?G:'#888',fontWeight:600,borderBottom:`1px solid ${BD}`,cursor:k?'pointer':'default',userSelect:'none' as const}}>
+                          {h}{tri===k?(triDir==='asc'?' ↑':' ↓'):''}
+                        </th>
+                      ))}
+                    </tr></thead>
+                    <tbody>{fMO.map(moItem=>{const m=marge(moItem.debourse,moItem.prixFacture);return(
+                      <tr key={moItem.id} style={{borderBottom:`1px solid ${BD}`}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
+                        <td style={{padding:'10px 16px'}}><div><div style={{fontSize:13,fontWeight:600,color:'#111'}}>{moItem.nom}</div>{moItem.tags&&<div style={{fontSize:11,color:'#888'}}>{moItem.tags}</div>}</div></td>
+                        <td style={{padding:'10px 16px'}}><span style={{padding:'2px 8px',borderRadius:12,background:`${catColor(moItem.categorie)}18`,color:catColor(moItem.categorie),fontSize:11,fontWeight:600}}>{moItem.categorie}</span></td>
+                        <td style={{padding:'10px 16px',fontSize:12,color:'#555'}}>{moItem.unite}</td>
+                        <td style={{padding:'10px 16px',fontSize:13,color:'#555'}}>{fmt(moItem.debourse)}</td>
+                        <td style={{padding:'10px 16px',fontSize:13,fontWeight:700,color:'#111'}}>{fmt(moItem.prixFacture)}</td>
+                        <td style={{padding:'10px 16px'}}><span style={{fontSize:12,fontWeight:700,color:margeColor(m)}}>{m}%</span></td>
+                        <td style={{padding:'10px 16px'}}><div style={{display:'flex',gap:4}}>
+                          <button onClick={()=>dupliquer('mo',moItem)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>📋</button>
+                          <button onClick={()=>openEdit('mo',moItem)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>✏️</button>
+                          <button onClick={()=>setDeleteConfirm(moItem.id)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>🗑</button>
+                        </div></td>
+                      </tr>
+                    )})}</tbody>
+                  </table>
+                </div>
           )}
         </div>
       </div>
@@ -1212,6 +1392,17 @@ export default function BibliothequePage() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toast annuler suppression */}
+      {showUndoToast&&(
+        <div style={{position:'fixed',bottom:80,left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',color:'#fff',borderRadius:10,padding:'12px 20px',zIndex:9999,display:'flex',alignItems:'center',gap:12,boxShadow:'0 4px 20px rgba(0,0,0,0.3)'}}>
+          <span style={{fontSize:13}}>Élément supprimé</span>
+          <button onClick={annulerSuppression}
+            style={{padding:'5px 14px',background:G,color:'#fff',border:'none',borderRadius:6,fontSize:12,fontWeight:700,cursor:'pointer'}}>
+            Annuler
+          </button>
         </div>
       )}
 
