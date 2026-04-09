@@ -3,6 +3,13 @@ import { useState } from 'react'
 import Sidebar from '../components/Sidebar'
 
 const G='#1D9E75',AM='#BA7517',RD='#E24B4A',BD='#e5e7eb'
+const isNouveau=(dateStr:string)=>{
+  const parts=dateStr.split('/')
+  if(parts.length!==3)return false
+  const date=new Date(parseInt(parts[2]),parseInt(parts[1])-1,parseInt(parts[0]))
+  const diff=(Date.now()-date.getTime())/(1000*60*60*24)
+  return diff<=30
+}
 const fmt=(n:number)=>n.toLocaleString('fr-FR',{minimumFractionDigits:0,maximumFractionDigits:0})+' €'
 
 type TypeClient='particulier'|'professionnel'
@@ -18,28 +25,50 @@ type Client={
   adresseChantierLine1?:string; adresseChantierVille?:string; adresseChantierCp?:string
   // Autres
   source?:string; langue?:string; tags?:string; notes?:string
+  statut?:'actif'|'inactif'|'prospect'
+  enCharge?:string
   // Stats fictives
   nbDevis:number; caTotal:number; margeAvg:number; derniereActivite:string
 }
+
+const MEMBRES_EQUIPE=['Alexandre Delcourt','Emma Strano','Ysaline Bernard','Xavier Concy','Thomas Giraud']
 
 const FORMES=['SAS','SARL','SCI','SASU','EURL','SA','Auto-entrepreneur','EI','Autre']
 const SOURCES=['Bouche à oreille','Google','Recommandation','Réseaux sociaux','Chantier voisin','Autre']
 const LANGUES=['Français','Anglais','Espagnol','Arabe','Autre']
 
 const initClients:Client[]=[
-  {id:'c1',type:'professionnel',civilite:'M.',prenom:'Jean',nom:'Dupont',email:'j.dupont@immobilier.fr',tel:'06 12 34 56 78',raisonSociale:'Dupont Immobilier SAS',formeJuridique:'SAS',siret:'85357201400012',siren:'853572014',tvaIntra:'FR12853572014',paysImmat:'France',contactNom:'Jean Dupont',contactPoste:'Directeur',adresseFactLine1:'45 avenue des Champs',adresseFactVille:'Paris',adresseFactCp:'75008',adresseFactPays:'France',adresseChantierLine1:'12 rue de la Paix',adresseChantierVille:'Paris',adresseChantierCp:'75001',source:'Recommandation',langue:'Français',tags:'VIP, gros chantier',notes:'',nbDevis:8,caTotal:124500,margeAvg:62,derniereActivite:'05/04/2026'},
-  {id:'c2',type:'particulier',civilite:'Mme',prenom:'Sophie',nom:'Martin',email:'s.martin@gmail.com',tel:'07 23 45 67 89',adresseFactLine1:'8 rue des Lilas',adresseFactVille:'Courbevoie',adresseFactCp:'92400',adresseFactPays:'France',adresseChantierLine1:'8 rue des Lilas',adresseChantierVille:'Courbevoie',adresseChantierCp:'92400',source:'Google',langue:'Français',tags:'',notes:'Rénovation complète appartement 80m²',nbDevis:3,caTotal:28400,margeAvg:58,derniereActivite:'08/04/2026'},
-  {id:'c3',type:'professionnel',civilite:'M.',prenom:'Karim',nom:'Mansouri',email:'k.mansouri@promoteur.fr',tel:'06 34 56 78 90',raisonSociale:'Mansouri Promotion SARL',formeJuridique:'SARL',siret:'72345678900034',siren:'723456789',tvaIntra:'FR34723456789',paysImmat:'France',contactNom:'Karim Mansouri',contactPoste:'Gérant',adresseFactLine1:'22 boulevard Haussmann',adresseFactVille:'Paris',adresseFactCp:'75009',adresseFactPays:'France',adresseChantierLine1:'5 rue Voltaire',adresseChantierVille:'Levallois-Perret',adresseChantierCp:'92300',source:'Bouche à oreille',langue:'Français',tags:'Promoteur, récurrent',notes:'',nbDevis:12,caTotal:287000,margeAvg:65,derniereActivite:'02/04/2026'},
-  {id:'c4',type:'particulier',civilite:'M.',prenom:'Pierre',nom:'Leblanc',email:'p.leblanc@outlook.fr',tel:'06 45 67 89 01',adresseFactLine1:'3 allée des Roses',adresseFactVille:'Neuilly-sur-Seine',adresseFactCp:'92200',adresseFactPays:'France',adresseChantierLine1:'3 allée des Roses',adresseChantierVille:'Neuilly-sur-Seine',adresseChantierCp:'92200',source:'Chantier voisin',langue:'Français',tags:'',notes:'',nbDevis:1,caTotal:8900,margeAvg:54,derniereActivite:'01/03/2026'},
-  {id:'c5',type:'professionnel',civilite:'Mme',prenom:'Alice',nom:'Bernard',email:'a.bernard@sci-famille.fr',tel:'06 56 78 90 12',raisonSociale:'SCI Famille Bernard',formeJuridique:'SCI',siret:'65432198700089',siren:'654321987',tvaIntra:'',paysImmat:'France',contactNom:'Alice Bernard',contactPoste:'Gérante',adresseFactLine1:'17 rue de la République',adresseFactVille:'Levallois-Perret',adresseFactCp:'92300',adresseFactPays:'France',adresseChantierLine1:'Résidence Les Pins, Bât A',adresseChantierVille:'Clichy',adresseChantierCp:'92110',source:'Recommandation',langue:'Français',tags:'SCI, immeuble',notes:'Gère plusieurs lots',nbDevis:5,caTotal:67200,margeAvg:60,derniereActivite:'28/03/2026'},
+  {id:'c1',type:'professionnel',civilite:'M.',prenom:'Jean',nom:'Dupont',email:'j.dupont@immobilier.fr',tel:'06 12 34 56 78',raisonSociale:'Dupont Immobilier SAS',formeJuridique:'SAS',siret:'85357201400012',siren:'853572014',tvaIntra:'FR12853572014',paysImmat:'France',contactNom:'Jean Dupont',contactPoste:'Directeur',adresseFactLine1:'45 avenue des Champs',adresseFactVille:'Paris',adresseFactCp:'75008',adresseFactPays:'France',adresseChantierLine1:'12 rue de la Paix',adresseChantierVille:'Paris',adresseChantierCp:'75001',source:'Recommandation',langue:'Français',tags:'VIP, gros chantier',notes:'',statut:'actif',enCharge:'Alexandre Delcourt',nbDevis:8,caTotal:124500,margeAvg:62,derniereActivite:'05/04/2026'},
+  {id:'c2',type:'particulier',civilite:'Mme',prenom:'Sophie',nom:'Martin',email:'s.martin@gmail.com',tel:'07 23 45 67 89',adresseFactLine1:'8 rue des Lilas',adresseFactVille:'Courbevoie',adresseFactCp:'92400',adresseFactPays:'France',adresseChantierLine1:'8 rue des Lilas',adresseChantierVille:'Courbevoie',adresseChantierCp:'92400',source:'Google',langue:'Français',tags:'',notes:'Rénovation complète appartement 80m²',statut:'actif',enCharge:'Emma Strano',nbDevis:3,caTotal:28400,margeAvg:58,derniereActivite:'08/04/2026'},
+  {id:'c3',type:'professionnel',civilite:'M.',prenom:'Karim',nom:'Mansouri',email:'k.mansouri@promoteur.fr',tel:'06 34 56 78 90',raisonSociale:'Mansouri Promotion SARL',formeJuridique:'SARL',siret:'72345678900034',siren:'723456789',tvaIntra:'FR34723456789',paysImmat:'France',contactNom:'Karim Mansouri',contactPoste:'Gérant',adresseFactLine1:'22 boulevard Haussmann',adresseFactVille:'Paris',adresseFactCp:'75009',adresseFactPays:'France',adresseChantierLine1:'5 rue Voltaire',adresseChantierVille:'Levallois-Perret',adresseChantierCp:'92300',source:'Bouche à oreille',langue:'Français',tags:'Promoteur, récurrent',notes:'',statut:'actif',enCharge:'Alexandre Delcourt',nbDevis:12,caTotal:287000,margeAvg:65,derniereActivite:'02/04/2026'},
+  {id:'c4',type:'particulier',civilite:'M.',prenom:'Pierre',nom:'Leblanc',email:'p.leblanc@outlook.fr',tel:'06 45 67 89 01',adresseFactLine1:'3 allée des Roses',adresseFactVille:'Neuilly-sur-Seine',adresseFactCp:'92200',adresseFactPays:'France',adresseChantierLine1:'3 allée des Roses',adresseChantierVille:'Neuilly-sur-Seine',adresseChantierCp:'92200',source:'Chantier voisin',langue:'Français',tags:'',notes:'',statut:'prospect',enCharge:'Emma Strano',nbDevis:1,caTotal:8900,margeAvg:54,derniereActivite:'01/03/2026'},
+  {id:'c5',type:'professionnel',civilite:'Mme',prenom:'Alice',nom:'Bernard',email:'a.bernard@sci-famille.fr',tel:'06 56 78 90 12',raisonSociale:'SCI Famille Bernard',formeJuridique:'SCI',siret:'65432198700089',siren:'654321987',tvaIntra:'',paysImmat:'France',contactNom:'Alice Bernard',contactPoste:'Gérante',adresseFactLine1:'17 rue de la République',adresseFactVille:'Levallois-Perret',adresseFactCp:'92300',adresseFactPays:'France',adresseChantierLine1:'Résidence Les Pins, Bât A',adresseChantierVille:'Clichy',adresseChantierCp:'92110',source:'Recommandation',langue:'Français',tags:'SCI, immeuble',notes:'Gère plusieurs lots',statut:'actif',enCharge:'Ysaline Bernard',nbDevis:5,caTotal:67200,margeAvg:60,derniereActivite:'28/03/2026'},
 ]
 
 const emptyClient=():Omit<Client,'id'|'nbDevis'|'caTotal'|'margeAvg'|'derniereActivite'>=>({
   type:'particulier',civilite:'M.',prenom:'',nom:'',email:'',tel:'',
   adresseFactLine1:'',adresseFactVille:'',adresseFactCp:'',adresseFactPays:'France',
   adresseChantierLine1:'',adresseChantierVille:'',adresseChantierCp:'',
-  source:'',langue:'Français',tags:'',notes:''
+  source:'',langue:'Français',tags:'',notes:'',statut:'prospect',enCharge:''
 })
+
+const historiqueCommunications:Record<string,{date:string,type:string,sujet:string,statut:string}[]>={
+  'c1':[
+    {date:'05/04/2026 09:15',type:'devis',sujet:'DEV-2024-089 - Rénovation bureau 3ème étage',statut:'Envoyé'},
+    {date:'12/02/2026 14:30',type:'facture',sujet:'FAC-2024-076 - Installation électrique',statut:'Payée'},
+    {date:'10/02/2026 11:00',type:'devis',sujet:'DEV-2024-076 - Installation électrique',statut:'Envoyé'},
+    {date:'08/01/2026 10:20',type:'relance',sujet:'Relance devis DEV-2024-061',statut:'Envoyé'},
+  ],
+  'c2':[
+    {date:'08/04/2026 16:45',type:'devis',sujet:'DEV-2024-091 - Rénovation salle de bain',statut:'Envoyé'},
+    {date:'15/03/2026 09:00',type:'facture',sujet:'FAC-2024-083 - Peinture salon',statut:'Payée'},
+  ],
+  'c3':[
+    {date:'02/04/2026 08:30',type:'devis',sujet:'DEV-2024-085 - Rénovation immeuble',statut:'Envoyé'},
+    {date:'20/02/2026 15:00',type:'facture',sujet:'FAC-2024-072 - Parties communes',statut:'Payée'},
+    {date:'18/02/2026 10:00',type:'relance',sujet:'Relance paiement FAC-2024-065',statut:'Envoyé'},
+  ],
+}
 
 const historiqueDevis=[
   {clientId:'c1',num:'DEV-2024-089',titre:'Rénovation bureau 3ème étage',date:'05/04/2026',statut:'Signé',montant:42000,marge:64},
@@ -73,16 +102,33 @@ export default function ClientsPage(){
   const[deleteConfirm,setDeleteConfirm]=useState<string|null>(null)
   const[importErrors,setImportErrors]=useState<string[]>([])
   const[showImport,setShowImport]=useState(false)
+  const[tri,setTri]=useState<'nom'|'caTotal'|'nbDevis'|'derniereActivite'>('nom')
+  const[triDir,setTriDir]=useState<'asc'|'desc'>('asc')
+  const toggleTri=(t:typeof tri)=>{if(tri===t)setTriDir(d=>d==='asc'?'desc':'asc');else{setTri(t);setTriDir('asc')}}
   const[importPreview,setImportPreview]=useState<any[]>([])
 
   const showToast=(msg:string)=>{setToast(msg);setTimeout(()=>setToast(''),3000)}
   const genId=()=>'c'+Math.random().toString(36).slice(2,8)
 
+  const sorted=(items:Client[])=>[...items].sort((a,b)=>{
+    if(tri==='nom') return triDir==='asc'?a.nom.localeCompare(b.nom):b.nom.localeCompare(a.nom)
+    if(tri==='caTotal') return triDir==='asc'?a.caTotal-b.caTotal:b.caTotal-a.caTotal
+    if(tri==='nbDevis') return triDir==='asc'?a.nbDevis-b.nbDevis:b.nbDevis-a.nbDevis
+    if(tri==='derniereActivite'){
+      const toDate=(s:string)=>{const p=s.split('/');return new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0])).getTime()}
+      return triDir==='asc'?toDate(a.derniereActivite)-toDate(b.derniereActivite):toDate(b.derniereActivite)-toDate(a.derniereActivite)
+    }
+    return 0
+  })
+
+  const[filtreStatut,setFiltreStatut]=useState<'tous'|'actif'|'inactif'|'prospect'>('tous')
+
   const filtered=clients.filter(c=>{
     const q=search.toLowerCase()
     const matchSearch=!search||c.nom.toLowerCase().includes(q)||c.prenom.toLowerCase().includes(q)||c.email.toLowerCase().includes(q)||c.tel.includes(q)||(c.raisonSociale||'').toLowerCase().includes(q)||(c.adresseFactVille||'').toLowerCase().includes(q)||(c.tags||'').toLowerCase().includes(q)
     const matchFiltre=filtre==='tous'||c.type===filtre
-    return matchSearch&&matchFiltre
+    const matchStatut=filtreStatut==='tous'||c.statut===filtreStatut
+    return matchSearch&&matchFiltre&&matchStatut
   })
 
   const openAdd=()=>{
@@ -227,22 +273,51 @@ export default function ClientsPage(){
 
           {/* Stats */}
           <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}}>
-            {[
-              {label:'Total clients',val:clients.length,color:'#111'},
-              {label:'Professionnels',val:clients.filter(c=>c.type==='professionnel').length,color:'#2563eb'},
-              {label:'Particuliers',val:clients.filter(c=>c.type==='particulier').length,color:AM},
-              {label:'CA total',val:clients.reduce((s,c)=>s+c.caTotal,0).toLocaleString('fr-FR')+' €',color:G},
-            ].map(s=>(
+            {(()=>{
+              const caAnnee=clients.reduce((s,c)=>s+c.caTotal,0)
+              const caAnneePrecedente=Math.round(caAnnee*0.82)
+              const variation=Math.round((caAnnee-caAnneePrecedente)/caAnneePrecedente*100)
+              return [
+                {label:'Total clients',val:clients.length,color:'#111',sub:null},
+                {label:'Professionnels',val:clients.filter(c=>c.type==='professionnel').length,color:'#2563eb',sub:null},
+                {label:'Particuliers',val:clients.filter(c=>c.type==='particulier').length,color:AM,sub:null},
+                {label:'CA cette année',val:caAnnee.toLocaleString('fr-FR')+' €',color:G,sub:{variation,precedent:caAnneePrecedente}},
+              ]
+            })().map(s=>(
               <div key={s.label} style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px'}}>
                 <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:4}}>{s.label}</div>
                 <div style={{fontSize:22,fontWeight:700,color:s.color}}>{s.val}</div>
+                {s.sub&&(
+                  <div style={{display:'flex',alignItems:'center',gap:6,marginTop:4}}>
+                    <span style={{fontSize:11,fontWeight:700,color:s.sub.variation>=0?G:RD}}>
+                      {s.sub.variation>=0?'+':''}{s.sub.variation}% vs 2025
+                    </span>
+                    <span style={{fontSize:11,color:'#888'}}>{s.sub.precedent.toLocaleString('fr-FR')} € en 2025</span>
+                  </div>
+                )}
               </div>
             ))}
           </div>
 
           {/* Filtres + Recherche */}
           <div style={{display:'flex',gap:8,marginBottom:16,flexWrap:'wrap' as const}}>
-            {(['tous','particulier','professionnel'] as const).map(f=>(
+            <div style={{display:'flex',gap:6}}>
+            {([['tous','Tous'],['actif','Actif'],['prospect','Prospect'],['inactif','Inactif']] as const).map(([f,label])=>(
+              <button key={f} onClick={()=>setFiltreStatut(f)}
+                style={{padding:'5px 12px',borderRadius:20,border:`1px solid ${filtreStatut===f?(f==='actif'?G:f==='prospect'?AM:f==='inactif'?'#888':G):BD}`,background:filtreStatut===f?(f==='actif'?'#f0fdf4':f==='prospect'?'#fffbeb':f==='inactif'?'#f9fafb':'#f0fdf4'):'#fff',color:filtreStatut===f?(f==='actif'?G:f==='prospect'?AM:f==='inactif'?'#888':G):'#555',fontSize:12,fontWeight:filtreStatut===f?600:400,cursor:'pointer'}}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <div style={{display:'flex',gap:6}}>
+            {([['tous','Tous'],['actif','Actif'],['prospect','Prospect'],['inactif','Inactif']] as const).map(([f,label])=>(
+              <button key={f} onClick={()=>setFiltreStatut(f)}
+                style={{padding:'5px 12px',borderRadius:20,border:`1px solid ${filtreStatut===f?(f==='actif'?G:f==='prospect'?AM:f==='inactif'?'#888':G):BD}`,background:filtreStatut===f?(f==='actif'?'#f0fdf4':f==='prospect'?'#fffbeb':f==='inactif'?'#f9fafb':'#f0fdf4'):'#fff',color:filtreStatut===f?(f==='actif'?G:f==='prospect'?AM:f==='inactif'?'#888':G):'#555',fontSize:12,fontWeight:filtreStatut===f?600:400,cursor:'pointer'}}>
+                {label}
+              </button>
+            ))}
+          </div>
+          {(['tous','particulier','professionnel'] as const).map(f=>(
               <button key={f} onClick={()=>setFiltre(f)}
                 style={{padding:'7px 16px',borderRadius:20,border:`1px solid ${filtre===f?G:BD}`,background:filtre===f?'#f0fdf4':'#fff',color:filtre===f?G:'#555',fontSize:13,fontWeight:filtre===f?600:400,cursor:'pointer'}}>
                 {f==='tous'?`Tous (${clients.length})`:f==='particulier'?`Particuliers (${clients.filter(c=>c.type==='particulier').length})`:`Professionnels (${clients.filter(c=>c.type==='professionnel').length})`}
@@ -261,15 +336,32 @@ export default function ClientsPage(){
             <table style={{width:'100%',borderCollapse:'collapse'}}>
               <thead>
                 <tr style={{background:'#f9fafb'}}>
-                  {['Client','Type','Email','Téléphone','Ville','Devis','CA total','Dernière activité',''].map(h=>(
-                    <th key={h} style={{padding:'11px 16px',textAlign:'left' as const,fontSize:12,color:'#888',fontWeight:600,borderBottom:`1px solid ${BD}`}}>{h}</th>
+                  {[
+                    {label:'Client',key:'nom'},
+                    {label:'Type',key:''},
+                    {label:'Statut',key:''},
+                    {label:'Statut',key:''},
+                    {label:'Email',key:''},
+                    {label:'Téléphone',key:''},
+                    {label:'Ville',key:''},
+                    {label:'Devis',key:'nbDevis'},
+                    {label:'CA total',key:'caTotal'},
+                    {label:'Dernière activité',key:'derniereActivite'},
+                    {label:'En charge',key:''},
+                    {label:'Communications',key:''},
+                    {label:'',key:''},
+                  ].map(({label,key})=>(
+                    <th key={label} onClick={()=>key&&toggleTri(key as typeof tri)}
+                      style={{padding:'11px 16px',textAlign:'left' as const,fontSize:12,color:tri===key&&key?G:'#888',fontWeight:600,borderBottom:`1px solid ${BD}`,cursor:key?'pointer':'default',userSelect:'none' as const,whiteSpace:'nowrap' as const}}>
+                      {label}{tri===key&&key?(triDir==='asc'?' ↑':' ↓'):''}
+                    </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {filtered.length===0?(
                   <tr><td colSpan={9} style={{padding:'3rem',textAlign:'center' as const,color:'#888',fontSize:13}}>Aucun client{search?' pour cette recherche':''}</td></tr>
-                ):filtered.map(client=>(
+                ):sorted(filtered).map(client=>(
                   <tr key={client.id} style={{borderBottom:`1px solid ${BD}`,cursor:'pointer',transition:'background 0.1s'}}
                     onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
                     onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}
@@ -282,6 +374,9 @@ export default function ClientsPage(){
                         <div>
                           <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{client.civilite} {client.prenom} {client.nom}</div>
                           {client.raisonSociale&&<div style={{fontSize:11,color:'#888'}}>{client.raisonSociale}</div>}
+                          {isNouveau(client.derniereActivite)&&(
+                            <span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:8,background:'#eff6ff',color:'#2563eb',border:'1px solid #bfdbfe'}}>NOUVEAU</span>
+                          )}
                           {client.tags&&<div style={{display:'flex',gap:4,marginTop:2,flexWrap:'wrap' as const}}>
                             {client.tags.split(',').filter(t=>t.trim()).map((t,i)=>(
                               <span key={i} style={{fontSize:10,padding:'1px 5px',background:'#f0fdf4',color:G,borderRadius:8,fontWeight:600}}>{t.trim()}</span>
@@ -297,12 +392,43 @@ export default function ClientsPage(){
                         {client.type==='professionnel'?'Pro':'Particulier'}
                       </span>
                     </td>
+                    <td style={{padding:'12px 16px'}}>
+                      <span style={{fontSize:11,fontWeight:700,padding:'3px 9px',borderRadius:12,
+                        background:client.statut==='actif'?'#f0fdf4':client.statut==='prospect'?'#fffbeb':'#f9fafb',
+                        color:client.statut==='actif'?G:client.statut==='prospect'?AM:'#888'}}>
+                        {client.statut==='actif'?'Actif':client.statut==='prospect'?'Prospect':'Inactif'}
+                      </span>
+                    </td>
+                    <td style={{padding:'12px 16px'}}>
+                      <span style={{fontSize:11,fontWeight:700,padding:'3px 9px',borderRadius:12,
+                        background:client.statut==='actif'?'#f0fdf4':client.statut==='prospect'?'#fffbeb':'#f9fafb',
+                        color:client.statut==='actif'?G:client.statut==='prospect'?AM:'#888'}}>
+                        {client.statut==='actif'?'Actif':client.statut==='prospect'?'Prospect':'Inactif'}
+                      </span>
+                    </td>
                     <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{client.email}</td>
                     <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{client.tel}</td>
                     <td style={{padding:'12px 16px',fontSize:13,color:'#555'}}>{client.adresseFactVille}</td>
                     <td style={{padding:'12px 16px',fontSize:13,fontWeight:600,color:'#111',textAlign:'center' as const}}>{client.nbDevis}</td>
                     <td style={{padding:'12px 16px',fontSize:13,fontWeight:600,color:G}}>{fmt(client.caTotal)}</td>
                     <td style={{padding:'12px 16px',fontSize:12,color:'#888'}}>{client.derniereActivite}</td>
+                    <td style={{padding:'12px 16px'}}>
+                      {client.enCharge?(
+                        <div style={{display:'flex',alignItems:'center',gap:6}}>
+                          <div style={{width:24,height:24,borderRadius:'50%',background:G+'22',color:G,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,flexShrink:0}}>
+                            {client.enCharge.split(' ').map((n:string)=>n[0]).join('').slice(0,2)}
+                          </div>
+                          <span style={{fontSize:12,color:'#333'}}>{client.enCharge.split(' ')[0]}</span>
+                        </div>
+                      ):<span style={{fontSize:11,color:'#888'}}>—</span>}
+                    </td>
+                    <td style={{padding:'12px 16px'}}>
+                      {(historiqueCommunications[client.id]||[]).length>0?(
+                        <span style={{fontSize:11,color:'#2563eb',fontWeight:600}}>
+                          {(historiqueCommunications[client.id]||[]).length} email{(historiqueCommunications[client.id]||[]).length>1?'s':''}
+                        </span>
+                      ):<span style={{fontSize:11,color:'#888'}}>—</span>}
+                    </td>
                     <td style={{padding:'12px 16px'}} onClick={e=>e.stopPropagation()}>
                       <div style={{display:'flex',gap:4}}>
                         <button onClick={()=>openEdit(client)} title="Modifier"
@@ -345,7 +471,29 @@ export default function ClientsPage(){
               <div>
                 <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:6}}>Type de client</label>
                 <div style={{display:'flex',gap:8}}>
-                  {(['particulier','professionnel'] as const).map(t=>(
+                  <div style={{marginBottom:12}}>
+                <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:6}}>Statut</label>
+                <div style={{display:'flex',gap:8}}>
+                  {([['actif','✅ Actif',G],['prospect','🔍 Prospect',AM],['inactif','⏸ Inactif','#888']] as const).map(([s,label,col])=>(
+                    <button key={s} onClick={()=>setForm((p:any)=>({...p,statut:s}))}
+                      style={{flex:1,padding:'8px',border:`2px solid ${form.statut===s?col:BD}`,borderRadius:8,background:form.statut===s?col+'18':'#fff',color:form.statut===s?col:'#555',fontSize:12,fontWeight:form.statut===s?600:400,cursor:'pointer'}}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div style={{marginBottom:12}}>
+                <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:6}}>Statut</label>
+                <div style={{display:'flex',gap:8}}>
+                  {([['actif','✅ Actif',G],['prospect','🔍 Prospect',AM],['inactif','⏸ Inactif','#888']] as const).map(([s,label,col])=>(
+                    <button key={s} onClick={()=>setForm((p:any)=>({...p,statut:s}))}
+                      style={{flex:1,padding:'8px',border:`2px solid ${form.statut===s?col:BD}`,borderRadius:8,background:form.statut===s?col+'18':'#fff',color:form.statut===s?col:'#555',fontSize:12,fontWeight:form.statut===s?600:400,cursor:'pointer'}}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(['particulier','professionnel'] as const).map(t=>(
                     <button key={t} onClick={()=>setForm((p:any)=>({...p,type:t}))}
                       style={{flex:1,padding:'9px',border:`2px solid ${form.type===t?G:BD}`,borderRadius:8,background:form.type===t?'#f0fdf4':'#fff',color:form.type===t?G:'#555',fontSize:13,fontWeight:form.type===t?600:400,cursor:'pointer',transition:'all 0.15s'}}>
                       {t==='particulier'?'👤 Particulier':'🏢 Professionnel'}
@@ -422,7 +570,15 @@ export default function ClientsPage(){
               {/* Autres */}
               <Section title="Autres informations"/>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                <S label="Source d'acquisition" field="source" options={SOURCES}/>
+                <div>
+                <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:4}}>En charge</label>
+                <select value={form.enCharge||''} onChange={e=>setForm((p:any)=>({...p,enCharge:e.target.value}))}
+                  style={{width:'100%',padding:'8px 11px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',background:'#fff'}}>
+                  <option value="">Non assigné</option>
+                  {MEMBRES_EQUIPE.map(m=><option key={m}>{m}</option>)}
+                </select>
+              </div>
+              <S label="Source d'acquisition" field="source" options={SOURCES}/>
                 <S label="Langue préférée" field="langue" options={LANGUES}/>
               </div>
               <F label="Tags (séparés par virgules)" field="tags" placeholder="VIP, gros chantier, récurrent"/>
@@ -452,9 +608,26 @@ export default function ClientsPage(){
                 <div>
                   <div style={{fontSize:15,fontWeight:700,color:'#111'}}>{selectedClient.civilite} {selectedClient.prenom} {selectedClient.nom}</div>
                   {selectedClient.raisonSociale&&<div style={{fontSize:12,color:'#888'}}>{selectedClient.raisonSociale}</div>}
+                <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:8,
+                  background:selectedClient.statut==='actif'?'#f0fdf4':selectedClient.statut==='prospect'?'#fffbeb':'#f9fafb',
+                  color:selectedClient.statut==='actif'?G:selectedClient.statut==='prospect'?AM:'#888'}}>
+                  {selectedClient.statut==='actif'?'Actif':selectedClient.statut==='prospect'?'Prospect':'Inactif'}
+                </span>
+                <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:8,
+                  background:selectedClient.statut==='actif'?'#f0fdf4':selectedClient.statut==='prospect'?'#fffbeb':'#f9fafb',
+                  color:selectedClient.statut==='actif'?G:selectedClient.statut==='prospect'?AM:'#888'}}>
+                  {selectedClient.statut==='actif'?'Actif':selectedClient.statut==='prospect'?'Prospect':'Inactif'}
+                </span>
+                {isNouveau(selectedClient.derniereActivite)&&(
+                  <span style={{fontSize:10,fontWeight:700,padding:'2px 8px',borderRadius:8,background:'#eff6ff',color:'#2563eb',border:'1px solid #bfdbfe'}}>NOUVEAU</span>
+                )}
                 </div>
               </div>
               <div style={{display:'flex',gap:8}}>
+                <a href="/devis/nouveau" style={{padding:'7px 14px',background:G,color:'#fff',border:'none',borderRadius:7,fontSize:13,cursor:'pointer',fontWeight:600,textDecoration:'none',display:'inline-flex',alignItems:'center',gap:5}}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Créer un devis
+                </a>
                 <button onClick={()=>openEdit(selectedClient)} style={{padding:'7px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,cursor:'pointer',color:'#333',fontWeight:500}}>Modifier</button>
                 <button onClick={closePanel} style={{width:32,height:32,borderRadius:'50%',border:`1px solid ${BD}`,background:'#f9fafb',cursor:'pointer',fontSize:16,color:'#888',display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
               </div>
@@ -484,10 +657,30 @@ export default function ClientsPage(){
                     {label:'Email',val:selectedClient.email},
                     {label:'Téléphone',val:selectedClient.tel},
                     {label:'Adresse fact.',val:`${selectedClient.adresseFactLine1||''} ${selectedClient.adresseFactCp||''} ${selectedClient.adresseFactVille||''}`},
-                    {label:'Chantier',val:`${selectedClient.adresseChantierLine1||''} ${selectedClient.adresseChantierCp||''} ${selectedClient.adresseChantierVille||''}`},
+                    {label:'Chantier',val:(
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <span>{selectedClient.adresseChantierLine1||''} {selectedClient.adresseChantierCp||''} {selectedClient.adresseChantierVille||''}</span>
+                        {selectedClient.adresseChantierVille&&(
+                          <a href={`https://maps.google.com/?q=${encodeURIComponent((selectedClient.adresseChantierLine1||'')+' '+(selectedClient.adresseChantierCp||'')+' '+(selectedClient.adresseChantierVille||''))}`}
+                            target="_blank" rel="noreferrer"
+                            style={{fontSize:11,color:'#2563eb',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:3,flexShrink:0}}>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            Maps
+                          </a>
+                        )}
+                      </div>
+                    )},
                     selectedClient.siret?{label:'SIRET',val:selectedClient.siret}:null,
                     selectedClient.tvaIntra?{label:'TVA intra',val:selectedClient.tvaIntra}:null,
-                    selectedClient.source?{label:'Source',val:selectedClient.source}:null,
+                    selectedClient.enCharge?{label:'En charge',val:(
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <div style={{width:24,height:24,borderRadius:'50%',background:G+'22',color:G,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700}}>
+                          {selectedClient.enCharge.split(' ').map((n:string)=>n[0]).join('').slice(0,2)}
+                        </div>
+                        <span>{selectedClient.enCharge}</span>
+                      </div>
+                    )}:null,
+    selectedClient.source?{label:'Source',val:selectedClient.source}:null,
                   ].filter(Boolean).map((item:any,i)=>(
                     <div key={i} style={{display:'flex',gap:8,fontSize:13}}>
                       <span style={{color:'#888',minWidth:90,flexShrink:0}}>{item.label}</span>
@@ -517,6 +710,35 @@ export default function ClientsPage(){
                             <div style={{fontSize:11,color:d.marge>=60?G:d.marge>=40?AM:RD}}>{d.marge}% marge</div>
                           </div>
                         </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Historique communications */}
+              <div>
+                <div style={{fontSize:12,fontWeight:700,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Historique des communications</div>
+                {(historiqueCommunications[selectedClient.id]||[]).length===0?(
+                  <div style={{textAlign:'center' as const,padding:'1rem',color:'#888',fontSize:12,background:'#f9fafb',borderRadius:8,border:`1px solid ${BD}`}}>Aucune communication</div>
+                ):(
+                  <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                    {(historiqueCommunications[selectedClient.id]||[]).map((comm,i)=>(
+                      <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:8}}>
+                        <div style={{width:30,height:30,borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',
+                          background:comm.type==='devis'?'#eff6ff':comm.type==='facture'?'#f0fdf4':'#fffbeb',
+                          color:comm.type==='devis'?'#2563eb':comm.type==='facture'?G:AM,fontSize:14}}>
+                          {comm.type==='devis'?'📄':comm.type==='facture'?'🧾':'🔔'}
+                        </div>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:12,fontWeight:500,color:'#111',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>{comm.sujet}</div>
+                          <div style={{fontSize:11,color:'#888'}}>{comm.date}</div>
+                        </div>
+                        <span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:10,flexShrink:0,
+                          background:comm.statut==='Payée'?'#f0fdf4':comm.statut==='Envoyé'?'#eff6ff':'#f9fafb',
+                          color:comm.statut==='Payée'?G:comm.statut==='Envoyé'?'#2563eb':'#888'}}>
+                          {comm.statut}
+                        </span>
                       </div>
                     ))}
                   </div>
