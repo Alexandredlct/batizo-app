@@ -896,21 +896,21 @@ export default function BibliothequePage() {
           </div>
 
           {/* Recherche + filtre */}
-          <div style={{display:'flex',gap:8,marginBottom:20}}>
+          <div style={{display:'flex',gap:8,marginBottom:20,alignItems:'center'}}>
             <div style={{flex:1,position:'relative'}}>
               <svg style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)'}} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher par nom, description, catégorie..."
-                style={{width:'100%',padding:'9px 12px 9px 36px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const,color:'#111'}}/>
+                style={{width:'100%',padding:'9px 12px 9px 36px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const,color:'#111'}}/>
               {search&&<button onClick={()=>setSearch('')} style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:18}}>×</button>}
             </div>
 <select value={catFiltre} onChange={e=>setCatFiltre(e.target.value)}
-              style={{padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111',minWidth:160}}>
+              style={{padding:'9px 12px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111',minWidth:160,height:40}}>
               <option value="">Toutes catégories</option>
               {categories.map(cat=><option key={cat.nom}>{cat.nom}</option>)}
             </select>
             {/* Tri */}
             <select value={tri} onChange={e=>{setTri(e.target.value as typeof tri);setTriDir('asc')}}
-              style={{padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
+              style={{padding:'9px 12px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111',height:40}}>
               <option value="nom">Trier : Nom</option>
               <option value="marge">Trier : Marge</option>
               <option value="prix">Trier : Prix facturé</option>
@@ -918,17 +918,17 @@ export default function BibliothequePage() {
             </select>
             <button onClick={()=>setTriDir(d=>d==='asc'?'desc':'asc')}
               title={triDir==='asc'?'Croissant':'Décroissant'}
-              style={{padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,background:'#fff',cursor:'pointer',fontSize:14,color:'#555'}}>
+              style={{padding:'9px 12px',border:'1px solid #999',borderRadius:8,background:'#fff',cursor:'pointer',fontSize:14,color:'#555',height:40,display:'flex',alignItems:'center'}}>
               {triDir==='asc'?'↑':'↓'}
             </button>
             {/* Vue */}
-            <div style={{display:'flex',border:`1px solid ${BD}`,borderRadius:8,overflow:'hidden'}}>
+            <div style={{display:'flex',border:'1px solid #999',borderRadius:8,overflow:'hidden',height:40}}>
               <button onClick={()=>setVue('grille')} title="Grille"
-                style={{padding:'9px 12px',background:vue==='grille'?'#f0fdf4':'#fff',border:'none',cursor:'pointer',color:vue==='grille'?G:'#555',borderRight:`1px solid ${BD}`}}>
+                style={{padding:'0 12px',background:vue==='grille'?'#f0fdf4':'#fff',border:'none',cursor:'pointer',color:vue==='grille'?G:'#555',borderRight:'1px solid #999',height:'100%',display:'flex',alignItems:'center'}}>
                 ⊞
               </button>
               <button onClick={()=>setVue('liste')} title="Liste"
-                style={{padding:'9px 12px',background:vue==='liste'?'#f0fdf4':'#fff',border:'none',cursor:'pointer',color:vue==='liste'?G:'#555'}}>
+                style={{padding:'0 12px',background:vue==='liste'?'#f0fdf4':'#fff',border:'none',cursor:'pointer',color:vue==='liste'?G:'#555',height:'100%',display:'flex',alignItems:'center'}}>
                 ☰
               </button>
             </div>
