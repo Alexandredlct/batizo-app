@@ -267,7 +267,7 @@ export default function ClientsPage(){
             <div style={{flex:1,position:'relative',minWidth:200}}>
               <svg style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)'}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher..."
-                style={{width:'100%',padding:'7px 12px 7px 32px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
+                style={{width:'100%',padding:'7px 12px 7px 32px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
               {search&&<button onClick={()=>setSearch('')} style={{position:'absolute',right:8,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:16}}>×</button>}
             </div>
           </div>
