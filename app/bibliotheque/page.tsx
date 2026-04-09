@@ -30,12 +30,14 @@ type Materiau = {
   debourse:number; prixFacture:number; categorie:string
   notes?:string; tags?:string; uniteCustom?:string
   prixFournisseur?:number; coeffMarge?:number; fournisseur?:string
+  photo?:string; lienFournisseur?:string
 }
 type MainOeuvre = {
   id:string; nom:string; description:string; unite:Unite; tva:Tva
   debourse:number; prixFacture:number; categorie:string
   notes?:string; tags?:string; uniteCustom?:string
   prixFournisseur?:number; coeffMarge?:number; fournisseur?:string
+  photo?:string; lienFournisseur?:string
 }
 type LigneOuvrage = { type:'materiau'|'mo'; id:string; nom:string; qte:number; pu:number }
 type Ouvrage = {
@@ -44,6 +46,7 @@ type Ouvrage = {
   lignes:LigneOuvrage[]
   notes?:string; tags?:string; uniteCustom?:string
   prixFournisseur?:number; coeffMarge?:number; fournisseur?:string
+  photo?:string; lienFournisseur?:string
 }
 
 const initMateriaux:Materiau[] = [
@@ -168,6 +171,13 @@ export default function BibliothequePage() {
   const[showCatModal,setShowCatModal]=useState(false)
   const[newCatNom,setNewCatNom]=useState('')
   const[newCatCouleur,setNewCatCouleur]=useState('#1D9E75')
+  const handlePhotoItem=(e:React.ChangeEvent<HTMLInputElement>)=>{
+    const file=e.target.files?.[0]
+    if(!file)return
+    const reader=new FileReader()
+    reader.onload=ev=>setForm((p:any)=>({...p,photo:ev.target?.result as string}))
+    reader.readAsDataURL(file)
+  }
   const ajouterCategorie=()=>{
     if(!newCatNom.trim())return
     if(categories.find(c=>c.nom===newCatNom.trim()))return
@@ -272,6 +282,11 @@ export default function BibliothequePage() {
       <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,padding:'16px',position:'relative',transition:'box-shadow 0.15s'}}
         onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.boxShadow='0 2px 12px rgba(0,0,0,0.08)'}
         onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.boxShadow=''}>
+        {item.photo&&(
+          <div style={{height:100,margin:'-16px -16px 12px',overflow:'hidden',borderRadius:'12px 12px 0 0'}}>
+            <img src={item.photo} alt={item.nom} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+          </div>
+        )}
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
           <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:20,background:`${catColor(item.categorie)}18`,color:catColor(item.categorie)}}>{item.categorie}</span>
           <div style={{display:'flex',gap:4}}>
@@ -312,6 +327,14 @@ export default function BibliothequePage() {
             <div style={{height:'100%',width:`${Math.min(m,100)}%`,background:margeColor(m),borderRadius:4,transition:'width 0.3s'}}></div>
           </div>
         </div>
+        {/* Lien fournisseur */}
+        {item.lienFournisseur&&(
+          <a href={item.lienFournisseur} target="_blank" rel="noreferrer"
+            style={{fontSize:11,color:'#2563eb',display:'inline-flex',alignItems:'center',gap:4,marginTop:6,textDecoration:'none'}}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Voir fiche fournisseur
+          </a>
+        )}
         {/* Prix fournisseur */}
         {item.prixFournisseur&&(
           <div style={{fontSize:11,color:'#888',marginTop:4}}>
@@ -383,6 +406,45 @@ export default function BibliothequePage() {
               style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const,color:'#111'}}
               onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
               onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+          </div>
+
+          {/* Photo + Lien fournisseur */}
+          <div style={{display:'grid',gridTemplateColumns:'auto 1fr',gap:14,alignItems:'start'}}>
+            {/* Photo */}
+            <div>
+              <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Photo</label>
+              <label style={{display:'block',width:72,height:72,borderRadius:10,border:`2px dashed ${BD}`,cursor:'pointer',overflow:'hidden',background:'#f9fafb',position:'relative'}}>
+                {form.photo
+                  ?<img src={form.photo} alt="photo" style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                  :<div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',justifyContent:'center',height:'100%',gap:4}}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <span style={{fontSize:9,color:'#aaa',textAlign:'center' as const}}>Ajouter</span>
+                  </div>}
+                <input type="file" accept="image/*" onChange={handlePhotoItem} style={{display:'none'}}/>
+              </label>
+              {form.photo&&(
+                <button onClick={()=>setForm((p:any)=>({...p,photo:''}))}
+                  style={{fontSize:11,color:RD,background:'none',border:'none',cursor:'pointer',marginTop:4,padding:0}}>
+                  Supprimer
+                </button>
+              )}
+            </div>
+            {/* Lien fournisseur */}
+            <div>
+              <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Lien fournisseur</label>
+              <input value={form.lienFournisseur||''} onChange={e=>setForm((p:any)=>({...p,lienFournisseur:e.target.value}))}
+                placeholder="https://www.leroymerlin.fr/..."
+                style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,outline:'none',color:'#111',boxSizing:'border-box' as const}}
+                onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+                onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+              {form.lienFournisseur&&(
+                <a href={form.lienFournisseur} target="_blank" rel="noreferrer"
+                  style={{fontSize:11,color:'#2563eb',display:'inline-flex',alignItems:'center',gap:4,marginTop:4,textDecoration:'none'}}>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  Ouvrir le lien
+                </a>
+              )}
+            </div>
           </div>
 
           {/* Catégorie + Unité + TVA */}
