@@ -179,7 +179,7 @@ export default function ParametresPage(){
         </div>
 
         <div style={{flex:1,overflowY:'auto',padding:24}}>
-          <div style={{maxWidth:900,margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 340px',gap:20}}>
+          <div style={{maxWidth:1200,margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 480px',gap:24}}>
 
             {/* COLONNE GAUCHE — Formulaire */}
             <div>
@@ -624,11 +624,11 @@ export default function ParametresPage(){
                 </div>
 
                 {/* Mini aperçu document */}
-                <div style={{padding:14,background:'#f8f9fa'}}>
-                  <div style={{background:'#fff',borderRadius:8,boxShadow:'0 2px 8px rgba(0,0,0,0.1)',overflow:'hidden',fontSize:'0.7em'}}>
+                <div style={{padding:16,background:'#f8f9fa'}}>
+                  <div style={{background:'#fff',borderRadius:8,boxShadow:'0 2px 8px rgba(0,0,0,0.1)',overflow:'hidden',fontSize:'0.85em'}}>
 
                     {/* En-tête aperçu */}
-                    <div style={{background:params.couleurPrincipale,padding:'10px 12px',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+                    <div style={{background:params.couleurPrincipale,padding:'16px 18px',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
                       <div style={{color:'#fff'}}>
                         {params.showNom&&<div style={{fontWeight:700,fontSize:14}}>{params.nomEntreprise}</div>}
                         {params.showAdresse&&<div style={{fontSize:10,opacity:0.9,marginTop:1}}>{params.adresse}</div>}
@@ -643,14 +643,14 @@ export default function ParametresPage(){
                     </div>
 
                     {/* Client */}
-                    <div style={{padding:'8px 12px',borderBottom:`1px solid ${BD}`}}>
+                    <div style={{padding:'12px 16px',borderBottom:`1px solid ${BD}`}}>
                       <div style={{fontSize:9,color:'#888',marginBottom:2}}>DESTINATAIRE</div>
                       <div style={{fontSize:11,fontWeight:600,color:'#111'}}>Jean Dupont</div>
                       <div style={{fontSize:9,color:'#555'}}>45 avenue des Champs, 75008 Paris</div>
                     </div>
 
                     {/* Lignes */}
-                    <div style={{padding:'6px 12px'}}>
+                    <div style={{padding:'12px 16px'}}>
                       <div style={{display:'grid',gridTemplateColumns:'1fr 50px 50px 60px',gap:4,marginBottom:4,borderBottom:`1px solid ${BD}`,paddingBottom:4}}>
                         <div style={{fontSize:8,color:'#888',fontWeight:600}}>DÉSIGNATION</div>
                         <div style={{fontSize:8,color:'#888',fontWeight:600,textAlign:'right' as const}}>QTÉ</div>
@@ -672,11 +672,11 @@ export default function ParametresPage(){
                     </div>
 
                     {/* Signature aperçu */}
-                    <div style={{padding:'6px 12px',borderTop:`1px solid ${BD}`,display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+                    <div style={{padding:'12px 16px',borderTop:`1px solid ${BD}`,display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
                       <div style={{border:`1px solid ${BD}`,borderRadius:4,padding:'6px 8px'}}>
                         <div style={{fontSize:9,fontWeight:600,color:'#111',marginBottom:3}}>{params.texteClient}</div>
                         <div style={{fontSize:7,color:'#888',fontStyle:'italic',marginBottom:4,lineHeight:1.4}}>Bon pour travaux.</div>
-                        <div style={{height:20,border:`1px dashed ${BD}`,borderRadius:3}}/>
+                        <div style={{height:40,border:`1px dashed ${BD}`,borderRadius:3}}/>
                       </div>
                       <div style={{border:`1px solid ${BD}`,borderRadius:4,padding:'6px 8px'}}>
                         <div style={{fontSize:9,fontWeight:600,color:'#111',marginBottom:3}}>{params.nomSignataireEntreprise}</div>
@@ -686,7 +686,7 @@ export default function ParametresPage(){
                     </div>
 
                     {/* Pied de page aperçu */}
-                    <div style={{padding:'6px 12px',background:'#f9fafb',borderTop:`1px solid ${BD}`}}>
+                    <div style={{padding:'10px 16px',background:'#f9fafb',borderTop:`1px solid ${BD}`}}>
                       <div style={{fontSize:7,color:'#888',textAlign:'center' as const,lineHeight:1.6}}>
                         {params.nomEntreprise}{params.showFormeJuridique?` — ${params.formeJuridique}`:''}
                         {params.showSiegeSocial?` — ${params.adresse}`:''}
