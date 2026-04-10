@@ -213,6 +213,7 @@ export default function NouveauDevisPage(){
           <td colSpan={6} style={{padding:'8px 12px'}}>
             <div style={{display:'flex',alignItems:'center',gap:8}}>
               <button onClick={()=>updateLigne(l.id,'collapsed',!l.collapsed)} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#888',padding:0}}>{l.collapsed?'▶':'▼'}</button>
+              <span style={{fontSize:isSub?12:13,fontWeight:800,color:isSub?G:'#15803d',fontFamily:'monospace',flexShrink:0,minWidth:isSub?32:20}}>{getNumero(lignes,idx)}</span>
               <input value={l.titre||''} onChange={e=>updateLigne(l.id,'titre',e.target.value)}
                 style={{flex:1,border:'none',background:'transparent',fontSize:isSub?13:14,fontWeight:700,color:isSub?G:'#15803d',outline:'none',fontFamily:'system-ui'}}
                 placeholder={isSub?'Sous-catégorie':'Catégorie'}/>
