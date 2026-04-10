@@ -5,8 +5,8 @@ import SearchBar from '../../components/SearchBar'
 
 const G='#1D9E75',AM='#BA7517',RD='#E24B4A',BD='#e5e7eb'
 const fmt=(n:number)=>n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})
-const TVA_OPTIONS=['20%','10%','5.5%','0%']
-const UNITES=['u','m²','ml','m³','h','ens','Forf','Fft','kg','Mois']
+const TVA_OPTIONS=['0%','5.5%','10%','20%']
+const UNITES=['u','ens','m²','ml','m³','h','Fft','Forf','Mois','kg','L']
 
 type LigneType='materiau'|'mo'|'ouvrage'|'categorie'|'sous-categorie'|'note'|'saut-page'
 type LigneOuvrage={id:string;nom:string;qte:number;pu:number;unite:string;tva:string}
@@ -66,6 +66,8 @@ export default function NouveauDevisPage(){
   const[showSaved,setShowSaved]=useState(false)
   const[showHeaderInfo,setShowHeaderInfo]=useState(false)
   const[ouvrageExpanded,setOuvrageExpanded]=useState<Record<string,boolean>>({})
+  const[editingCell,setEditingCell]=useState<{id:string,field:string}|null>(null)
+  const isEditing=(id:string,field:string)=>editingCell?.id===id&&editingCell?.field===field
   const[editMode,setEditMode]=useState(false)
   const[snapshot,setSnapshot]=useState<any>(null)
   const[adresseMode,setAdresseMode]=useState<'hidden'|'client'|'manuel'|null>(null)
@@ -258,29 +260,68 @@ export default function NouveauDevisPage(){
               </div>
             </div>
           </td>
-          <td style={{padding:'8px 4px',width:70}}>
-            <input type="number" value={l.qte||0} min={0} step={0.5} onChange={e=>updateLigne(l.id,'qte',parseFloat(e.target.value)||0)}
-              style={{width:'100%',border:`1px solid ${BD}`,borderRadius:6,fontSize:13,padding:'5px 8px',outline:'none',textAlign:'right' as const,color:'#111',fontWeight:500,background:'#fafafa'}}
-              onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
-              onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+          {/* QTÉ + UNITÉ */}
+          <td style={{padding:'6px 8px',width:100}} onClick={()=>setEditingCell({id:l.id,field:'qte'})}>
+            {isEditing(l.id,'qte')?(
+              <div style={{display:'flex',alignItems:'center',gap:4}}>
+                <input type="number" autoFocus value={l.qte||0} min={0} step={0.5}
+                  onChange={e=>updateLigne(l.id,'qte',parseFloat(e.target.value)||0)}
+                  onBlur={()=>setEditingCell(null)}
+                  style={{width:55,border:`1px solid ${G}`,borderRadius:5,fontSize:13,padding:'4px 6px',outline:'none',textAlign:'right' as const,color:'#111',fontWeight:500}}/>
+                <select value={l.unite||'u'} onChange={e=>updateLigne(l.id,'unite',e.target.value)}
+                  onBlur={()=>setEditingCell(null)}
+                  style={{border:`1px solid ${G}`,borderRadius:5,fontSize:12,padding:'4px 4px',outline:'none',background:'#fff',color:'#111'}}>
+                  {UNITES.map(u=><option key={u}>{u}</option>)}
+                </select>
+              </div>
+            ):(
+              <div style={{fontSize:13,color:'#333',cursor:'pointer',padding:'4px 6px',borderRadius:5,textAlign:'right' as const}}
+                onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
+                onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                {l.qte||0} <span style={{fontSize:11,color:'#888'}}>{l.unite||'u'}</span>
+              </div>
+            )}
           </td>
-          <td style={{padding:'8px 4px',width:90}}>
-            {isOuvrage&&!l.prixManuel
-              ?<div style={{fontSize:12,color:'#888',textAlign:'right' as const,padding:'4px 6px'}}>auto</div>
-              :<input type="number" value={isOuvrage?l.prixForce||0:l.pu||0} min={0}
+          {/* PU HT */}
+          <td style={{padding:'6px 8px',width:100}} onClick={()=>!isOuvrage||l.prixManuel?setEditingCell({id:l.id,field:'pu'}):null}>
+            {isEditing(l.id,'pu')?(
+              <input type="number" autoFocus value={isOuvrage?l.prixForce||0:l.pu||0} min={0}
                 onChange={e=>updateLigne(l.id,isOuvrage?'prixForce':'pu',parseFloat(e.target.value)||0)}
-                style={{width:'100%',border:`1px solid ${BD}`,borderRadius:6,fontSize:13,padding:'5px 8px',outline:'none',textAlign:'right' as const,color:'#111',fontWeight:500,background:'#fafafa'}}
-                onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
-                onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>}
-            {isOuvrage&&<div style={{display:'flex',alignItems:'center',gap:3,marginTop:2}}>
-              <input type="checkbox" checked={l.prixManuel||false} onChange={e=>updateLigne(l.id,'prixManuel',e.target.checked)} style={{accentColor:G,width:10,height:10}}/>
-              <span style={{fontSize:9,color:'#888'}}>Manuel</span>
-            </div>}
+                onBlur={()=>setEditingCell(null)}
+                style={{width:'100%',border:`1px solid ${G}`,borderRadius:5,fontSize:13,padding:'4px 6px',outline:'none',textAlign:'right' as const,color:'#111',fontWeight:500}}/>
+            ):(
+              <div style={{fontSize:13,color:'#333',cursor:isOuvrage&&!l.prixManuel?'default':'pointer',padding:'4px 6px',borderRadius:5,textAlign:'right' as const,display:'flex',alignItems:'center',justifyContent:'flex-end',gap:6}}
+                onMouseEnter={e=>{if(!isOuvrage||l.prixManuel)(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}}
+                onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                {isOuvrage&&!l.prixManuel?(
+                  <span style={{fontSize:11,color:'#aaa',fontStyle:'italic'}}>auto</span>
+                ):(
+                  <span style={{fontWeight:500}}>{fmt(isOuvrage?l.prixForce||0:l.pu||0)} €</span>
+                )}
+                {isOuvrage&&(
+                  <label style={{display:'flex',alignItems:'center',gap:3,cursor:'pointer'}} onClick={e=>e.stopPropagation()}>
+                    <input type="checkbox" checked={l.prixManuel||false} onChange={e=>updateLigne(l.id,'prixManuel',e.target.checked)} style={{accentColor:G,width:10,height:10}}/>
+                    <span style={{fontSize:9,color:'#888'}}>Manuel</span>
+                  </label>
+                )}
+              </div>
+            )}
           </td>
-          <td style={{padding:'8px 4px',width:70}}>
-            <select value={l.tva||'20%'} onChange={e=>updateLigne(l.id,'tva',e.target.value)} style={{width:'100%',border:`1px solid ${BD}`,borderRadius:6,fontSize:13,padding:'5px 6px',outline:'none',background:'#fafafa',color:'#111',fontWeight:500}}>
-              {TVA_OPTIONS.map(t=><option key={t}>{t}</option>)}
-            </select>
+          {/* TVA */}
+          <td style={{padding:'6px 8px',width:70}} onClick={()=>setEditingCell({id:l.id,field:'tva'})}>
+            {isEditing(l.id,'tva')?(
+              <select autoFocus value={l.tva||'20%'} onChange={e=>updateLigne(l.id,'tva',e.target.value)}
+                onBlur={()=>setEditingCell(null)}
+                style={{width:'100%',border:`1px solid ${G}`,borderRadius:5,fontSize:13,padding:'4px',outline:'none',background:'#fff',color:'#111'}}>
+                {TVA_OPTIONS.map(t=><option key={t}>{t}</option>)}
+              </select>
+            ):(
+              <div style={{fontSize:13,color:'#333',cursor:'pointer',padding:'4px 6px',borderRadius:5,textAlign:'center' as const}}
+                onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
+                onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                {l.tva||'20%'}
+              </div>
+            )}
           </td>
           <td style={{padding:'8px 8px',width:100,textAlign:'right' as const}}>
             <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{fmt(ht)} €</div>
