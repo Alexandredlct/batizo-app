@@ -150,48 +150,6 @@ export default function MesInfosPage(){
             </div>
           </div>
 
-          {/* Infos entreprise */}
-          <div style={{marginBottom:24}}>
-            <div style={{fontSize:13,fontWeight:600,color:'#333',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Informations entreprise</div>
-            <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,padding:'20px 24px'}}>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
-                <Field label="Nom de l'entreprise *" defaultVal="Batizo SAS"/>
-                <div>
-                  <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Forme juridique</label>
-                  <select defaultValue="SAS" onChange={()=>setHasChanges(true)} style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
-                    <option>SAS</option><option>SARL</option><option>EURL</option><option>Auto-entrepreneur</option>
-                  </select>
-                </div>
-                <Field label="SIRET" defaultVal="853 572 014"/>
-                <Field label="Numéro TVA intracommunautaire" defaultVal="FR XX XXX XXX XXX"/>
-                <Field label="Téléphone entreprise" defaultVal="01 84 78 24 50" type="tel"/>
-                <Field label="Email entreprise" defaultVal="contact@batizo.fr" type="email"/>
-                <Field label="Site web" defaultVal="https://www.batizo.fr" type="url" full/>
-              </div>
-            </div>
-          </div>
-
-          {/* Adresse */}
-          <div style={{marginBottom:24}}>
-            <div style={{fontSize:13,fontWeight:600,color:'#333',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Adresse de l'entreprise</div>
-            <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,padding:'20px 24px'}}>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:14}}>
-                <Field label="Adresse (numéro et voie) *" defaultVal="130 rue de Normandie" full/>
-                <Field label="Code postal *" defaultVal="92400"/>
-                <Field label="Ville *" defaultVal="Courbevoie"/>
-                <div>
-                  <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Pays</label>
-                  <select defaultValue="France" onChange={()=>setHasChanges(true)} style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
-                    <option>France</option><option>Belgique</option><option>Suisse</option>
-                  </select>
-                </div>
-              </div>
-              <label style={{display:'flex',alignItems:'center',gap:8,fontSize:13,cursor:'pointer',color:'#555'}}>
-                <input type="checkbox"defaultChecked/>Utiliser cette adresse comme adresse de facturation
-              </label>
-            </div>
-          </div>
-
           {/* Sécurité */}
           <div style={{marginBottom:24}}>
             <div style={{fontSize:13,fontWeight:600,color:'#333',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Sécurité</div>

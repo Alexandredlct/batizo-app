@@ -31,6 +31,10 @@ const DEFAULT_PARAMS={
   decennale:'Allianz — Police n° 12345678',
   slogan:'',
   iban:'',
+  adresseLigne1:'130 rue de Normandie',
+  codePostal:'92400',
+  ville:'Courbevoie',
+  pays:'France',
   // En-tête affichage
   showNom:true,showAdresse:true,showTel:true,showEmail:false,
   showSiteWeb:false,showSiret:true,showSlogan:false,showDecennale:true,
@@ -220,6 +224,37 @@ export default function ParametresPage(){
               {/* ===== EN-TÊTE ===== */}
               {tab==='entete'&&(
                 <div>
+                  <Section title="Informations entreprise">
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      <Field label="Nom de l'entreprise *" k="nomEntreprise" placeholder="Batizo SAS"/>
+                      <div>
+                        <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Forme juridique</label>
+                        <select value={params.formeJuridique} onChange={e=>set('formeJuridique',e.target.value)}
+                          style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',background:'#fff'}}>
+                          {['SAS','SARL','EURL','SCI','SASU','Auto-entrepreneur','EI','Autre'].map(f=><option key={f}>{f}</option>)}
+                        </select>
+                      </div>
+                      <Field label="SIRET" k="siret" placeholder="123 456 789 00012"/>
+                      <Field label="N° TVA intracommunautaire" k="tvaIntra" placeholder="FR12123456789"/>
+                      <Field label="Téléphone" k="tel" placeholder="01 23 45 67 89"/>
+                      <Field label="Email entreprise" k="email" placeholder="contact@batizo.fr"/>
+                      <Field label="Site web" k="siteWeb" placeholder="www.batizo.fr"/>
+                      <Field label="N° Assurance décennale" k="decennale" placeholder="Allianz — Police n° 12345"/>
+                    </div>
+                    <div style={{marginTop:12,display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      <Field label="Adresse (numéro et voie)" k="adresseLigne1" placeholder="130 rue de Normandie"/>
+                      <Field label="Code postal" k="codePostal" placeholder="92400"/>
+                      <Field label="Ville" k="ville" placeholder="Courbevoie"/>
+                      <div>
+                        <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Pays</label>
+                        <select value={(params as any).pays||'France'} onChange={e=>set('pays',e.target.value)}
+                          style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',background:'#fff'}}>
+                          {['France','Belgique','Suisse','Luxembourg'].map(p=><option key={p}>{p}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                  </Section>
+
                   <Section title="Logo">
                     <div style={{border:`2px dashed ${BD}`,borderRadius:10,padding:'24px',textAlign:'center' as const,cursor:'pointer',marginBottom:12,background:'#fafafa'}}
                       onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor=G}
