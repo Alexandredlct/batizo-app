@@ -66,7 +66,7 @@ export default function NouveauDevisPage(){
   const[showSaved,setShowSaved]=useState(false)
   const[showHeaderInfo,setShowHeaderInfo]=useState(false)
   const[ouvrageExpanded,setOuvrageExpanded]=useState<Record<string,boolean>>({})
-  const[isDirty,setIsDirty]=useState(false)
+  const[editMode,setEditMode]=useState(false)
   const[adresseMode,setAdresseMode]=useState<'hidden'|'client'|'manuel'|null>(null)
   const[showAdresseMenu,setShowAdresseMenu]=useState(false)
   const[numeroDevis,setNumeroDevis]=useState<string|null>(null)
@@ -94,7 +94,7 @@ export default function NouveauDevisPage(){
   const addLigne=(type:LigneType,data?:any)=>{
     const base:Ligne={id:genId(),type}
     if(type==='materiau'||type==='mo'){
-      setIsDirty(true);setLignes(p=>[...p,{...base,designation:data?.nom||'',description:'',unite:data?.unite||'u',qte:1,pu:data?.pu||0,tva:data?.tva||'20%'}])
+      setEditMode(true);setLignes(p=>[...p,{...base,designation:data?.nom||'',description:'',unite:data?.unite||'u',qte:1,pu:data?.pu||0,tva:data?.tva||'20%'}])
     } else if(type==='ouvrage'){
       setLignes(p=>[...p,{...base,designation:data?.nom||'Nouvel ouvrage',description:'',unite:data?.unite||'u',qte:1,pu:data?.pu||0,tva:data?.tva||'20%',lignesInternes:data?.lignesInternes||[],prixManuel:false}])
     } else if(type==='categorie'||type==='sous-categorie'){
@@ -107,8 +107,8 @@ export default function NouveauDevisPage(){
     setShowBiblio(null)
   }
 
-  const updateLigne=(id:string,field:string,val:any)=>{setIsDirty(true);setLignes(p=>p.map(l=>l.id===id?{...l,[field]:val}:l))}
-  const deleteLigne=(id:string)=>{setIsDirty(true);setLignes(p=>p.filter(l=>l.id!==id))}
+  const updateLigne=(id:string,field:string,val:any)=>{setEditMode(true);setLignes(p=>p.map(l=>l.id===id?{...l,[field]:val}:l))}
+  const deleteLigne=(id:string)=>{setEditMode(true);setLignes(p=>p.filter(l=>l.id!==id))}
   const moveLigne=(id:string,dir:'up'|'down')=>{
     setLignes(p=>{
       const idx=p.findIndex(l=>l.id===id)
@@ -335,8 +335,11 @@ export default function NouveauDevisPage(){
               )}
             </div>
             <button style={{padding:'8px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',color:'#333',fontWeight:500}}>Aperçu PDF</button>
-            <button onClick={()=>{setShowSaved(true);setIsDirty(false);setTimeout(()=>setShowSaved(false),3000)}}
-              style={{padding:'8px 18px',background:isDirty?G:'#f3f4f6',color:isDirty?'#fff':'#888',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:isDirty?'pointer':'default',transition:'all 0.2s'}}>{isDirty?'Enregistrer':'Modifier'}</button>
+            <button onClick={()=>{
+                if(editMode){setShowSaved(true);setEditMode(false);setTimeout(()=>setShowSaved(false),3000)}
+                else{setEditMode(true)}
+              }}
+              style={{padding:'8px 18px',background:editMode?G:'#f3f4f6',color:editMode?'#fff':'#555',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer',transition:'all 0.2s'}}>{editMode?'Enregistrer':'Modifier'}</button>
           </div>
         </div>
 
@@ -641,7 +644,7 @@ export default function NouveauDevisPage(){
             </p>
             <div style={{display:'flex',gap:10}}>
               <button onClick={()=>setShowNumeroModal(false)} style={{flex:1,padding:11,border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555',fontWeight:500}}>Annuler</button>
-              <button onClick={()=>{setNumeroDevis('DEV-2026-001');setShowNumeroModal(false);setIsDirty(true)}}
+              <button onClick={()=>{setNumeroDevis('DEV-2026-001');setShowNumeroModal(false);setEditMode(true)}}
                 style={{flex:1,padding:11,background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
                 ✔ Attribuer ce numéro
               </button>
