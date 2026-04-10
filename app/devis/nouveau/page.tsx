@@ -207,17 +207,17 @@ export default function NouveauDevisPage(){
       const st=getSousTotal(idx)
       const isSub=l.type==='sous-categorie'
       return(
-        <tr key={l.id} style={{background:isSub?'#f8f9fa':'#f0fdf4'}}>
+        <tr key={l.id} style={{background:isSub?'#f0fdf4':'#dcfce7'}}>
           <td colSpan={6} style={{padding:'8px 12px'}}>
             <div style={{display:'flex',alignItems:'center',gap:8}}>
               <button onClick={()=>updateLigne(l.id,'collapsed',!l.collapsed)} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#888',padding:0}}>{l.collapsed?'▶':'▼'}</button>
               <input value={l.titre||''} onChange={e=>updateLigne(l.id,'titre',e.target.value)}
-                style={{flex:1,border:'none',background:'transparent',fontSize:isSub?13:14,fontWeight:700,color:isSub?'#333':'#111',outline:'none',fontFamily:'system-ui'}}
+                style={{flex:1,border:'none',background:'transparent',fontSize:isSub?13:14,fontWeight:700,color:isSub?G:'#15803d',outline:'none',fontFamily:'system-ui'}}
                 placeholder={isSub?'Sous-catégorie':'Catégorie'}/>
             </div>
           </td>
           <td colSpan={2} style={{padding:'8px 12px',textAlign:'right' as const}}>
-            <span style={{fontSize:13,fontWeight:700,color:isSub?'#555':G}}>{fmt(st)} €</span>
+            <span style={{fontSize:13,fontWeight:700,color:isSub?G:'#15803d'}}>{fmt(st)} €</span>
             <div style={{display:'flex',justifyContent:'flex-end',gap:4,marginTop:2}}>
               <button onClick={()=>moveLigne(l.id,'up')} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:11}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>↑</button>
               <button onClick={()=>moveLigne(l.id,'down')} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:11}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>↓</button>
