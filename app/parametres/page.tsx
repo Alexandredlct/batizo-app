@@ -260,6 +260,9 @@ export default function ParametresPage(){
                         {label:'Site web',k:'siteWeb',showK:'showSiteWeb',placeholder:'www.batizo.fr'},
                         {label:'Assurance décennale',k:'decennale',showK:'showDecennale',placeholder:'Allianz — Police n° 12345'},
                         {label:'Slogan / Accroche',k:'slogan',showK:'showSlogan',placeholder:'Votre artisan de confiance'},
+                        {label:'Adresse',k:'adresseLigne1',showK:'showAdresse',placeholder:'130 rue de Normandie'},
+                        {label:'Code postal',k:'codePostal',showK:'showAdresse',placeholder:'92400'},
+                        {label:'Ville',k:'ville',showK:'showAdresse',placeholder:'Courbevoie'},
                       ].map(({label,k,showK,placeholder,select}:any)=>(
                         <div key={k} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:8,background:(params as any)[showK]?'#f9fafb':'#fff'}}>
                           <input type="checkbox" checked={(params as any)[showK]||false} onChange={e=>set(showK,e.target.checked)} style={{accentColor:G,width:15,height:15,flexShrink:0}}/>
@@ -278,20 +281,7 @@ export default function ParametresPage(){
                     </div>
                   </Section>
 
-                  <Section title="Adresse du siège social">
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-                      <Field label="Adresse (numéro et voie)" k="adresseLigne1" placeholder="130 rue de Normandie"/>
-                      <Field label="Code postal" k="codePostal" placeholder="92400"/>
-                      <Field label="Ville" k="ville" placeholder="Courbevoie"/>
-                      <div>
-                        <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Pays</label>
-                        <select value={(params as any).pays||'France'} onChange={e=>set('pays',e.target.value)}
-                          style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',background:'#fff'}}>
-                          {['France','Belgique','Suisse','Luxembourg'].map(p=><option key={p}>{p}</option>)}
-                        </select>
-                      </div>
-                    </div>
-                  </Section>
+
                 </div>
               )}
 
@@ -609,8 +599,12 @@ export default function ParametresPage(){
                     <div style={{background:params.couleurPrincipale,padding:'16px 18px',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
                       <div style={{color:'#fff'}}>
                         {params.showNom&&<div style={{fontWeight:700,fontSize:14}}>{params.nomEntreprise}</div>}
-                        {params.showAdresse&&<div style={{fontSize:10,opacity:0.9,marginTop:1}}>{params.adresse}</div>}
-                        {params.showTel&&<div style={{fontSize:10,opacity:0.9}}>{params.tel}</div>}
+                        {params.showAdresse&&<div style={{fontSize:10,opacity:0.9,marginTop:1}}>{params.adresseLigne1||params.adresse}{params.codePostal?` ${params.codePostal}`:''}{params.ville?` ${params.ville}`:''}</div>}
+                        {params.showTel&&<div style={{fontSize:10,opacity:0.9}}>📞 {params.tel}</div>}
+                        {params.showEmail&&<div style={{fontSize:10,opacity:0.9}}>✉ {params.email}</div>}
+                        {params.showSiteWeb&&<div style={{fontSize:10,opacity:0.9}}>🌐 {params.siteWeb}</div>}
+                        {params.showSiret&&<div style={{fontSize:9,opacity:0.8,marginTop:2}}>SIRET: {params.siret}</div>}
+                        {params.showSlogan&&params.slogan&&<div style={{fontSize:9,opacity:0.8,fontStyle:'italic'}}>{params.slogan}</div>}
                         {params.showDecennale&&<div style={{fontSize:9,opacity:0.75,marginTop:3}}>Décennale: {params.decennale}</div>}
                       </div>
                       <div style={{color:'#fff',textAlign:'right' as const}}>
