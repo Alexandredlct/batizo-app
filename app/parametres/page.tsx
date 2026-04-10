@@ -224,37 +224,6 @@ export default function ParametresPage(){
               {/* ===== EN-TÊTE ===== */}
               {tab==='entete'&&(
                 <div>
-                  <Section title="Informations entreprise">
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-                      <Field label="Nom de l'entreprise *" k="nomEntreprise" placeholder="Batizo SAS"/>
-                      <div>
-                        <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Forme juridique</label>
-                        <select value={params.formeJuridique} onChange={e=>set('formeJuridique',e.target.value)}
-                          style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',background:'#fff'}}>
-                          {['SAS','SARL','EURL','SCI','SASU','Auto-entrepreneur','EI','Autre'].map(f=><option key={f}>{f}</option>)}
-                        </select>
-                      </div>
-                      <Field label="SIRET" k="siret" placeholder="123 456 789 00012"/>
-                      <Field label="N° TVA intracommunautaire" k="tvaIntra" placeholder="FR12123456789"/>
-                      <Field label="Téléphone" k="tel" placeholder="01 23 45 67 89"/>
-                      <Field label="Email entreprise" k="email" placeholder="contact@batizo.fr"/>
-                      <Field label="Site web" k="siteWeb" placeholder="www.batizo.fr"/>
-                      <Field label="N° Assurance décennale" k="decennale" placeholder="Allianz — Police n° 12345"/>
-                    </div>
-                    <div style={{marginTop:12,display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-                      <Field label="Adresse (numéro et voie)" k="adresseLigne1" placeholder="130 rue de Normandie"/>
-                      <Field label="Code postal" k="codePostal" placeholder="92400"/>
-                      <Field label="Ville" k="ville" placeholder="Courbevoie"/>
-                      <div>
-                        <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Pays</label>
-                        <select value={(params as any).pays||'France'} onChange={e=>set('pays',e.target.value)}
-                          style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',background:'#fff'}}>
-                          {['France','Belgique','Suisse','Luxembourg'].map(p=><option key={p}>{p}</option>)}
-                        </select>
-                      </div>
-                    </div>
-                  </Section>
-
                   <Section title="Logo">
                     <div style={{border:`2px dashed ${BD}`,borderRadius:10,padding:'24px',textAlign:'center' as const,cursor:'pointer',marginBottom:12,background:'#fafafa'}}
                       onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor=G}
@@ -276,48 +245,57 @@ export default function ParametresPage(){
                     </div>
                   </Section>
 
-                  <Section title="Afficher dans l'en-tête">
-                    <div style={{fontSize:11,color:'#888',marginBottom:10,display:'flex',alignItems:'center',gap:4}}>
-                      📎 Données issues de <a href="/mes-informations" style={{color:G,textDecoration:'none'}}>Mes informations</a>
+                  <Section title="Informations entreprise">
+                    <div style={{fontSize:11,color:'#888',marginBottom:12,display:'flex',alignItems:'center',gap:4}}>
+                      Les champs cochés ✅ apparaîtront dans l'en-tête de vos documents.
                     </div>
-                    <CheckRow label="Nom entreprise" k="showNom">
-                      <input value={params.nomEntreprise} onChange={e=>set('nomEntreprise',e.target.value)}
-                        style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
-                    </CheckRow>
-                    <CheckRow label="Adresse" k="showAdresse">
-                      <input value={params.adresse} onChange={e=>set('adresse',e.target.value)}
-                        style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
-                    </CheckRow>
-                    <CheckRow label="Téléphone" k="showTel">
-                      <input value={params.tel} onChange={e=>set('tel',e.target.value)}
-                        style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
-                    </CheckRow>
-                    <CheckRow label="Email" k="showEmail">
-                      <input value={params.email} onChange={e=>set('email',e.target.value)}
-                        style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
-                    </CheckRow>
-                    <CheckRow label="Site web" k="showSiteWeb">
-                      <input value={params.siteWeb} onChange={e=>set('siteWeb',e.target.value)}
-                        style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
-                    </CheckRow>
-                    <CheckRow label="SIRET" k="showSiret">
-                      <input value={params.siret} onChange={e=>set('siret',e.target.value)}
-                        style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
-                    </CheckRow>
-                    <CheckRow label="Slogan / Accroche" k="showSlogan">
-                      <input value={params.slogan} onChange={e=>set('slogan',e.target.value)} placeholder="Ex : Votre artisan de confiance"
-                        style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
-                    </CheckRow>
-                    <CheckRow label="Garantie décennale" k="showDecennale">
-                      <input value={params.decennale} onChange={e=>set('decennale',e.target.value)}
-                        style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
-                    </CheckRow>
+                    <div style={{display:'flex',flexDirection:'column' as const,gap:8}}>
+                      {[
+                        {label:"Nom de l'entreprise",k:'nomEntreprise',showK:'showNom',placeholder:'Batizo SAS'},
+                        {label:'Forme juridique',k:'formeJuridique',showK:'showFormeJuridique',placeholder:'SAS',select:['SAS','SARL','EURL','SCI','SASU','Auto-entrepreneur','EI','Autre']},
+                        {label:'SIRET',k:'siret',showK:'showSiret',placeholder:'123 456 789 00012'},
+                        {label:'N° TVA intracommunautaire',k:'tvaIntra',showK:'showTvaIntra',placeholder:'FR12123456789'},
+                        {label:'Téléphone',k:'tel',showK:'showTel',placeholder:'01 23 45 67 89'},
+                        {label:'Email entreprise',k:'email',showK:'showEmail',placeholder:'contact@batizo.fr'},
+                        {label:'Site web',k:'siteWeb',showK:'showSiteWeb',placeholder:'www.batizo.fr'},
+                        {label:'Assurance décennale',k:'decennale',showK:'showDecennale',placeholder:'Allianz — Police n° 12345'},
+                        {label:'Slogan / Accroche',k:'slogan',showK:'showSlogan',placeholder:'Votre artisan de confiance'},
+                      ].map(({label,k,showK,placeholder,select}:any)=>(
+                        <div key={k} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:8,background:(params as any)[showK]?'#f9fafb':'#fff'}}>
+                          <input type="checkbox" checked={(params as any)[showK]||false} onChange={e=>set(showK,e.target.checked)} style={{accentColor:G,width:15,height:15,flexShrink:0}}/>
+                          <span style={{fontSize:12,color:'#555',minWidth:160,flexShrink:0}}>{label}</span>
+                          {select?(
+                            <select value={(params as any)[k]||''} onChange={e=>set(k,e.target.value)}
+                              style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none',background:'#fff'}}>
+                              {select.map((o:string)=><option key={o}>{o}</option>)}
+                            </select>
+                          ):(
+                            <input value={(params as any)[k]||''} onChange={e=>set(k,e.target.value)} placeholder={placeholder}
+                              style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </Section>
+
+                  <Section title="Adresse du siège social">
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      <Field label="Adresse (numéro et voie)" k="adresseLigne1" placeholder="130 rue de Normandie"/>
+                      <Field label="Code postal" k="codePostal" placeholder="92400"/>
+                      <Field label="Ville" k="ville" placeholder="Courbevoie"/>
+                      <div>
+                        <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Pays</label>
+                        <select value={(params as any).pays||'France'} onChange={e=>set('pays',e.target.value)}
+                          style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',background:'#fff'}}>
+                          {['France','Belgique','Suisse','Luxembourg'].map(p=><option key={p}>{p}</option>)}
+                        </select>
+                      </div>
+                    </div>
                   </Section>
                 </div>
               )}
 
-              {/* ===== PIED DE PAGE ===== */}
-              {tab==='pied'&&(
+                            {tab==='pied'&&(
                 <div>
                   <Section title="Informations légales">
                     <CheckRow label="Siège social" k="showSiegeSocial"/>
