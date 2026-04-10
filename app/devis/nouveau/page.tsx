@@ -149,19 +149,23 @@ export default function NouveauDevisPage(){
 
   // Calcul numérotation hiérarchique
   const getNumero=(lignes:Ligne[],idx:number)=>{
-    let cat=0,sub=0,line=0
+    let cat=0,sub=0,line=0,lastCat=0,lastSub=0
     for(let i=0;i<=idx;i++){
       const l=lignes[i]
-      if(l.type==='categorie'){cat++;sub=0;line=0}
-      else if(l.type==='sous-categorie'){sub++;line=0}
-      else if(['materiau','mo','ouvrage'].includes(l.type)){line++}
+      if(l.type==='categorie'){
+        cat++;sub=0;line=0;lastCat=cat;lastSub=0
+      } else if(l.type==='sous-categorie'){
+        sub++;line=0;lastSub=sub
+      } else if(['materiau','mo','ouvrage'].includes(l.type)){
+        line++
+      }
     }
     const l=lignes[idx]
-    if(l.type==='categorie') return `${cat}.`
-    if(l.type==='sous-categorie') return `${cat}.${sub}`
+    if(l.type==='categorie') return `${cat}`
+    if(l.type==='sous-categorie') return `${lastCat}.${sub}`
     if(['materiau','mo','ouvrage'].includes(l.type)){
-      if(sub>0) return `${cat}.${sub}.${line}`
-      if(cat>0) return `${cat}.${line}`
+      if(lastSub>0) return `${lastCat}.${lastSub}.${line}`
+      if(lastCat>0) return `${lastCat}.${line}`
       return `${line}`
     }
     return ''
