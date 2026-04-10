@@ -149,22 +149,20 @@ export default function NouveauDevisPage(){
 
   // Calcul numérotation hiérarchique
   const getNumero=(lignes:Ligne[],idx:number)=>{
-    let catCount=0,subCount=0,lineCount=0
-    let currentCat=0,currentSub=0
+    let cat=0,sub=0,line=0
     for(let i=0;i<=idx;i++){
       const l=lignes[i]
-      if(l.type==='categorie'){catCount++;subCount=0;lineCount=0;currentCat=catCount;currentSub=0}
-      else if(l.type==='sous-categorie'){subCount++;lineCount=0;currentSub=subCount}
-      else if(['materiau','mo','ouvrage'].includes(l.type)){lineCount++}
-      if(i===idx){
-        if(l.type==='categorie') return `${catCount}.`
-        if(l.type==='sous-categorie') return `${currentCat}.${subCount}`
-        if(['materiau','mo','ouvrage'].includes(l.type)){
-          if(currentSub>0) return `${currentCat}.${currentSub}.${lineCount}`
-          if(currentCat>0) return `${currentCat}.${lineCount}`
-          return `${lineCount}`
-        }
-      }
+      if(l.type==='categorie'){cat++;sub=0;line=0}
+      else if(l.type==='sous-categorie'){sub++;line=0}
+      else if(['materiau','mo','ouvrage'].includes(l.type)){line++}
+    }
+    const l=lignes[idx]
+    if(l.type==='categorie') return `${cat}.`
+    if(l.type==='sous-categorie') return `${cat}.${sub}`
+    if(['materiau','mo','ouvrage'].includes(l.type)){
+      if(sub>0) return `${cat}.${sub}.${line}`
+      if(cat>0) return `${cat}.${line}`
+      return `${line}`
     }
     return ''
   }
@@ -233,7 +231,7 @@ export default function NouveauDevisPage(){
         <tr key={l.id} style={{borderBottom:`1px solid ${BD}`,background:'#fff'}}
           onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
           onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background='#fff'}>
-          <td style={{padding:'8px 6px',width:44,textAlign:'center' as const}}><span style={{fontSize:10,color:'#aaa',fontWeight:600}}>{getNumero(lignes,idx)}</span></td>
+          <td style={{padding:'8px 6px',width:60,textAlign:'left' as const,paddingLeft:10}}><span style={{fontSize:11,color:'#888',fontWeight:600,fontFamily:'monospace'}}>{getNumero(lignes,idx)}</span></td>
           <td style={{padding:'8px 8px',minWidth:240}}>
             <div style={{display:'flex',alignItems:'center',gap:6}}>
               {isOuvrage&&<button onClick={()=>setOuvrageExpanded(p=>({...p,[l.id]:!expanded}))} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#888',padding:0,flexShrink:0}}>{expanded?'▼':'▶'}</button>}
