@@ -54,6 +54,7 @@ export default function NouveauDevisPage(){
   const[acompte,setAcompte]=useState(0)
   const[acomptePct,setAcomptePct]=useState(true)
   const[primeCEE,setPrimeCEE]=useState(0)
+  const[primeCEELabel,setPrimeCEELabel]=useState('')
   const[condPaiement,setCondPaiement]=useState('Paiement par chèque ou virement bancaire')
   const[notes,setNotes]=useState('')
   const[statut,setStatut]=useState<'brouillon'|'en_attente'|'finalise'|'signe'|'refuse'>('brouillon')
@@ -65,6 +66,11 @@ export default function NouveauDevisPage(){
   const[showSaved,setShowSaved]=useState(false)
   const[showHeaderInfo,setShowHeaderInfo]=useState(false)
   const[ouvrageExpanded,setOuvrageExpanded]=useState<Record<string,boolean>>({})
+  const[isDirty,setIsDirty]=useState(false)
+  const[adresseMode,setAdresseMode]=useState<'hidden'|'client'|'manuel'|null>(null)
+  const[showAdresseMenu,setShowAdresseMenu]=useState(false)
+  const[numeroDevis,setNumeroDevis]=useState<string|null>(null)
+  const[showNumeroModal,setShowNumeroModal]=useState(false)
 
   const calcLigneHT=(l:Ligne)=>{
     if(l.type==='ouvrage'){
@@ -88,7 +94,7 @@ export default function NouveauDevisPage(){
   const addLigne=(type:LigneType,data?:any)=>{
     const base:Ligne={id:genId(),type}
     if(type==='materiau'||type==='mo'){
-      setLignes(p=>[...p,{...base,designation:data?.nom||'',description:'',unite:data?.unite||'u',qte:1,pu:data?.pu||0,tva:data?.tva||'20%'}])
+      setIsDirty(true);setLignes(p=>[...p,{...base,designation:data?.nom||'',description:'',unite:data?.unite||'u',qte:1,pu:data?.pu||0,tva:data?.tva||'20%'}])
     } else if(type==='ouvrage'){
       setLignes(p=>[...p,{...base,designation:data?.nom||'Nouvel ouvrage',description:'',unite:data?.unite||'u',qte:1,pu:data?.pu||0,tva:data?.tva||'20%',lignesInternes:data?.lignesInternes||[],prixManuel:false}])
     } else if(type==='categorie'||type==='sous-categorie'){
@@ -101,8 +107,8 @@ export default function NouveauDevisPage(){
     setShowBiblio(null)
   }
 
-  const updateLigne=(id:string,field:string,val:any)=>setLignes(p=>p.map(l=>l.id===id?{...l,[field]:val}:l))
-  const deleteLigne=(id:string)=>setLignes(p=>p.filter(l=>l.id!==id))
+  const updateLigne=(id:string,field:string,val:any)=>{setIsDirty(true);setLignes(p=>p.map(l=>l.id===id?{...l,[field]:val}:l))}
+  const deleteLigne=(id:string)=>{setIsDirty(true);setLignes(p=>p.filter(l=>l.id!==id))}
   const moveLigne=(id:string,dir:'up'|'down')=>{
     setLignes(p=>{
       const idx=p.findIndex(l=>l.id===id)
@@ -127,6 +133,28 @@ export default function NouveauDevisPage(){
   }
   const statutLabels:Record<string,string>={brouillon:'Brouillon',en_attente:'En attente',finalise:'Finalisé',signe:'Signé',refuse:'Refusé'}
 
+  // Calcul numérotation hiérarchique
+  const getNumero=(lignes:Ligne[],idx:number)=>{
+    let catCount=0,subCount=0,lineCount=0
+    let currentCat=0,currentSub=0
+    for(let i=0;i<=idx;i++){
+      const l=lignes[i]
+      if(l.type==='categorie'){catCount++;subCount=0;lineCount=0;currentCat=catCount;currentSub=0}
+      else if(l.type==='sous-categorie'){subCount++;lineCount=0;currentSub=subCount}
+      else if(['materiau','mo','ouvrage'].includes(l.type)){lineCount++}
+      if(i===idx){
+        if(l.type==='categorie') return `${catCount}.`
+        if(l.type==='sous-categorie') return `${currentCat}.${subCount}`
+        if(['materiau','mo','ouvrage'].includes(l.type)){
+          if(currentSub>0) return `${currentCat}.${currentSub}.${lineCount}`
+          if(currentCat>0) return `${currentCat}.${lineCount}`
+          return `${lineCount}`
+        }
+      }
+    }
+    return ''
+  }
+
   const renderLigne=(l:Ligne,idx:number):any=>{
     const ht=calcLigneHT(l)
     const isOuvrage=l.type==='ouvrage'
@@ -146,7 +174,7 @@ export default function NouveauDevisPage(){
     )
 
     if(l.type==='note') return(
-      <tr key={l.id} style={{background:'#fffef0'}}>
+      <tr key={l.id} style={{background:'#fff'}}>
         <td colSpan={8} style={{padding:'6px 8px'}}>
           <div style={{display:'flex',alignItems:'flex-start',gap:8}}>
             <span style={{fontSize:11,color:AM,fontWeight:700,flexShrink:0,marginTop:7}}>📝</span>
@@ -188,10 +216,10 @@ export default function NouveauDevisPage(){
 
     return(
       <>
-        <tr key={l.id} style={{borderBottom:`1px solid ${BD}`,background:isOuvrage?'#fafff8':l.type==='mo'?'#fafafe':'#fff'}}
-          onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background=isOuvrage?'#f0fdf4':l.type==='mo'?'#f0f0ff':'#f9fafb'}
-          onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=isOuvrage?'#fafff8':l.type==='mo'?'#fafafe':'#fff'}>
-          <td style={{padding:'8px 6px',width:36,textAlign:'center' as const}}><span style={{fontSize:11,color:'#aaa'}}>{idx+1}</span></td>
+        <tr key={l.id} style={{borderBottom:`1px solid ${BD}`,background:'#fff'}}
+          onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
+          onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background='#fff'}>
+          <td style={{padding:'8px 6px',width:44,textAlign:'center' as const}}><span style={{fontSize:10,color:'#aaa',fontWeight:600}}>{getNumero(lignes,idx)}</span></td>
           <td style={{padding:'8px 8px',minWidth:240}}>
             <div style={{display:'flex',alignItems:'center',gap:6}}>
               {isOuvrage&&<button onClick={()=>setOuvrageExpanded(p=>({...p,[l.id]:!expanded}))} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#888',padding:0,flexShrink:0}}>{expanded?'▼':'▶'}</button>}
@@ -244,7 +272,7 @@ export default function NouveauDevisPage(){
           </td>
         </tr>
         {isOuvrage&&expanded&&(l.lignesInternes||[]).map((li,j)=>(
-          <tr key={li.id} style={{background:'#f8fdf8',borderBottom:'1px solid #e8f5e8'}}>
+          <tr key={li.id} style={{background:'#fafafa',borderBottom:`1px solid ${BD}`}}>
             <td style={{padding:'5px 6px',textAlign:'center' as const}}><span style={{fontSize:10,color:'#ccc'}}>{idx+1}.{j+1}</span></td>
             <td style={{padding:'5px 8px',paddingLeft:40}}>
               <input value={li.nom} onChange={e=>updateLigne(l.id,'lignesInternes',(l.lignesInternes||[]).map((x,i)=>i===j?{...x,nom:e.target.value}:x))}
@@ -307,8 +335,8 @@ export default function NouveauDevisPage(){
               )}
             </div>
             <button style={{padding:'8px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',color:'#333',fontWeight:500}}>Aperçu PDF</button>
-            <button onClick={()=>{setShowSaved(true);setTimeout(()=>setShowSaved(false),3000)}}
-              style={{padding:'8px 18px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>Enregistrer</button>
+            <button onClick={()=>{setShowSaved(true);setIsDirty(false);setTimeout(()=>setShowSaved(false),3000)}}
+              style={{padding:'8px 18px',background:isDirty?G:'#f3f4f6',color:isDirty?'#fff':'#888',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:isDirty?'pointer':'default',transition:'all 0.2s'}}>{isDirty?'Enregistrer':'Modifier'}</button>
           </div>
         </div>
 
@@ -347,7 +375,7 @@ export default function NouveauDevisPage(){
                         <div>{client.tel}</div>
                         {client.siret&&<div style={{color:'#888',fontSize:11}}>SIRET: {client.siret}</div>}
                       </div>
-                      <button onClick={()=>setClient(null)} style={{fontSize:11,color:G,background:'none',border:'none',cursor:'pointer',marginTop:6,padding:0}}>✏ Modifier</button>
+                      <button onClick={()=>{setClientSearch(client?.nom||'');setShowClientDD(true);setClient(null)}} style={{fontSize:11,color:G,background:'none',border:'none',cursor:'pointer',marginTop:6,padding:0}}>✏ Modifier</button>
                     </div>
                   ):(
                     <div style={{position:'relative'}}>
@@ -385,14 +413,70 @@ export default function NouveauDevisPage(){
 
               {/* MÉTADONNÉES */}
               <div style={{padding:'14px 24px',borderBottom:`1px solid ${BD}`,background:'#fafafa',display:'flex',gap:20,flexWrap:'wrap' as const,alignItems:'flex-end'}}>
-                <div><label style={{fontSize:11,color:'#888',display:'block',marginBottom:3}}>Devis n°</label><div style={{fontSize:13,fontWeight:600,color:'#888',fontStyle:'italic'}}>Sans numéro</div></div>
+                <div>
+                  <label style={{fontSize:11,color:'#888',display:'block',marginBottom:3}}>Devis n°</label>
+                  {numeroDevis?(
+                    <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{numeroDevis}</div>
+                  ):(
+                    <div onClick={()=>setShowNumeroModal(true)}
+                      style={{fontSize:13,fontWeight:600,color:'#aaa',fontStyle:'italic',cursor:'pointer',padding:'3px 8px',borderRadius:6,border:'1px dashed #d1d5db',display:'inline-block',transition:'all 0.15s'}}
+                      onMouseEnter={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor=G;d.style.color=G}}
+                      onMouseLeave={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor='#d1d5db';d.style.color='#aaa'}}>
+                      Sans numéro
+                    </div>
+                  )}
+                </div>
                 <div><label style={{fontSize:11,color:'#888',display:'block',marginBottom:3}}>Date</label>
                   <input type="date" value={dateDevis} onChange={e=>setDateDevis(e.target.value)} style={{padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,outline:'none',color:'#111'}}/></div>
                 <div><label style={{fontSize:11,color:'#888',display:'block',marginBottom:3}}>Validité</label>
                   <input value={validite} onChange={e=>setValidite(e.target.value)} style={{width:80,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,outline:'none',color:'#111'}}/></div>
-                <div style={{flex:1}}><label style={{fontSize:11,color:'#888',display:'block',marginBottom:3}}>Adresse du projet</label>
-                  <input value={adresseProjet} onChange={e=>setAdresseProjet(e.target.value)} placeholder="Optionnel"
-                    style={{width:'100%',padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,outline:'none',color:'#111',boxSizing:'border-box' as const}}/></div>
+                <div style={{flex:1,position:'relative'}}>
+                  <label style={{fontSize:11,color:'#888',display:'block',marginBottom:3}}>Adresse du projet</label>
+                  {adresseMode===null&&(
+                    <div onClick={()=>setShowAdresseMenu(!showAdresseMenu)}
+                      style={{padding:'5px 10px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#aaa',cursor:'pointer',background:'#fff',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                      <span>Optionnel — cliquez pour définir</span>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                  )}
+                  {adresseMode==='client'&&(
+                    <div style={{padding:'5px 10px',border:`1px solid ${G}`,borderRadius:6,fontSize:12,color:'#555',background:'#f0fdf4',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                      <span>{client?.adresse||'Adresse client non renseignée'}</span>
+                      <button onClick={()=>{setAdresseMode(null);setAdresseProjet('')}} style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:14}}>×</button>
+                    </div>
+                  )}
+                  {adresseMode==='manuel'&&(
+                    <div style={{display:'flex',gap:6}}>
+                      <input value={adresseProjet} onChange={e=>setAdresseProjet(e.target.value)} placeholder="Saisir l'adresse du projet..."
+                        style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,outline:'none',color:'#111'}}/>
+                      <button onClick={()=>{setAdresseMode(null);setAdresseProjet('')}} style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:16}}>×</button>
+                    </div>
+                  )}
+                  {showAdresseMenu&&adresseMode===null&&(
+                    <div style={{position:'absolute',top:'110%',left:0,right:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:200,overflow:'hidden'}}>
+                      <div onClick={()=>{setAdresseMode('client');setAdresseProjet(client?.adresse||'');setShowAdresseMenu(false)}}
+                        style={{padding:'10px 14px',cursor:'pointer',borderBottom:`1px solid #f3f4f6`,fontSize:13}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                        <div style={{fontWeight:600,color:'#111'}}>📍 Utiliser l\'adresse du client</div>
+                        <div style={{fontSize:11,color:'#888',marginTop:1}}>{client?.adresse||'Sélectionnez d\'abord un client'}</div>
+                      </div>
+                      <div onClick={()=>{setAdresseMode('manuel');setShowAdresseMenu(false)}}
+                        style={{padding:'10px 14px',cursor:'pointer',borderBottom:`1px solid #f3f4f6`,fontSize:13}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                        <div style={{fontWeight:600,color:'#111'}}>✏️ Saisir une autre adresse</div>
+                        <div style={{fontSize:11,color:'#888',marginTop:1}}>Adresse de chantier différente</div>
+                      </div>
+                      <div onClick={()=>{setAdresseMode('hidden');setShowAdresseMenu(false)}}
+                        style={{padding:'10px 14px',cursor:'pointer',fontSize:13}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                        <div style={{fontWeight:600,color:'#888'}}>🚫 Ne pas indiquer d'adresse</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* TITRE */}
@@ -503,13 +587,26 @@ export default function NouveauDevisPage(){
                         {remise>0&&<span style={{fontSize:11,color:RD}}>−{fmt(remiseMt)} €</span>}
                       </div>
                     </div>
-                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,fontSize:13}}>
-                      <span style={{color:'#555',flexShrink:0}}>Prime CEE / MAP</span>
-                      <div style={{display:'flex',gap:4,alignItems:'center'}}>
-                        <input type="number" value={primeCEE} min={0} onChange={e=>setPrimeCEE(parseFloat(e.target.value)||0)}
-                          style={{width:55,padding:'4px 6px',border:`1px solid ${BD}`,borderRadius:5,fontSize:12,outline:'none',textAlign:'right' as const,color:'#111'}}/>
-                        <span style={{fontSize:11,color:'#888'}}>€</span>
-                        {primeCEE>0&&<span style={{fontSize:11,color:RD}}>−{fmt(primeCEE)} €</span>}
+                    <div style={{background:'#fff8f0',border:'1px solid #fde8c8',borderRadius:8,padding:'10px 12px'}}>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}>
+                        <div style={{display:'flex',alignItems:'center',gap:6}}>
+                          <input value={primeCEELabel||'Prime non soumise à TVA à déduire…'} onChange={e=>setPrimeCEELabel(e.target.value)}
+                            style={{border:'none',background:'transparent',fontSize:12,color:'#555',outline:'none',fontStyle:'italic',minWidth:200,fontFamily:'system-ui'}}/>
+                          <div style={{position:'relative',display:'inline-block'}}>
+                            <span style={{width:16,height:16,borderRadius:'50%',background:'#f59e0b',color:'#fff',fontSize:10,fontWeight:700,display:'inline-flex',alignItems:'center',justifyContent:'center',cursor:'help'}}>?</span>
+                            <div style={{position:'absolute',bottom:'120%',left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',color:'#fff',fontSize:11,padding:'8px 12px',borderRadius:8,whiteSpace:'nowrap' as const,zIndex:300,width:260,textAlign:'center' as const,lineHeight:1.5,pointerEvents:'none',opacity:0,transition:'opacity 0.2s'}}
+                              onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.opacity='1'}
+                              className="tooltip-content">
+                              Déduisez vos primes non assujetties à la TVA (ex. CEE, MaPrimeRénov'…)
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{display:'flex',gap:4,alignItems:'center'}}>
+                          <input type="number" value={primeCEE} min={0} onChange={e=>setPrimeCEE(parseFloat(e.target.value)||0)}
+                            style={{width:65,padding:'4px 6px',border:'1px solid #fde8c8',borderRadius:5,fontSize:12,outline:'none',textAlign:'right' as const,color:'#111',background:'#fff'}}/>
+                          <span style={{fontSize:11,color:'#888'}}>€</span>
+                          {primeCEE>0&&<span style={{fontSize:11,color:RD,fontWeight:600}}>−{fmt(primeCEE)} €</span>}
+                        </div>
                       </div>
                     </div>
                     <div style={{background:'#f0fdf4',borderRadius:8,padding:'12px',display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:4}}>
@@ -523,6 +620,35 @@ export default function NouveauDevisPage(){
           </div>
         </div>
       </div>
+
+      {/* Modal numéro devis */}
+      {showNumeroModal&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowNumeroModal(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:28,maxWidth:380,width:'90%'}}>
+            <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:16}}>
+              <div style={{width:44,height:44,borderRadius:12,background:'#f0fdf4',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>🔢</div>
+              <div>
+                <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Attribuer un numéro</div>
+                <div style={{fontSize:12,color:'#888',marginTop:2}}>Cette action est non réversible</div>
+              </div>
+            </div>
+            <div style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px',marginBottom:16}}>
+              <div style={{fontSize:12,color:'#888',marginBottom:4}}>Prochain numéro disponible</div>
+              <div style={{fontSize:22,fontWeight:800,color:'#111',letterSpacing:'0.02em'}}>DEV-2026-001</div>
+            </div>
+            <p style={{fontSize:13,color:'#555',lineHeight:1.6,marginBottom:20}}>
+              Une fois attribué, ce numéro ne peut plus être modifié. Les numéros se suivent automatiquement.
+            </p>
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={()=>setShowNumeroModal(false)} style={{flex:1,padding:11,border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555',fontWeight:500}}>Annuler</button>
+              <button onClick={()=>{setNumeroDevis('DEV-2026-001');setShowNumeroModal(false);setIsDirty(true)}}
+                style={{flex:1,padding:11,background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
+                ✔ Attribuer ce numéro
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal bibliothèque */}
       {showBiblio&&(
