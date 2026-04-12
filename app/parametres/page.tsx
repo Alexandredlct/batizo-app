@@ -82,6 +82,7 @@ const DEFAULT_PARAMS={
   cgvActive:false,
   cgvTexte:'',
   pagesComp:[],
+  gardePdf:'',gardePdfNom:'',
 }
 
 export default function ParametresPage(){
@@ -496,26 +497,51 @@ export default function ParametresPage(){
                     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12,padding:'12px 14px',background:'#f9fafb',borderRadius:8,border:`1px solid ${BD}`}}>
                       <div>
                         <div style={{fontSize:13,fontWeight:600,color:'#111'}}>Activer la page de garde</div>
-                        <div style={{fontSize:11,color:'#888',marginTop:2}}>Toujours en première position — non déplaçable</div>
+                
                       </div>
                       <Toggle k="gardeActive"/>
                     </div>
                     {params.gardeActive&&(
-                      <div style={{border:`2px dashed ${BD}`,borderRadius:10,padding:'20px',textAlign:'center' as const,cursor:'pointer',background:'#fafafa',marginTop:4}}
-                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor=G}
-                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.borderColor=BD}>
-                        <div style={{fontSize:28,marginBottom:8}}>📄</div>
-                        <div style={{fontSize:13,color:'#555',fontWeight:600}}>Importer votre page de garde (PDF)</div>
-                        <div style={{fontSize:11,color:'#888',marginTop:4}}>PDF uniquement — max 5 Mo</div>
-                        <div style={{fontSize:11,color:'#888',marginTop:2}}>La page sera insérée automatiquement en première position</div>
+                      <div style={{marginTop:4}}>
+                        <input type="file" accept="application/pdf" id="garde-upload" style={{display:'none'}}
+                          onChange={e=>{
+                            const file=e.target.files?.[0]
+                            if(!file)return
+                            if(file.size>5*1024*1024){alert('Fichier trop lourd — max 5 Mo');return}
+                            const reader=new FileReader()
+                            reader.onload=(ev)=>{set('gardePdf',ev.target?.result);set('gardePdfNom',file.name)}
+                            reader.readAsDataURL(file)
+                          }}/>
+                        <label htmlFor="garde-upload">
+                          <div style={{border:`2px dashed ${(params as any).gardePdf?G:BD}`,borderRadius:10,padding:'20px',textAlign:'center' as const,cursor:'pointer',background:(params as any).gardePdf?'#f0fdf4':'#fafafa',transition:'all 0.2s'}}
+                            onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor=G}
+                            onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.borderColor=(params as any).gardePdf?G:BD}>
+                            {(params as any).gardePdf?(
+                              <div style={{display:'flex',alignItems:'center',justifyContent:'center' as const,gap:10}}>
+                                <span style={{fontSize:24}}>📄</span>
+                                <div style={{textAlign:'left' as const}}>
+                                  <div style={{fontSize:13,fontWeight:600,color:G}}>✓ {(params as any).gardePdfNom||'page-de-garde.pdf'}</div>
+                                  <div style={{fontSize:11,color:'#888',marginTop:2}}>Cliquez pour remplacer</div>
+                                </div>
+                              </div>
+                            ):(
+                              <>
+                                <div style={{fontSize:28,marginBottom:8}}>📄</div>
+                                <div style={{fontSize:13,color:'#555',fontWeight:600}}>Importer votre page de garde (PDF)</div>
+                                <div style={{fontSize:11,color:'#888',marginTop:4}}>PDF uniquement — max 5 Mo</div>
+                              </>
+                            )}
+                          </div>
+                        </label>
+                        {(params as any).gardePdf&&(
+                          <button onClick={()=>{set('gardePdf','');set('gardePdfNom','')}}
+                            style={{marginTop:8,padding:'5px 12px',background:'#fff',border:`1px solid ${BD}`,borderRadius:6,fontSize:11,cursor:'pointer',color:'#888',display:'flex',alignItems:'center',gap:4}}>
+                            🗑 Supprimer
+                          </button>
+                        )}
                       </div>
                     )}
                   </Section>
-                  <div style={{fontSize:13,color:'#888',marginBottom:16,lineHeight:1.6}}>
-                    Ces pages seront ajoutées à la fin de chaque document, après le devis ou la facture.<br/>
-                    <strong style={{color:'#111'}}>Seuls les PDF importés sont acceptés.</strong>
-                  </div>
-
                   {/* Structure document */}
                   <Section title="Structure du document PDF">
                     <div style={{display:'flex',flexDirection:'column' as const,gap:8}}>
@@ -613,6 +639,9 @@ export default function ParametresPage(){
                       </div>
                     </label>
                     <div style={{fontSize:11,color:'#888',marginTop:6,textAlign:'center' as const}}>PDF uniquement — max 5 Mo par fichier</div>
+                    <div style={{fontSize:12,color:'#888',marginTop:12,padding:'10px 14px',background:'#f9fafb',borderRadius:8,border:`1px solid ${BD}`,lineHeight:1.6}}>
+                      Ces pages seront ajoutées à la fin de chaque document, après le devis ou la facture. Seuls les PDF importés sont acceptés.
+                    </div>
                   </div>
                 </div>
               )}
