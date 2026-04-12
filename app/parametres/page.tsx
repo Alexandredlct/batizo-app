@@ -42,8 +42,10 @@ const DEFAULT_PARAMS={
   // Pied de page
   showSiegeSocial:true,showFormeJuridique:true,showRCS:true,showSiretPied:true,
   showTvaIntra:true,showCodeAPE:false,showRM:false,
-  showDecennalePied:true,showEmailPied:false,showTelPied:false,showSiteWebPied:false,showIBAN:false,
+  showDecennalePied:true,showEmailPied:false,showTelPied:false,showSiteWebPied:false,
   showFormeJuridiquePied:true,showTvaIntraP:true,showSloganPied:false,
+  showSiren:false,showCapital:false,showIBANPied:false,showCodeAPEPied:false,
+  siren:'',rm:'',capitalSocial:'',
   showNumPage:true,showMerci:true,
   texteRemerciement:'Merci pour votre confiance. N\'hésitez pas à nous contacter pour toute question.',
   // Style
@@ -325,29 +327,24 @@ export default function ParametresPage(){
                     <div style={{display:'flex',flexDirection:'column' as const,gap:8}}>
                       {[
                         {label:'Forme juridique',k:'formeJuridique',showK:'showFormeJuridiquePied',placeholder:'SAS'},
+                        {label:'Capital social',k:'capitalSocial',showK:'showCapital',placeholder:'Ex : au capital de 10 000 €'},
                         {label:'RCS',k:'rcs',showK:'showRCS',placeholder:'RCS Nanterre B 123 456 789'},
-                        {label:'SIRET / RM',k:'siret',showK:'showSiretPied',placeholder:'123 456 789 00012'},
+                        {label:'SIREN',k:'siren',showK:'showSiren',placeholder:'123 456 789'},
+                        {label:'SIRET',k:'siret',showK:'showSiretPied',placeholder:'123 456 789 00012'},
+                        {label:'RM (Répertoire des Métiers)',k:'rm',showK:'showRM',placeholder:'Ex : RM 123 456 789'},
                         {label:'N° TVA intracommunautaire',k:'tvaIntra',showK:'showTvaIntraP',placeholder:'FR12123456789'},
-                        {label:'Code APE',k:'codeAPE',showK:'showCodeAPE',placeholder:'4339Z'},
+                        {label:'Code APE',k:'codeAPE',showK:'showCodeAPEPied',placeholder:'4339Z'},
                         {label:'Assurance décennale',k:'decennale',showK:'showDecennalePied',placeholder:'Allianz — Police n° 12345'},
-                        {label:'Email',k:'email',showK:'showEmailPied',placeholder:'contact@batizo.fr'},
-                        {label:'Téléphone',k:'tel',showK:'showTelPied',placeholder:'01 23 45 67 89'},
-                        {label:'Site web',k:'siteWeb',showK:'showSiteWebPied',placeholder:'www.batizo.fr'},
-                        {label:'IBAN',k:'iban',showK:'showIBAN',placeholder:'FR76 3000...'},
+                        {label:'IBAN',k:'iban',showK:'showIBANPied',placeholder:'FR76 3000...'},
                       ].map(({label,k,showK,placeholder}:any)=>(
-                        <div key={k} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:8,background:(params as any)[showK]?'#f9fafb':'#fff'}}>
+                        <div key={k} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',border:`1px solid ${(params as any)[showK]?G:BD}`,borderRadius:8,background:(params as any)[showK]?'#f9fafb':'#fff',transition:'all 0.15s'}}>
                           <input type="checkbox" checked={(params as any)[showK]||false} onChange={e=>set(showK,e.target.checked)} style={{accentColor:G,width:15,height:15,flexShrink:0}}/>
-                          <span style={{fontSize:12,color:'#555',minWidth:180,flexShrink:0}}>{label}</span>
+                          <span style={{fontSize:12,color:'#555',minWidth:200,flexShrink:0}}>{label}</span>
                           <input value={(params as any)[k]||''} onChange={e=>set(k,e.target.value)} placeholder={placeholder}
                             style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
                         </div>
                       ))}
                     </div>
-                  </Section>
-
-                  <Section title="Texte de fin de document">
-                    <Field label="Message affiché en bas de chaque document" k="texteRemerciement" rows={2}
-                      placeholder="Merci pour votre confiance. N'hésitez pas à nous contacter pour toute question."/>
                   </Section>
                 </div>
               )}
@@ -682,16 +679,19 @@ export default function ParametresPage(){
 
                     {/* Pied de page aperçu */}
                     <div style={{padding:'10px 16px',background:'#f9fafb',borderTop:`1px solid ${BD}`}}>
-                      <div style={{fontSize:7,color:'#888',textAlign:'center' as const,lineHeight:1.6}}>
-                        {params.nomEntreprise}
-                        {params.showFormeJuridiquePied?` — ${params.formeJuridique}`:''}
-                        {params.showSiegeSocial?` — ${params.adresseLigne1||params.adresse} ${params.codePostal||''} ${params.ville||''}`:''}
-                        {params.showRCS?` — ${params.rcs}`:''}
-                        {params.showSiretPied?` — SIRET: ${params.siret}`:''}
-                        {params.showTvaIntraP?` — TVA: ${params.tvaIntra}`:''}
-                        {params.showDecennalePied?` — ${params.decennale}`:''}
+                      <div style={{fontSize:7,color:'#888',textAlign:'center' as const,lineHeight:1.8}}>
+                        <span style={{fontWeight:600}}>{params.nomEntreprise}</span>
+                        {(params as any).showFormeJuridiquePied&&(params as any).formeJuridique?' — '+(params as any).formeJuridique:''}
+                        {(params as any).showCapital&&(params as any).capitalSocial?' — '+(params as any).capitalSocial:''}
+                        {(params as any).showRCS&&(params as any).rcs?' — '+(params as any).rcs:''}
+                        {(params as any).showSiren&&(params as any).siren?' — SIREN: '+(params as any).siren:''}
+                        {(params as any).showSiretPied&&(params as any).siret?' — SIRET: '+(params as any).siret:''}
+                        {(params as any).showRM&&(params as any).rm?' — '+(params as any).rm:''}
+                        {(params as any).showTvaIntraP&&(params as any).tvaIntra?' — TVA: '+(params as any).tvaIntra:''}
+                        {(params as any).showCodeAPEPied&&(params as any).codeAPE?' — APE: '+(params as any).codeAPE:''}
+                        {(params as any).showDecennalePied&&(params as any).decennale?' — '+(params as any).decennale:''}
+                        {(params as any).showIBANPied&&(params as any).iban?' — IBAN: '+(params as any).iban:''}
                       </div>
-                      {params.showMerci&&<div style={{fontSize:7,color:'#888',textAlign:'center' as const,marginTop:3,fontStyle:'italic'}}>{params.texteRemerciement}</div>}
                     </div>
                   </div>
                 </div>
