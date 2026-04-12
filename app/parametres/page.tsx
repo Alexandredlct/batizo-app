@@ -598,10 +598,9 @@ export default function ParametresPage(){
                         {params.showTel&&<div style={{fontSize:10,opacity:0.9}}>{params.tel}</div>}
                         {params.showEmail&&<div style={{fontSize:10,opacity:0.9}}>{params.email}</div>}
                         {params.showSiteWeb&&<div style={{fontSize:10,opacity:0.9}}>{params.siteWeb}</div>}
-                        {params.showSiret&&<div style={{fontSize:9,opacity:0.8,marginTop:2}}>SIRET: {params.siret}</div>}
-                        {params.showTvaIntra&&<div style={{fontSize:9,opacity:0.8}}>TVA: {params.tvaIntra}</div>}
+                        
                         {params.showSlogan&&params.slogan&&<div style={{fontSize:9,opacity:0.8,fontStyle:'italic'}}>{params.slogan}</div>}
-                        {params.showDecennale&&<div style={{fontSize:9,opacity:0.75,marginTop:3}}>Décennale: {params.decennale}</div>}
+                        
                       </div>
                       <div style={{color:'#fff',textAlign:'right' as const}}>
                         <div style={{fontSize:12,fontWeight:700}}>DEVIS</div>
