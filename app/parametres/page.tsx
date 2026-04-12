@@ -501,44 +501,14 @@ export default function ParametresPage(){
                       <Toggle k="gardeActive"/>
                     </div>
                     {params.gardeActive&&(
-                      <>
-                        <div style={{marginBottom:12}}>
-                          <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:6}}>Fond</label>
-                          <div style={{display:'flex',gap:8}}>
-                            {[['couleur','🎨 Couleur'],['image','🖼 Image'],['pdf','📄 PDF']].map(([v,l])=>(
-                              <button key={v} onClick={()=>set('gardeFond',v)}
-                                style={{flex:1,padding:'7px',border:`2px solid ${params.gardeFond===v?G:BD}`,borderRadius:8,background:params.gardeFond===v?'#f0fdf4':'#fff',color:params.gardeFond===v?G:'#555',fontSize:12,fontWeight:params.gardeFond===v?600:400,cursor:'pointer'}}>
-                                {l}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        {params.gardeFond==='couleur'&&(
-                          <div style={{display:'flex',gap:10,alignItems:'center',marginBottom:12}}>
-                            <input type="color" value={params.gardeColor} onChange={e=>set('gardeColor',e.target.value)}
-                              style={{width:40,height:40,borderRadius:7,border:`1px solid ${BD}`,cursor:'pointer',padding:2}}/>
-                            {['#1D9E75','#2563eb','#111','#9333ea'].map(col=>(
-                              <div key={col} onClick={()=>set('gardeColor',col)}
-                                style={{width:28,height:28,borderRadius:'50%',background:col,cursor:'pointer',border:`3px solid ${params.gardeColor===col?'#111':'transparent'}`}}/>
-                            ))}
-                          </div>
-                        )}
-                        {(params.gardeFond==='image'||params.gardeFond==='pdf')&&(
-                          <div style={{border:`2px dashed ${BD}`,borderRadius:10,padding:'16px',textAlign:'center' as const,cursor:'pointer',marginBottom:12,background:'#fafafa'}}
-                            onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor=G}
-                            onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.borderColor=BD}>
-                            <div style={{fontSize:22,marginBottom:4}}>{params.gardeFond==='pdf'?'📄':'🖼'}</div>
-                            <div style={{fontSize:13,color:'#555',fontWeight:500}}>Importer {params.gardeFond==='pdf'?'un PDF':'une image'}</div>
-                            <div style={{fontSize:11,color:'#888',marginTop:2}}>{params.gardeFond==='pdf'?'PDF — max 5 Mo':'PNG/JPG — max 2 Mo'}</div>
-                          </div>
-                        )}
-                        <Field label="Titre" k="gardeTitre" placeholder="DEVIS DE TRAVAUX"/>
-                        <Field label="Sous-titre" k="gardeSousTitre" placeholder="Rénovation complète — Paris & Île-de-France"/>
-                        <div style={{height:90,borderRadius:8,background:params.gardeFond==='couleur'?params.gardeColor:'#111',display:'flex',flexDirection:'column' as const,alignItems:'center',justifyContent:'center',padding:12,marginTop:8}}>
-                          <div style={{fontSize:13,fontWeight:800,color:'#fff',textAlign:'center' as const}}>{params.gardeTitre||'DEVIS DE TRAVAUX'}</div>
-                          <div style={{fontSize:9,color:'rgba(255,255,255,0.7)',marginTop:4,textAlign:'center' as const}}>{params.gardeSousTitre}</div>
-                        </div>
-                      </>
+                      <div style={{border:`2px dashed ${BD}`,borderRadius:10,padding:'20px',textAlign:'center' as const,cursor:'pointer',background:'#fafafa',marginTop:4}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor=G}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.borderColor=BD}>
+                        <div style={{fontSize:28,marginBottom:8}}>📄</div>
+                        <div style={{fontSize:13,color:'#555',fontWeight:600}}>Importer votre page de garde (PDF)</div>
+                        <div style={{fontSize:11,color:'#888',marginTop:4}}>PDF uniquement — max 5 Mo</div>
+                        <div style={{fontSize:11,color:'#888',marginTop:2}}>La page sera insérée automatiquement en première position</div>
+                      </div>
                     )}
                   </Section>
                   <div style={{fontSize:13,color:'#888',marginBottom:16,lineHeight:1.6}}>
