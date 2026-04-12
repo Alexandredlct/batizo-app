@@ -599,9 +599,9 @@ export default function ParametresPage(){
                       <div style={{color:'#fff'}}>
                         {params.showNom&&<div style={{fontWeight:700,fontSize:14}}>{params.nomEntreprise}</div>}
                         {params.showAdresse&&<div style={{fontSize:10,opacity:0.9,marginTop:1}}>{params.adresseLigne1||params.adresse}{params.codePostal?` ${params.codePostal}`:''}{params.ville?` ${params.ville}`:''}</div>}
-                        {params.showTel&&<div style={{fontSize:10,opacity:0.9}}>📞 {params.tel}</div>}
-                        {params.showEmail&&<div style={{fontSize:10,opacity:0.9}}>✉ {params.email}</div>}
-                        {params.showSiteWeb&&<div style={{fontSize:10,opacity:0.9}}>🌐 {params.siteWeb}</div>}
+                        {params.showTel&&<div style={{fontSize:10,opacity:0.9}}>{params.tel}</div>}
+                        {params.showEmail&&<div style={{fontSize:10,opacity:0.9}}>{params.email}</div>}
+                        {params.showSiteWeb&&<div style={{fontSize:10,opacity:0.9}}>{params.siteWeb}</div>}
                         {params.showSiret&&<div style={{fontSize:9,opacity:0.8,marginTop:2}}>SIRET: {params.siret}</div>}
                         {params.showTvaIntra&&<div style={{fontSize:9,opacity:0.8}}>TVA: {params.tvaIntra}</div>}
                         {params.showSlogan&&params.slogan&&<div style={{fontSize:9,opacity:0.8,fontStyle:'italic'}}>{params.slogan}</div>}
