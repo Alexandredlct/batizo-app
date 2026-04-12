@@ -324,6 +324,9 @@ export default function ParametresPage(){
                   <div style={{fontSize:13,color:'#888',marginBottom:16}}>Ces informations apparaîtront dans le pied de page de tous vos documents.</div>
 
                   <Section title="Informations légales">
+                    <div style={{fontSize:11,color:'#888',marginBottom:12,display:'flex',alignItems:'center',gap:4}}>
+                      Choisissez les informations à afficher dans le pied de page de vos documents.
+                    </div>
                     <div style={{display:'flex',flexDirection:'column' as const,gap:8}}>
                       {[
                         {label:'Forme juridique',k:'formeJuridique',showK:'showFormeJuridiquePied',placeholder:'SAS'},
