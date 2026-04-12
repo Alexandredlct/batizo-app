@@ -774,14 +774,13 @@ export default function ParametresPage(){
                     {/* Signature aperçu */}
                     <div style={{padding:'12px 16px',borderTop:`1px solid ${BD}`,display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
                       <div style={{border:`1px solid ${BD}`,borderRadius:4,padding:'6px 8px'}}>
-                        <div style={{fontSize:9,fontWeight:600,color:'#111',marginBottom:3}}>{params.texteClient}</div>
-                        <div style={{fontSize:7,color:'#888',fontStyle:'italic',marginBottom:4,lineHeight:1.4}}>Bon pour travaux.</div>
-                        <div style={{height:40,border:`1px dashed ${BD}`,borderRadius:3}}/>
+                        <div style={{fontSize:9,fontWeight:600,color:'#111',marginBottom:3}}>{params.texteClient||'Le client'}</div>
+                        <div style={{fontSize:7,color:'#555',fontStyle:'italic',marginBottom:4,lineHeight:1.4}}>{params.mentionClient}</div>
+                        <div style={{height:params.tailleSignature==='petit'?16:params.tailleSignature==='grand'?44:28,border:`1px dashed ${BD}`,borderRadius:3,transition:'height 0.2s'}}/>
                       </div>
                       <div style={{border:`1px solid ${BD}`,borderRadius:4,padding:'6px 8px'}}>
-                        <div style={{fontSize:9,fontWeight:600,color:'#111',marginBottom:3}}>{params.nomSignataireEntreprise}</div>
-                        <div style={{fontSize:7,color:'#888',marginBottom:4}}>{params.titreSignataire}</div>
-                        <div style={{height:20,border:`1px dashed ${BD}`,borderRadius:3}}/>
+                        <div style={{fontSize:9,fontWeight:600,color:'#111',marginBottom:3}}>{params.nomSignataireEntreprise||"L'entreprise"}</div>
+                        <div style={{height:params.tailleSignature==='petit'?16:params.tailleSignature==='grand'?44:28,border:`1px dashed ${BD}`,borderRadius:3,transition:'height 0.2s'}}/>
                       </div>
                     </div>
 
