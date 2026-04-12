@@ -668,15 +668,14 @@ export default function ParametresPage(){
                   </Section>
 
                   <Section title="Zone de signature entreprise">
-                    <Field label="Nom affiché (signataire)" k="nomSignataireEntreprise" placeholder="Alexandre Delcourt"/>
-                    <Field label="Titre / Fonction" k="titreSignataire" placeholder="Gérant — Batizo SAS"/>
+                    <Field label="Texte au-dessus de la signature" k="nomSignataireEntreprise" placeholder="Ex : Alexandre Delcourt — Gérant"/>
                   </Section>
 
                   <Section title="Cachet / Tampon">
                     <div style={{border:`2px dashed ${BD}`,borderRadius:10,padding:'20px',textAlign:'center' as const,cursor:'pointer',background:'#fafafa'}}
                       onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor=G}
                       onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.borderColor=BD}>
-                      <div style={{fontSize:28,marginBottom:6}}>🔵</div>
+                      <div style={{fontSize:28,marginBottom:6}}>🖼️</div>
                       <div style={{fontSize:13,color:'#555',fontWeight:500}}>Importer un tampon/cachet</div>
                       <div style={{fontSize:11,color:'#888',marginTop:2}}>PNG fond transparent — max 2 Mo — format carré idéal</div>
                     </div>
