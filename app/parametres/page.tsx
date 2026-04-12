@@ -337,7 +337,7 @@ export default function ParametresPage(){
                         {label:'Assurance décennale',k:'decennale',showK:'showDecennalePied',placeholder:'Allianz — Police n° 12345'},
                         {label:'IBAN',k:'iban',showK:'showIBANPied',placeholder:'FR76 3000...'},
                       ].map(({label,k,showK,placeholder}:any)=>(
-                        <div key={k} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',border:`1px solid ${(params as any)[showK]?G:BD}`,borderRadius:8,background:(params as any)[showK]?'#f9fafb':'#fff',transition:'all 0.15s'}}>
+                        <div key={k} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:8,background:(params as any)[showK]?'#f9fafb':'#fff'}}>
                           <input type="checkbox" checked={(params as any)[showK]||false} onChange={e=>set(showK,e.target.checked)} style={{accentColor:G,width:15,height:15,flexShrink:0}}/>
                           <span style={{fontSize:12,color:'#555',minWidth:200,flexShrink:0}}>{label}</span>
                           <input value={(params as any)[k]||''} onChange={e=>set(k,e.target.value)} placeholder={placeholder}
@@ -680,17 +680,28 @@ export default function ParametresPage(){
                     {/* Pied de page aperçu */}
                     <div style={{padding:'10px 16px',background:'#f9fafb',borderTop:`1px solid ${BD}`}}>
                       <div style={{fontSize:7,color:'#888',textAlign:'center' as const,lineHeight:1.8}}>
-                        <span style={{fontWeight:600}}>{params.nomEntreprise}</span>
-                        {(params as any).showFormeJuridiquePied&&(params as any).formeJuridique?' — '+(params as any).formeJuridique:''}
-                        {(params as any).showCapital&&(params as any).capitalSocial?' — '+(params as any).capitalSocial:''}
-                        {(params as any).showRCS&&(params as any).rcs?' — '+(params as any).rcs:''}
-                        {(params as any).showSiren&&(params as any).siren?' — SIREN: '+(params as any).siren:''}
-                        {(params as any).showSiretPied&&(params as any).siret?' — SIRET: '+(params as any).siret:''}
-                        {(params as any).showRM&&(params as any).rm?' — '+(params as any).rm:''}
-                        {(params as any).showTvaIntraP&&(params as any).tvaIntra?' — TVA: '+(params as any).tvaIntra:''}
-                        {(params as any).showCodeAPEPied&&(params as any).codeAPE?' — APE: '+(params as any).codeAPE:''}
-                        {(params as any).showDecennalePied&&(params as any).decennale?' — '+(params as any).decennale:''}
-                        {(params as any).showIBANPied&&(params as any).iban?' — IBAN: '+(params as any).iban:''}
+                        {(()=>{
+                          const p=params as any
+                          const parts:string[]=[p.nomEntreprise]
+                          const formeCapital=[
+                            p.showFormeJuridiquePied&&p.formeJuridique?p.formeJuridique:'',
+                            p.showCapital&&p.capitalSocial?'au capital de '+p.capitalSocial:''
+                          ].filter(Boolean).join(' ')
+                          if(formeCapital) parts.push(formeCapital)
+                          if(p.showRCS&&p.rcs){
+                            const ville=p.ville||'[ville]'
+                            const num=p.rcs.replace(/^RCSs+w+s+ws+/,'')
+                            parts.push('Immatriculée au RCS de '+ville+' sous le numéro '+num)
+                          }
+                          if(p.showSiren&&p.siren) parts.push('SIREN : '+p.siren)
+                          if(p.showSiretPied&&p.siret) parts.push('SIRET : '+p.siret)
+                          if(p.showRM&&p.rm) parts.push('RM : '+p.rm)
+                          if(p.showTvaIntraP&&p.tvaIntra) parts.push('TVA Intracommunautaire : '+p.tvaIntra)
+                          if(p.showCodeAPEPied&&p.codeAPE) parts.push('Code APE : '+p.codeAPE)
+                          if(p.showDecennalePied&&p.decennale) parts.push('Assurance Décennale : N° '+p.decennale)
+                          if(p.showIBANPied&&p.iban) parts.push('IBAN : '+p.iban)
+                          return parts.join(' — ')
+                        })()}
                       </div>
                     </div>
                   </div>
