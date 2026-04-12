@@ -86,6 +86,26 @@ export default function ParametresPage(){
   const[tab,setTab]=useState('modeles')
   const[params,setParams]=useState({...DEFAULT_PARAMS})
   const[saved,setSaved]=useState(false)
+  const[logoPreview,setLogoPreview]=useState<string|null>(null)
+
+  const handleLogo=(e:React.ChangeEvent<HTMLInputElement>)=>{
+    const file=e.target.files?.[0]
+    if(!file)return
+    if(file.size>2*1024*1024){alert('Fichier trop lourd — max 2 Mo');return}
+    const reader=new FileReader()
+    reader.onload=(ev)=>{
+      const result=ev.target?.result as string
+      setLogoPreview(result)
+      set('logo',result)
+      localStorage.setItem('batizo_logo',result)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  useEffect(()=>{
+    const stored=localStorage.getItem('batizo_logo')
+    if(stored){setLogoPreview(stored);set('logo',stored)}
+  },[])
   const[showReset,setShowReset]=useState(false)
 
   useEffect(()=>{
@@ -226,13 +246,41 @@ export default function ParametresPage(){
               {tab==='entete'&&(
                 <div>
                   <Section title="Logo">
-                    <div style={{border:`2px dashed ${BD}`,borderRadius:10,padding:'24px',textAlign:'center' as const,cursor:'pointer',marginBottom:12,background:'#fafafa'}}
-                      onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor=G}
-                      onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.borderColor=BD}>
-                      <div style={{fontSize:28,marginBottom:8}}>🖼</div>
-                      <div style={{fontSize:13,color:'#555',fontWeight:500}}>Importer un logo</div>
-                      <div style={{fontSize:11,color:'#888',marginTop:3}}>PNG ou JPG — max 2 Mo</div>
+                    <input type="file" accept="image/png,image/jpeg,image/svg+xml" id="logo-upload" style={{display:'none'}} onChange={handleLogo}/>
+                    <label htmlFor="logo-upload">
+                      <div style={{border:`2px dashed ${logoPreview?G:BD}`,borderRadius:10,padding:'16px',textAlign:'center' as const,cursor:'pointer',marginBottom:10,background:logoPreview?'#f0fdf4':'#fafafa',transition:'all 0.2s'}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor=G}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.borderColor=logoPreview?G:BD}>
+                        {logoPreview?(
+                          <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:12}}>
+                            <img src={logoPreview} alt="logo" style={{maxHeight:60,maxWidth:200,objectFit:'contain'}}/>
+                            <div style={{textAlign:'left' as const}}>
+                              <div style={{fontSize:12,fontWeight:600,color:G}}>✓ Logo importé</div>
+                              <div style={{fontSize:11,color:'#888',marginTop:2}}>Cliquez pour changer</div>
+                            </div>
+                          </div>
+                        ):(
+                          <>
+                            <div style={{fontSize:28,marginBottom:6}}>🖼</div>
+                            <div style={{fontSize:13,color:'#555',fontWeight:600}}>Cliquez pour importer votre logo</div>
+                            <div style={{fontSize:11,color:'#888',marginTop:4}}>PNG, JPG ou SVG — max 2 Mo</div>
+                          </>
+                        )}
+                      </div>
+                    </label>
+                    <div style={{background:'#f0fdf4',border:`1px solid ${G}40`,borderRadius:8,padding:'10px 14px',marginBottom:12,fontSize:12,color:'#555',lineHeight:1.7}}>
+                      <div style={{fontWeight:600,color:G,marginBottom:4}}>📐 Format recommandé</div>
+                      <div>• <strong>Taille :</strong> 300 × 100 px minimum (ratio 3:1 idéal)</div>
+                      <div>• <strong>Format :</strong> PNG avec fond transparent (recommandé) ou JPG</div>
+                      <div>• <strong>Poids :</strong> 2 Mo maximum</div>
+                      <div>• <strong>Résolution :</strong> 150 DPI minimum pour l'impression</div>
                     </div>
+                    {logoPreview&&(
+                      <button onClick={()=>{setLogoPreview(null);set('logo','');localStorage.removeItem('batizo_logo')}}
+                        style={{padding:'6px 12px',background:'#fff',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,cursor:'pointer',color:'#888',display:'flex',alignItems:'center',gap:6}}>
+                        🗑 Supprimer le logo
+                      </button>
+                    )}
                     <div>
                       <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:6}}>Position du logo</label>
                       <div style={{display:'flex',gap:8}}>
@@ -592,9 +640,14 @@ export default function ParametresPage(){
 
                     {/* En-tête aperçu */}
                     <div style={{background:params.couleurPrincipale,padding:'16px 18px',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
-                      <div style={{color:'#fff'}}>
+                      <div style={{color:'#fff',display:'flex',alignItems:'flex-start',gap:10}}>
+                        {logoPreview&&params.logoPosition==='gauche'&&(
+                          <img src={logoPreview} alt="logo" style={{height:36,maxWidth:80,objectFit:'contain',flexShrink:0,filter:'brightness(0) invert(1)',opacity:0.95}}/>
+                        )}
+                        <div>
                         {params.showNom&&<div style={{fontWeight:700,fontSize:14}}>{params.nomEntreprise}</div>}
                         {params.showAdresse&&<div style={{fontSize:10,opacity:0.9,marginTop:1}}>{params.adresseLigne1||params.adresse}{params.codePostal?` ${params.codePostal}`:''}{params.ville?` ${params.ville}`:''}</div>}
+                        </div>
                         {params.showTel&&<div style={{fontSize:10,opacity:0.9}}>{params.tel}</div>}
                         {params.showEmail&&<div style={{fontSize:10,opacity:0.9}}>{params.email}</div>}
                         {params.showSiteWeb&&<div style={{fontSize:10,opacity:0.9}}>{params.siteWeb}</div>}
