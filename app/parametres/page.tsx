@@ -260,9 +260,7 @@ export default function ParametresPage(){
                         {label:'Site web',k:'siteWeb',showK:'showSiteWeb',placeholder:'www.batizo.fr'},
                         {label:'Assurance décennale',k:'decennale',showK:'showDecennale',placeholder:'Allianz — Police n° 12345'},
                         {label:'Slogan / Accroche',k:'slogan',showK:'showSlogan',placeholder:'Votre artisan de confiance'},
-                        {label:'Adresse',k:'adresseLigne1',showK:'showAdresse',placeholder:'130 rue de Normandie'},
-                        {label:'Code postal',k:'codePostal',showK:'showAdresse',placeholder:'92400'},
-                        {label:'Ville',k:'ville',showK:'showAdresse',placeholder:'Courbevoie'},
+                        {label:'Adresse complète',k:'adresseLigne1',showK:'showAdresse',placeholder:'130 rue de Normandie'},
                       ].map(({label,k,showK,placeholder,select}:any)=>(
                         <div key={k} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:8,background:(params as any)[showK]?'#f9fafb':'#fff'}}>
                           <input type="checkbox" checked={(params as any)[showK]||false} onChange={e=>set(showK,e.target.checked)} style={{accentColor:G,width:15,height:15,flexShrink:0}}/>
@@ -604,6 +602,7 @@ export default function ParametresPage(){
                         {params.showEmail&&<div style={{fontSize:10,opacity:0.9}}>✉ {params.email}</div>}
                         {params.showSiteWeb&&<div style={{fontSize:10,opacity:0.9}}>🌐 {params.siteWeb}</div>}
                         {params.showSiret&&<div style={{fontSize:9,opacity:0.8,marginTop:2}}>SIRET: {params.siret}</div>}
+                        {params.showTvaIntra&&<div style={{fontSize:9,opacity:0.8}}>TVA: {params.tvaIntra}</div>}
                         {params.showSlogan&&params.slogan&&<div style={{fontSize:9,opacity:0.8,fontStyle:'italic'}}>{params.slogan}</div>}
                         {params.showDecennale&&<div style={{fontSize:9,opacity:0.75,marginTop:3}}>Décennale: {params.decennale}</div>}
                       </div>
