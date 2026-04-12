@@ -319,53 +319,40 @@ export default function ParametresPage(){
 
                             {tab==='pied'&&(
                 <div>
+                  <div style={{fontSize:13,color:'#888',marginBottom:16}}>Ces informations apparaîtront dans le pied de page de tous vos documents.</div>
+
                   <Section title="Informations légales">
-                    <CheckRow label="Siège social" k="showSiegeSocial"/>
-                    <CheckRow label="Forme juridique" k="showFormeJuridiquePied">
-                      <input value={params.formeJuridique} onChange={e=>set('formeJuridique',e.target.value)}
-                        style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
-                    </CheckRow>
-                    <CheckRow label="RCS" k="showRCS">
-                      <input value={params.rcs} onChange={e=>set('rcs',e.target.value)}
-                        style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
-                    </CheckRow>
-                    <CheckRow label="SIRET" k="showSiretPied"/>
-                    <CheckRow label="TVA intracommunautaire" k="showTvaIntraP">
-                      <input value={params.tvaIntra} onChange={e=>set('tvaIntra',e.target.value)}
-                        style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
-                    </CheckRow>
-                    <CheckRow label="Code APE" k="showCodeAPE">
-                      <input value={params.codeAPE} onChange={e=>set('codeAPE',e.target.value)}
-                        style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
-                    </CheckRow>
-                    <CheckRow label="RM (répertoire des métiers)" k="showRM"/>
+                    <div style={{display:'flex',flexDirection:'column' as const,gap:8}}>
+                      {[
+                        {label:'Forme juridique',k:'formeJuridique',showK:'showFormeJuridiquePied',placeholder:'SAS'},
+                        {label:'RCS',k:'rcs',showK:'showRCS',placeholder:'RCS Nanterre B 123 456 789'},
+                        {label:'SIRET / RM',k:'siret',showK:'showSiretPied',placeholder:'123 456 789 00012'},
+                        {label:'N° TVA intracommunautaire',k:'tvaIntra',showK:'showTvaIntraP',placeholder:'FR12123456789'},
+                        {label:'Code APE',k:'codeAPE',showK:'showCodeAPE',placeholder:'4339Z'},
+                        {label:'Assurance décennale',k:'decennale',showK:'showDecennalePied',placeholder:'Allianz — Police n° 12345'},
+                        {label:'Email',k:'email',showK:'showEmailPied',placeholder:'contact@batizo.fr'},
+                        {label:'Téléphone',k:'tel',showK:'showTelPied',placeholder:'01 23 45 67 89'},
+                        {label:'Site web',k:'siteWeb',showK:'showSiteWebPied',placeholder:'www.batizo.fr'},
+                        {label:'IBAN',k:'iban',showK:'showIBAN',placeholder:'FR76 3000...'},
+                      ].map(({label,k,showK,placeholder}:any)=>(
+                        <div key={k} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:8,background:(params as any)[showK]?'#f9fafb':'#fff'}}>
+                          <input type="checkbox" checked={(params as any)[showK]||false} onChange={e=>set(showK,e.target.checked)} style={{accentColor:G,width:15,height:15,flexShrink:0}}/>
+                          <span style={{fontSize:12,color:'#555',minWidth:180,flexShrink:0}}>{label}</span>
+                          <input value={(params as any)[k]||''} onChange={e=>set(k,e.target.value)} placeholder={placeholder}
+                            style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
+                        </div>
+                      ))}
+                    </div>
                   </Section>
 
-                  <Section title="Contact & assurance">
-                    <CheckRow label="Slogan / Accroche" k="showSloganPied"/>
-                    <CheckRow label="Assurance décennale" k="showDecennalePied">
-                      <input value={params.decennale} onChange={e=>set('decennale',e.target.value)}
-                        style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
-                    </CheckRow>
-                    <CheckRow label="Email" k="showEmailPied"/>
-                    <CheckRow label="Téléphone" k="showTelPied"/>
-                    <CheckRow label="Site web" k="showSiteWebPied"/>
-                    <CheckRow label="IBAN" k="showIBAN">
-                      <input value={params.iban} onChange={e=>set('iban',e.target.value)} placeholder="FR76 3000..."
-                        style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
-                    </CheckRow>
-                  </Section>
-
-                  <Section title="Texte libre & options">
-                    <Field label="Message de remerciement" k="texteRemerciement" rows={2}/>
-                    <CheckRow label="Numéro de page" k="showNumPage"/>
-                    <CheckRow label="Message de remerciement" k="showMerci"/>
+                  <Section title="Texte de fin de document">
+                    <Field label="Message affiché en bas de chaque document" k="texteRemerciement" rows={2}
+                      placeholder="Merci pour votre confiance. N'hésitez pas à nous contacter pour toute question."/>
                   </Section>
                 </div>
               )}
 
-              {/* ===== STYLE ===== */}
-              {tab==='style'&&(
+                            {tab==='style'&&(
                 <div>
                   <Section title="Couleur principale">
                     <div style={{display:'flex',gap:10,alignItems:'center',marginBottom:12}}>
