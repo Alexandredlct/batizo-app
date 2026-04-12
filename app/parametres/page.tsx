@@ -637,13 +637,11 @@ export default function ParametresPage(){
                         )}
                         {params.showNom&&<div style={{fontWeight:700,fontSize:14}}>{params.nomEntreprise}</div>}
                         {params.showAdresse&&<div style={{fontSize:10,opacity:0.9,marginTop:1}}>{params.adresseLigne1||params.adresse}{params.codePostal?` ${params.codePostal}`:''}{params.ville?` ${params.ville}`:''}</div>}
-                        </div>
                         {params.showTel&&<div style={{fontSize:10,opacity:0.9}}>{params.tel}</div>}
                         {params.showEmail&&<div style={{fontSize:10,opacity:0.9}}>{params.email}</div>}
                         {params.showSiteWeb&&<div style={{fontSize:10,opacity:0.9}}>{params.siteWeb}</div>}
-                        
                         {params.showSlogan&&params.slogan&&<div style={{fontSize:9,opacity:0.8,fontStyle:'italic'}}>{params.slogan}</div>}
-                        
+                        </div>
                       </div>
                       <div style={{color:'#fff',textAlign:'right' as const}}>
                         <div style={{fontSize:12,fontWeight:700}}>DEVIS</div>
