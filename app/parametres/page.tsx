@@ -82,6 +82,7 @@ const DEFAULT_PARAMS={
   // CGV
   cgvActive:false,
   cgvTexte:'',
+  pagesComp:[],
 }
 
 export default function ParametresPage(){
@@ -493,19 +494,22 @@ export default function ParametresPage(){
               {tab==='garde'&&(
                 <div>
                   <Section title="Page de garde">
-                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,padding:'12px 14px',background:'#f9fafb',borderRadius:8,border:`1px solid ${BD}`}}>
                       <div>
-                        <div style={{fontSize:13,fontWeight:500,color:'#111'}}>Activer la page de garde</div>
-                        <div style={{fontSize:11,color:'#888'}}>Une page de garde sera ajoutée avant le devis</div>
+                        <div style={{fontSize:13,fontWeight:600,color:'#111'}}>Activer la page de garde</div>
+                        <div style={{fontSize:11,color:'#888',marginTop:2}}>Ajoutée automatiquement en première page de chaque document</div>
                       </div>
                       <Toggle k="gardeActive"/>
                     </div>
                     {params.gardeActive&&(
                       <>
+                        <div style={{background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:8,padding:'10px 12px',marginBottom:14,fontSize:12,color:'#2563eb'}}>
+                          📌 La page de garde est toujours en première position — son ordre ne peut pas être modifié.
+                        </div>
                         <div style={{marginBottom:14}}>
                           <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:8}}>Fond de la page de garde</label>
                           <div style={{display:'flex',gap:8}}>
-                            {[['couleur','🎨 Couleur'],['image','🖼 Image'],['pdf','📄 PDF']].map(([v,l])=>(
+                            {[['couleur','🎨 Couleur'],['image','🖼 Image importée'],['pdf','📄 PDF importé']].map(([v,l])=>(
                               <button key={v} onClick={()=>set('gardeFond',v)}
                                 style={{flex:1,padding:'8px',border:`2px solid ${params.gardeFond===v?G:BD}`,borderRadius:8,background:params.gardeFond===v?'#f0fdf4':'#fff',color:params.gardeFond===v?G:'#555',fontSize:12,fontWeight:params.gardeFond===v?600:400,cursor:'pointer'}}>
                                 {l}
@@ -523,47 +527,141 @@ export default function ParametresPage(){
                             ))}
                           </div>
                         )}
+                        {(params.gardeFond==='image'||params.gardeFond==='pdf')&&(
+                          <div style={{border:`2px dashed ${BD}`,borderRadius:10,padding:'20px',textAlign:'center' as const,cursor:'pointer',marginBottom:14,background:'#fafafa'}}
+                            onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor=G}
+                            onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.borderColor=BD}>
+                            <div style={{fontSize:24,marginBottom:6}}>{params.gardeFond==='pdf'?'📄':'🖼'}</div>
+                            <div style={{fontSize:13,color:'#555',fontWeight:500}}>Importer {params.gardeFond==='pdf'?'un PDF':'une image'}</div>
+                            <div style={{fontSize:11,color:'#888',marginTop:2}}>{params.gardeFond==='pdf'?'PDF — max 5 Mo':'PNG ou JPG — max 2 Mo'}</div>
+                          </div>
+                        )}
                         <Field label="Titre sur la page de garde" k="gardeTitre" placeholder="DEVIS DE TRAVAUX"/>
                         <Field label="Sous-titre" k="gardeSousTitre" placeholder="Rénovation complète — Paris & Île-de-France"/>
-                      </>
-                    )}
-                  </Section>
-                </div>
-              )}
-
-              {/* ===== PAGES COMPLÉMENTAIRES ===== */}
-              {tab==='complementaires'&&(
-                <div>
-                  <div style={{fontSize:13,color:'#888',marginBottom:16}}>Ces pages seront ajoutées à la fin de chaque devis ou facture.</div>
-                  <Section title="Conditions Générales de Vente (CGV)">
-                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
-                      <div style={{fontSize:13,fontWeight:500,color:'#111'}}>Activer les CGV</div>
-                      <Toggle k="cgvActive"/>
-                    </div>
-                    {params.cgvActive&&(
-                      <>
-                        <div style={{display:'flex',gap:8,marginBottom:12}}>
-                          {[['texte','📝 Texte'],['pdf','📄 PDF importé']].map(([v,l])=>(
-                            <button key={v} onClick={()=>set('cgvSource',v)}
-                              style={{padding:'7px 14px',border:`2px solid ${(params as any).cgvSource===v?G:BD}`,borderRadius:8,background:(params as any).cgvSource===v?'#f0fdf4':'#fff',color:(params as any).cgvSource===v?G:'#555',fontSize:12,fontWeight:(params as any).cgvSource===v?600:400,cursor:'pointer'}}>
-                              {l}
-                            </button>
-                          ))}
+                        <div style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px',marginTop:4}}>
+                          <div style={{fontSize:12,fontWeight:600,color:'#555',marginBottom:8}}>Aperçu page de garde</div>
+                          <div style={{height:140,borderRadius:8,background:params.gardeFond==='couleur'?params.gardeColor:'#111',display:'flex',flexDirection:'column' as const,alignItems:'center',justifyContent:'center',padding:16,position:'relative' as const}}>
+                            {(params as any).logo&&<img src={(params as any).logo} alt="logo" style={{height:30,objectFit:'contain',marginBottom:10,filter:'brightness(0) invert(1)'}}/>}
+                            <div style={{fontSize:16,fontWeight:800,color:'#fff',textAlign:'center' as const,letterSpacing:'0.05em'}}>{params.gardeTitre||'DEVIS DE TRAVAUX'}</div>
+                            <div style={{fontSize:11,color:'rgba(255,255,255,0.7)',marginTop:6,textAlign:'center' as const}}>{params.gardeSousTitre}</div>
+                            <div style={{position:'absolute' as const,bottom:12,fontSize:9,color:'rgba(255,255,255,0.5)'}}>Client · Référence · Date</div>
+                          </div>
                         </div>
-                        <Field label="Texte des CGV" k="cgvTexte" rows={8} placeholder="Conditions générales de vente..."/>
                       </>
                     )}
                   </Section>
-                  <button style={{display:'flex',alignItems:'center',gap:8,padding:'10px 16px',border:`2px dashed ${BD}`,borderRadius:10,background:'#fff',color:'#555',fontSize:13,cursor:'pointer',width:'100%',justifyContent:'center' as const}}
-                    onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.borderColor=G}
-                    onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.borderColor=BD}>
-                    <span style={{fontSize:18}}>+</span> Ajouter une page complémentaire
-                  </button>
                 </div>
               )}
 
-              {/* ===== SIGNATURE ===== */}
-              {tab==='signature'&&(
+                            {tab==='complementaires'&&(
+                <div>
+                  <div style={{fontSize:13,color:'#888',marginBottom:16,lineHeight:1.6}}>
+                    Ces pages seront ajoutées à la fin de chaque document, après le devis ou la facture.<br/>
+                    <strong style={{color:'#111'}}>Seuls les PDF importés sont acceptés.</strong>
+                  </div>
+
+                  {/* Structure document */}
+                  <Section title="Structure du document PDF">
+                    <div style={{display:'flex',flexDirection:'column' as const,gap:8}}>
+                      {/* Page de garde — fixe */}
+                      <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:8}}>
+                        <span style={{fontSize:14}}>🔒</span>
+                        <div style={{flex:1}}>
+                          <div style={{fontSize:13,fontWeight:600,color:'#2563eb'}}>Page de garde</div>
+                          <div style={{fontSize:11,color:'#888'}}>Toujours en première position</div>
+                        </div>
+                        <span style={{fontSize:11,color:'#2563eb',fontWeight:600}}>Position fixe</span>
+                      </div>
+                      {/* Devis/Facture — fixe */}
+                      <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background:'#f0fdf4',border:`1px solid ${G}40`,borderRadius:8}}>
+                        <span style={{fontSize:14}}>📄</span>
+                        <div style={{flex:1}}>
+                          <div style={{fontSize:13,fontWeight:600,color:G}}>Devis / Facture</div>
+                          <div style={{fontSize:11,color:'#888'}}>Le document principal</div>
+                        </div>
+                        <span style={{fontSize:11,color:G,fontWeight:600}}>Position fixe</span>
+                      </div>
+                      {/* Pages complémentaires — réordonnables */}
+                      {((params as any).pagesComp||[]).map((page:any,i:number)=>(
+                        <div key={page.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:8}}>
+                          <div style={{display:'flex',flexDirection:'column' as const,gap:2}}>
+                            <button onClick={()=>{
+                              const arr=[...(params as any).pagesComp]
+                              if(i===0)return
+                              ;[arr[i],arr[i-1]]=[arr[i-1],arr[i]]
+                              set('pagesComp',arr)
+                            }} style={{background:'none',border:'none',cursor:i===0?'not-allowed':'pointer',color:i===0?'#ddd':'#888',fontSize:11,padding:0}}>↑</button>
+                            <button onClick={()=>{
+                              const arr=[...(params as any).pagesComp]
+                              if(i===arr.length-1)return
+                              ;[arr[i],arr[i+1]]=[arr[i+1],arr[i]]
+                              set('pagesComp',arr)
+                            }} style={{background:'none',border:'none',cursor:i===(params as any).pagesComp.length-1?'not-allowed':'pointer',color:i===(params as any).pagesComp.length-1?'#ddd':'#888',fontSize:11,padding:0}}>↓</button>
+                          </div>
+                          <input type="checkbox" checked={page.active} onChange={()=>{
+                            const arr=[...(params as any).pagesComp]
+                            arr[i]={...arr[i],active:!arr[i].active}
+                            set('pagesComp',arr)
+                          }} style={{accentColor:G,width:15,height:15}}/>
+                          <span style={{fontSize:14}}>📎</span>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:13,fontWeight:500,color:'#111'}}>{page.nom}</div>
+                            <div style={{fontSize:11,color:'#888',display:'flex',gap:8,marginTop:2}}>
+                              {['devis','facture'].map(type=>(
+                                <label key={type} style={{display:'flex',alignItems:'center',gap:4,cursor:'pointer'}}>
+                                  <input type="checkbox" checked={page[type]} onChange={()=>{
+                                    const arr=[...(params as any).pagesComp]
+                                    arr[i]={...arr[i],[type]:!arr[i][type]}
+                                    set('pagesComp',arr)
+                                  }} style={{accentColor:G,width:12,height:12}}/>
+                                  <span style={{fontSize:11,color:'#555',textTransform:'capitalize' as const}}>{type}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                          <button onClick={()=>{
+                            const arr=(params as any).pagesComp.filter((_:any,j:number)=>j!==i)
+                            set('pagesComp',arr)
+                          }} style={{background:'none',border:'none',cursor:'pointer',color:'#ddd',fontSize:18}}
+                            onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#E24B4A'}
+                            onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ddd'}>×</button>
+                        </div>
+                      ))}
+                    </div>
+                  </Section>
+
+                  {/* Bouton ajouter */}
+                  <div>
+                    <input type="file" accept="application/pdf" id="comp-upload" style={{display:'none'}}
+                      onChange={e=>{
+                        const file=e.target.files?.[0]
+                        if(!file)return
+                        if(file.size>5*1024*1024){alert('Fichier trop lourd — max 5 Mo');return}
+                        const reader=new FileReader()
+                        reader.onload=(ev)=>{
+                          const arr=[...((params as any).pagesComp||[]),{
+                            id:Math.random().toString(36).slice(2,8),
+                            nom:file.name.replace('.pdf',''),
+                            active:true,devis:true,facture:true,
+                            data:ev.target?.result
+                          }]
+                          set('pagesComp',arr)
+                        }
+                        reader.readAsDataURL(file)
+                      }}/>
+                    <label htmlFor="comp-upload">
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'center' as const,gap:8,padding:'12px 16px',border:`2px dashed ${BD}`,borderRadius:10,background:'#fff',color:'#555',fontSize:13,cursor:'pointer',transition:'all 0.15s'}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor=G}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.borderColor=BD}>
+                        <span style={{fontSize:18}}>+</span> Importer un PDF complémentaire
+                      </div>
+                    </label>
+                    <div style={{fontSize:11,color:'#888',marginTop:6,textAlign:'center' as const}}>PDF uniquement — max 5 Mo par fichier</div>
+                  </div>
+                </div>
+              )}
+
+                            {tab==='signature'&&(
                 <div>
                   <Section title="Zone de signature client">
                     <Field label="Texte au-dessus de la signature" k="texteClient" placeholder="Le client"/>
