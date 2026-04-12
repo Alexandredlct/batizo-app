@@ -11,7 +11,6 @@ const TABS=[
   {id:'pied',label:'Pied de page'},
   {id:'style',label:'Style'},
   {id:'devis',label:'Devis & Factures'},
-  {id:'garde',label:'Page de garde'},
   {id:'complementaires',label:'Pages complémentaires'},
   {id:'signature',label:'Signature'},
 ]
@@ -491,70 +490,57 @@ export default function ParametresPage(){
               )}
 
               {/* ===== PAGE DE GARDE ===== */}
-              {tab==='garde'&&(
+              {tab==='complementaires'&&(
                 <div>
                   <Section title="Page de garde">
-                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,padding:'12px 14px',background:'#f9fafb',borderRadius:8,border:`1px solid ${BD}`}}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12,padding:'12px 14px',background:'#f9fafb',borderRadius:8,border:`1px solid ${BD}`}}>
                       <div>
                         <div style={{fontSize:13,fontWeight:600,color:'#111'}}>Activer la page de garde</div>
-                        <div style={{fontSize:11,color:'#888',marginTop:2}}>Ajoutée automatiquement en première page de chaque document</div>
+                        <div style={{fontSize:11,color:'#888',marginTop:2}}>Toujours en première position — non déplaçable</div>
                       </div>
                       <Toggle k="gardeActive"/>
                     </div>
                     {params.gardeActive&&(
                       <>
-                        <div style={{background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:8,padding:'10px 12px',marginBottom:14,fontSize:12,color:'#2563eb'}}>
-                          📌 La page de garde est toujours en première position — son ordre ne peut pas être modifié.
-                        </div>
-                        <div style={{marginBottom:14}}>
-                          <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:8}}>Fond de la page de garde</label>
+                        <div style={{marginBottom:12}}>
+                          <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:6}}>Fond</label>
                           <div style={{display:'flex',gap:8}}>
-                            {[['couleur','🎨 Couleur'],['image','🖼 Image importée'],['pdf','📄 PDF importé']].map(([v,l])=>(
+                            {[['couleur','🎨 Couleur'],['image','🖼 Image'],['pdf','📄 PDF']].map(([v,l])=>(
                               <button key={v} onClick={()=>set('gardeFond',v)}
-                                style={{flex:1,padding:'8px',border:`2px solid ${params.gardeFond===v?G:BD}`,borderRadius:8,background:params.gardeFond===v?'#f0fdf4':'#fff',color:params.gardeFond===v?G:'#555',fontSize:12,fontWeight:params.gardeFond===v?600:400,cursor:'pointer'}}>
+                                style={{flex:1,padding:'7px',border:`2px solid ${params.gardeFond===v?G:BD}`,borderRadius:8,background:params.gardeFond===v?'#f0fdf4':'#fff',color:params.gardeFond===v?G:'#555',fontSize:12,fontWeight:params.gardeFond===v?600:400,cursor:'pointer'}}>
                                 {l}
                               </button>
                             ))}
                           </div>
                         </div>
                         {params.gardeFond==='couleur'&&(
-                          <div style={{display:'flex',gap:10,alignItems:'center',marginBottom:14}}>
+                          <div style={{display:'flex',gap:10,alignItems:'center',marginBottom:12}}>
                             <input type="color" value={params.gardeColor} onChange={e=>set('gardeColor',e.target.value)}
-                              style={{width:44,height:44,borderRadius:8,border:`1px solid ${BD}`,cursor:'pointer',padding:2}}/>
+                              style={{width:40,height:40,borderRadius:7,border:`1px solid ${BD}`,cursor:'pointer',padding:2}}/>
                             {['#1D9E75','#2563eb','#111','#9333ea'].map(col=>(
                               <div key={col} onClick={()=>set('gardeColor',col)}
-                                style={{width:32,height:32,borderRadius:'50%',background:col,cursor:'pointer',border:`3px solid ${params.gardeColor===col?'#111':'transparent'}`}}/>
+                                style={{width:28,height:28,borderRadius:'50%',background:col,cursor:'pointer',border:`3px solid ${params.gardeColor===col?'#111':'transparent'}`}}/>
                             ))}
                           </div>
                         )}
                         {(params.gardeFond==='image'||params.gardeFond==='pdf')&&(
-                          <div style={{border:`2px dashed ${BD}`,borderRadius:10,padding:'20px',textAlign:'center' as const,cursor:'pointer',marginBottom:14,background:'#fafafa'}}
+                          <div style={{border:`2px dashed ${BD}`,borderRadius:10,padding:'16px',textAlign:'center' as const,cursor:'pointer',marginBottom:12,background:'#fafafa'}}
                             onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor=G}
                             onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.borderColor=BD}>
-                            <div style={{fontSize:24,marginBottom:6}}>{params.gardeFond==='pdf'?'📄':'🖼'}</div>
+                            <div style={{fontSize:22,marginBottom:4}}>{params.gardeFond==='pdf'?'📄':'🖼'}</div>
                             <div style={{fontSize:13,color:'#555',fontWeight:500}}>Importer {params.gardeFond==='pdf'?'un PDF':'une image'}</div>
-                            <div style={{fontSize:11,color:'#888',marginTop:2}}>{params.gardeFond==='pdf'?'PDF — max 5 Mo':'PNG ou JPG — max 2 Mo'}</div>
+                            <div style={{fontSize:11,color:'#888',marginTop:2}}>{params.gardeFond==='pdf'?'PDF — max 5 Mo':'PNG/JPG — max 2 Mo'}</div>
                           </div>
                         )}
-                        <Field label="Titre sur la page de garde" k="gardeTitre" placeholder="DEVIS DE TRAVAUX"/>
+                        <Field label="Titre" k="gardeTitre" placeholder="DEVIS DE TRAVAUX"/>
                         <Field label="Sous-titre" k="gardeSousTitre" placeholder="Rénovation complète — Paris & Île-de-France"/>
-                        <div style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px',marginTop:4}}>
-                          <div style={{fontSize:12,fontWeight:600,color:'#555',marginBottom:8}}>Aperçu page de garde</div>
-                          <div style={{height:140,borderRadius:8,background:params.gardeFond==='couleur'?params.gardeColor:'#111',display:'flex',flexDirection:'column' as const,alignItems:'center',justifyContent:'center',padding:16,position:'relative' as const}}>
-                            {(params as any).logo&&<img src={(params as any).logo} alt="logo" style={{height:30,objectFit:'contain',marginBottom:10,filter:'brightness(0) invert(1)'}}/>}
-                            <div style={{fontSize:16,fontWeight:800,color:'#fff',textAlign:'center' as const,letterSpacing:'0.05em'}}>{params.gardeTitre||'DEVIS DE TRAVAUX'}</div>
-                            <div style={{fontSize:11,color:'rgba(255,255,255,0.7)',marginTop:6,textAlign:'center' as const}}>{params.gardeSousTitre}</div>
-                            <div style={{position:'absolute' as const,bottom:12,fontSize:9,color:'rgba(255,255,255,0.5)'}}>Client · Référence · Date</div>
-                          </div>
+                        <div style={{height:90,borderRadius:8,background:params.gardeFond==='couleur'?params.gardeColor:'#111',display:'flex',flexDirection:'column' as const,alignItems:'center',justifyContent:'center',padding:12,marginTop:8}}>
+                          <div style={{fontSize:13,fontWeight:800,color:'#fff',textAlign:'center' as const}}>{params.gardeTitre||'DEVIS DE TRAVAUX'}</div>
+                          <div style={{fontSize:9,color:'rgba(255,255,255,0.7)',marginTop:4,textAlign:'center' as const}}>{params.gardeSousTitre}</div>
                         </div>
                       </>
                     )}
                   </Section>
-                </div>
-              )}
-
-                            {tab==='complementaires'&&(
-                <div>
                   <div style={{fontSize:13,color:'#888',marginBottom:16,lineHeight:1.6}}>
                     Ces pages seront ajoutées à la fin de chaque document, après le devis ou la facture.<br/>
                     <strong style={{color:'#111'}}>Seuls les PDF importés sont acceptés.</strong>
