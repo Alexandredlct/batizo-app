@@ -83,6 +83,7 @@ const DEFAULT_PARAMS={
   cgvTexte:'',
   pagesComp:[],
   gardePdf:'',gardePdfNom:'',
+  cachet:'',
 }
 
 export default function ParametresPage(){
@@ -672,13 +673,37 @@ export default function ParametresPage(){
                   </Section>
 
                   <Section title="Cachet / Tampon">
-                    <div style={{border:`2px dashed ${BD}`,borderRadius:10,padding:'20px',textAlign:'center' as const,cursor:'pointer',background:'#fafafa'}}
-                      onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor=G}
-                      onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.borderColor=BD}>
-                      <div style={{fontSize:28,marginBottom:6}}>🖼️</div>
-                      <div style={{fontSize:13,color:'#555',fontWeight:500}}>Importer un tampon/cachet</div>
-                      <div style={{fontSize:11,color:'#888',marginTop:2}}>PNG fond transparent — max 2 Mo — format carré idéal</div>
-                    </div>
+                    <input type="file" accept="image/png" id="cachet-upload" style={{display:'none'}}
+                      onChange={e=>{
+                        const file=e.target.files?.[0]
+                        if(!file)return
+                        if(file.size>2*1024*1024){alert('Fichier trop lourd — max 2 Mo');return}
+                        const reader=new FileReader()
+                        reader.onload=(ev)=>set('cachet',ev.target?.result)
+                        reader.readAsDataURL(file)
+                      }}/>
+                    <label htmlFor="cachet-upload">
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'center' as const,gap:8,padding:'12px 16px',border:`2px dashed ${BD}`,borderRadius:10,background:'#fff',color:'#555',fontSize:13,cursor:'pointer',transition:'all 0.15s'}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor=G}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.borderColor=BD}>
+                        {(params as any).cachet?(
+                          <div style={{display:'flex',alignItems:'center',gap:10}}>
+                            <img src={(params as any).cachet} alt="cachet" style={{width:40,height:40,objectFit:'contain'}}/>
+                            <div>
+                              <div style={{fontSize:12,fontWeight:600,color:G}}>✓ Cachet importé</div>
+                              <div style={{fontSize:11,color:'#888'}}>Cliquez pour changer</div>
+                            </div>
+                          </div>
+                        ):(
+                          <span>Importer un tampon/cachet — PNG fond transparent — max 2 Mo</span>
+                        )}
+                      </div>
+                    </label>
+                    {(params as any).cachet&&(
+                      <button onClick={()=>set('cachet','')} style={{marginTop:8,padding:'5px 12px',background:'#fff',border:`1px solid ${BD}`,borderRadius:6,fontSize:11,cursor:'pointer',color:'#888',display:'flex',alignItems:'center',gap:4}}>
+                        🗑 Supprimer
+                      </button>
+                    )}
                   </Section>
                 </div>
               )}
