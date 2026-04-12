@@ -43,6 +43,7 @@ const DEFAULT_PARAMS={
   showSiegeSocial:true,showFormeJuridique:true,showRCS:true,showSiretPied:true,
   showTvaIntra:true,showCodeAPE:false,showRM:false,
   showDecennalePied:true,showEmailPied:false,showTelPied:false,showSiteWebPied:false,showIBAN:false,
+  showFormeJuridiquePied:true,showTvaIntraP:true,
   showNumPage:true,showMerci:true,
   texteRemerciement:'Merci pour votre confiance. N\'hésitez pas à nous contacter pour toute question.',
   // Style
@@ -287,7 +288,7 @@ export default function ParametresPage(){
                 <div>
                   <Section title="Informations légales">
                     <CheckRow label="Siège social" k="showSiegeSocial"/>
-                    <CheckRow label="Forme juridique" k="showFormeJuridique">
+                    <CheckRow label="Forme juridique" k="showFormeJuridiquePied">
                       <input value={params.formeJuridique} onChange={e=>set('formeJuridique',e.target.value)}
                         style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
                     </CheckRow>
@@ -296,7 +297,7 @@ export default function ParametresPage(){
                         style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
                     </CheckRow>
                     <CheckRow label="SIRET" k="showSiretPied"/>
-                    <CheckRow label="TVA intracommunautaire" k="showTvaIntra">
+                    <CheckRow label="TVA intracommunautaire" k="showTvaIntraP">
                       <input value={params.tvaIntra} onChange={e=>set('tvaIntra',e.target.value)}
                         style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#111',outline:'none'}}/>
                     </CheckRow>
@@ -659,11 +660,12 @@ export default function ParametresPage(){
                     {/* Pied de page aperçu */}
                     <div style={{padding:'10px 16px',background:'#f9fafb',borderTop:`1px solid ${BD}`}}>
                       <div style={{fontSize:7,color:'#888',textAlign:'center' as const,lineHeight:1.6}}>
-                        {params.nomEntreprise}{params.showFormeJuridique?` — ${params.formeJuridique}`:''}
-                        {params.showSiegeSocial?` — ${params.adresse}`:''}
+                        {params.nomEntreprise}
+                        {params.showFormeJuridiquePied?` — ${params.formeJuridique}`:''}
+                        {params.showSiegeSocial?` — ${params.adresseLigne1||params.adresse} ${params.codePostal||''} ${params.ville||''}`:''}
                         {params.showRCS?` — ${params.rcs}`:''}
                         {params.showSiretPied?` — SIRET: ${params.siret}`:''}
-                        {params.showTvaIntra?` — TVA: ${params.tvaIntra}`:''}
+                        {params.showTvaIntraP?` — TVA: ${params.tvaIntra}`:''}
                         {params.showDecennalePied?` — ${params.decennale}`:''}
                       </div>
                       {params.showMerci&&<div style={{fontSize:7,color:'#888',textAlign:'center' as const,marginTop:3,fontStyle:'italic'}}>{params.texteRemerciement}</div>}
