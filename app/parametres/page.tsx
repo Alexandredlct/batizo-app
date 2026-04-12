@@ -281,17 +281,7 @@ export default function ParametresPage(){
                         🗑 Supprimer le logo
                       </button>
                     )}
-                    <div>
-                      <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:6}}>Position du logo</label>
-                      <div style={{display:'flex',gap:8}}>
-                        {(['gauche','centre','droite'] as const).map(p=>(
-                          <button key={p} onClick={()=>set('logoPosition',p)}
-                            style={{flex:1,padding:'7px',border:`2px solid ${params.logoPosition===p?G:BD}`,borderRadius:7,background:params.logoPosition===p?'#f0fdf4':'#fff',color:params.logoPosition===p?G:'#555',fontSize:12,fontWeight:params.logoPosition===p?600:400,cursor:'pointer',textTransform:'capitalize' as const}}>
-                            {p}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+
                   </Section>
 
                   <Section title="Informations entreprise">
@@ -641,10 +631,10 @@ export default function ParametresPage(){
                     {/* En-tête aperçu */}
                     <div style={{background:params.couleurPrincipale,padding:'16px 18px',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
                       <div style={{color:'#fff',display:'flex',alignItems:'flex-start',gap:10}}>
-                        {logoPreview&&params.logoPosition==='gauche'&&(
-                          <img src={logoPreview} alt="logo" style={{height:36,maxWidth:80,objectFit:'contain',flexShrink:0,filter:'brightness(0) invert(1)',opacity:0.95}}/>
-                        )}
                         <div>
+                        {logoPreview&&(
+                          <img src={logoPreview} alt="logo" style={{height:36,maxWidth:120,objectFit:'contain',marginBottom:6,display:'block',filter:'brightness(0) invert(1)',opacity:0.95}}/>
+                        )}
                         {params.showNom&&<div style={{fontWeight:700,fontSize:14}}>{params.nomEntreprise}</div>}
                         {params.showAdresse&&<div style={{fontSize:10,opacity:0.9,marginTop:1}}>{params.adresseLigne1||params.adresse}{params.codePostal?` ${params.codePostal}`:''}{params.ville?` ${params.ville}`:''}</div>}
                         </div>
