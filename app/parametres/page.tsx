@@ -879,13 +879,13 @@ const[saved,setSaved]=useState(false)
 
                     {/* 6. TEXTE PIED DE DEVIS */}
                     {params.noteDevis&&(
-                      <div style={{padding:'6px 14px',borderTop:'1px solid #e5e7eb'}}>
+                      <div style={{padding:'6px 14px',borderTop:'1px solid #e5e7eb',background:'#fff'}}>
                         <div style={{fontSize:7,color:'#555',fontStyle:'italic',lineHeight:1.5}}>{params.noteDevis}</div>
                       </div>
                     )}
 
                     {/* 7. SIGNATURES */}
-                    <div style={{padding:'10px 14px',borderTop:'1px solid #e5e7eb',display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                    <div style={{padding:'10px 14px',borderTop:'1px solid #e5e7eb',display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,background:'#fff'}}>
                       <div style={{border:'1px solid #e5e7eb',borderRadius:6,padding:'7px 10px'}}>
                         <div style={{fontSize:9,fontWeight:700,color:'#111',marginBottom:4}}>{params.texteClient||'Le client'}</div>
                         <div style={{fontSize:7,color:'#555',fontStyle:'italic',marginBottom:6,lineHeight:1.5}}>{params.mentionClient}</div>
@@ -902,7 +902,7 @@ const[saved,setSaved]=useState(false)
                     </div>
 
                     {/* 8. PIED DE PAGE LÉGAL */}
-                    <div style={{padding:'8px 14px',background:'#f9fafb',borderTop:'1px solid #e5e7eb'}}>
+                    <div style={{padding:'8px 14px',background:'#fff',borderTop:'1px solid #e5e7eb'}}>
                       <div style={{fontSize:6.5,color:'#888',textAlign:'center' as const,lineHeight:1.8,fontFamily:params.police||'system-ui'}}>
                         {(()=>{
                           const p=params as any
