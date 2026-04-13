@@ -838,22 +838,24 @@ const[saved,setSaved]=useState(false)
                       </table>
                     </div>
 
-                    {/* Moyens de paiement */}
-                    {(params.moyensVirement||params.moyensCheque||params.moyensCarte||params.moyensEspeces)&&(
-                      <div style={{padding:'6px 14px',borderTop:'1px solid #f3f4f6',fontSize:7,color:'#555'}}>
-                        <span style={{fontWeight:600}}>Paiement : </span>
-                        {(()=>{
-                          const moyens=[params.moyensVirement?'virement bancaire':null,params.moyensCheque?'chèque':null,params.moyensCarte?'carte bancaire':null,params.moyensEspeces?'espèces':null].filter(Boolean) as string[]
-                          if(moyens.length===0) return ''
-                          const first=moyens[0].charAt(0).toUpperCase()+moyens[0].slice(1)
-                          if(moyens.length===1) return first+'.'
-                          return first+moyens.slice(1).map((m,i)=>i===moyens.length-2?' ou '+m:' / '+m).join('')+'.'
-                        })()}
-                      </div>
-                    )}
-
                     {/* 5. RÉCAPITULATIF */}
-                    <div style={{padding:'8px 14px',borderTop:'2px solid #e5e7eb',display:'flex',justifyContent:'flex-end'}}>
+                    <div style={{padding:'8px 14px',borderTop:'2px solid #e5e7eb',display:'flex',justifyContent:'space-between',gap:12,alignItems:'flex-start'}}>
+                      {/* Moyens de paiement — gauche */}
+                      <div style={{flex:1,paddingTop:2}}>
+                        {(params.moyensVirement||params.moyensCheque||params.moyensCarte||params.moyensEspeces)&&(
+                          <div style={{fontSize:7,color:'#555',lineHeight:1.5}}>
+                            <span style={{fontWeight:600}}>Paiement : </span>
+                            {(()=>{
+                              const moyens=[params.moyensVirement?'virement bancaire':null,params.moyensCheque?'chèque':null,params.moyensCarte?'carte bancaire':null,params.moyensEspeces?'espèces':null].filter(Boolean) as string[]
+                              if(moyens.length===0) return ''
+                              const first=moyens[0].charAt(0).toUpperCase()+moyens[0].slice(1)
+                              if(moyens.length===1) return first+'.'
+                              return first+moyens.slice(1).map((m:string,i:number)=>i===moyens.length-2?' ou '+m:' / '+m).join('')+'.'
+                            })()}
+                          </div>
+                        )}
+                      </div>
+                      {/* Montants — droite */}
                       <div style={{minWidth:160}}>
                         {[
                           {label:'Sous-total HT',val:'6 235,00 €',bold:false},
@@ -870,6 +872,7 @@ const[saved,setSaved]=useState(false)
                           <span style={{fontSize:9,fontWeight:800,color:'#111'}}>Net à payer</span>
                           <span style={{fontSize:10,fontWeight:800,color:'#111'}}>6 858,50 €</span>
                         </div>
+                      </div>
                       </div>
                     </div>
 
@@ -943,7 +946,6 @@ const[saved,setSaved]=useState(false)
                     </div>
                   ))}
                 </div>
-                            </div>
             </div>
           </div>
         </div>
