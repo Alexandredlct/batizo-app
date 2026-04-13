@@ -754,8 +754,7 @@ const[saved,setSaved]=useState(false)
                       </div>
                       {/* Colonne droite — Destinataire */}
                       <div>
-                        <div style={{fontSize:8,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.05em',marginBottom:4}}>Destinataire</div>
-                        <div style={{background:'#f3f4f6',borderRadius:6,padding:'8px 10px'}}>
+<div style={{background:'#f3f4f6',borderRadius:6,padding:'8px 10px'}}>
                           <div style={{fontSize:10,fontWeight:700,color:'#111'}}>Jean Dupont</div>
                           <div style={{fontSize:8,color:'#555',marginTop:2}}>Dupont Immobilier SAS</div>
                           <div style={{fontSize:8,color:'#555'}}>45 avenue des Champs</div>
