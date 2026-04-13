@@ -886,18 +886,19 @@ const[saved,setSaved]=useState(false)
 
                     {/* 7. SIGNATURES */}
                     <div style={{padding:'10px 14px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,background:'#fff'}}>
-                      <div style={{border:'1px solid #e5e7eb',padding:'7px 10px'}}>
-                        <div style={{fontSize:9,fontWeight:700,color:'#111',marginBottom:4}}>{params.texteClient||'Le client'}</div>
-                        <div style={{fontSize:7,color:'#555',fontStyle:'italic',marginBottom:6,lineHeight:1.5}}>{params.mentionClient}</div>
-                        <div style={{height:params.tailleSignature==='petit'?16:params.tailleSignature==='grand'?44:28,transition:'height 0.2s'}}/>
+                      {/* Client */}
+                      <div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',gap:4}}>
+                        <div style={{fontSize:9,fontWeight:700,color:'#111',textAlign:'center' as const}}>{params.texteClient||'Le client'}</div>
+                        {params.mentionClient&&<div style={{fontSize:7,color:'#555',fontStyle:'italic',textAlign:'center' as const,lineHeight:1.5}}>{params.mentionClient}</div>}
+                        <div style={{width:'100%',height:params.tailleSignature==='petit'?20:params.tailleSignature==='grand'?48:32,border:'1px solid #e5e7eb',borderRadius:6,marginTop:4,transition:'height 0.2s'}}/>
                       </div>
-                      <div style={{border:'1px solid #e5e7eb',padding:'7px 10px'}}>
-                        <div style={{fontSize:9,fontWeight:700,color:'#111',marginBottom:4}}>{params.nomSignataireEntreprise||"L'entreprise"}</div>
+                      {/* Entreprise */}
+                      <div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',gap:4}}>
+                        <div style={{fontSize:9,fontWeight:700,color:'#111',textAlign:'center' as const}}>{params.nomSignataireEntreprise||"L'entreprise"}</div>
                         {(params as any).cachet?(
-                          <img src={(params as any).cachet} alt="cachet" style={{height:params.tailleSignature==='petit'?16:params.tailleSignature==='grand'?44:28,maxWidth:'100%',objectFit:'contain',display:'block',transition:'height 0.2s'}}/>
-                        ):(
-                          <div style={{height:params.tailleSignature==='petit'?16:params.tailleSignature==='grand'?44:28,transition:'height 0.2s'}}/>
-                        )}
+                          <img src={(params as any).cachet} alt="cachet" style={{height:24,maxWidth:'80%',objectFit:'contain'}}/>
+                        ):null}
+                        <div style={{width:'100%',height:params.tailleSignature==='petit'?20:params.tailleSignature==='grand'?48:32,border:'1px solid #e5e7eb',borderRadius:6,marginTop:4,transition:'height 0.2s'}}/>
                       </div>
                     </div>
 
