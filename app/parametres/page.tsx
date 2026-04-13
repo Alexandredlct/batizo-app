@@ -710,7 +710,7 @@ const[saved,setSaved]=useState(false)
 
             {/* COLONNE DROITE — Aperçu live */}
             <div style={{position:'sticky' as const,top:0,alignSelf:'flex-start' as const}}>
-              <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,overflow:'hidden',boxShadow:'0 2px 8px rgba(0,0,0,0.06)'}}>
+              <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,overflow:'hidden',boxShadow:'0 2px 8px rgba(0,0,0,0.06)',padding:'0'}}>
                 <div style={{padding:'10px 14px',borderBottom:`1px solid ${BD}`,fontSize:11,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.05em'}}>
                   Aperçu live
                 </div>
@@ -739,7 +739,7 @@ const[saved,setSaved]=useState(false)
                   {/* DEVIS */}
                   <div style={{marginBottom:12}}>
                     <div style={{fontSize:9,color:'#888',fontWeight:600,marginBottom:4,textTransform:'uppercase' as const,letterSpacing:'0.05em'}}>Devis / Facture</div>
-                  <div style={{background:'#fff',borderRadius:8,boxShadow:'0 2px 8px rgba(0,0,0,0.1)',overflow:'hidden',fontFamily:params.police||'system-ui',fontSize:'0.72em'}}>
+                  <div style={{background:'#fff',borderRadius:0,boxShadow:'0 2px 8px rgba(0,0,0,0.1)',overflow:'hidden',fontFamily:params.police||'system-ui',fontSize:'0.72em',border:'1px solid #e5e7eb'}}>
 
                     {/* 1. EN-TÊTE — fond blanc, 2 colonnes */}
                     <div style={{padding:'12px 14px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
@@ -886,12 +886,12 @@ const[saved,setSaved]=useState(false)
 
                     {/* 7. SIGNATURES */}
                     <div style={{padding:'10px 14px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,background:'#fff'}}>
-                      <div style={{border:'1px solid #e5e7eb',borderRadius:6,padding:'7px 10px'}}>
+                      <div style={{border:'1px solid #e5e7eb',padding:'7px 10px'}}>
                         <div style={{fontSize:9,fontWeight:700,color:'#111',marginBottom:4}}>{params.texteClient||'Le client'}</div>
                         <div style={{fontSize:7,color:'#555',fontStyle:'italic',marginBottom:6,lineHeight:1.5}}>{params.mentionClient}</div>
                         <div style={{height:params.tailleSignature==='petit'?16:params.tailleSignature==='grand'?44:28,transition:'height 0.2s'}}/>
                       </div>
-                      <div style={{border:'1px solid #e5e7eb',borderRadius:6,padding:'7px 10px'}}>
+                      <div style={{border:'1px solid #e5e7eb',padding:'7px 10px'}}>
                         <div style={{fontSize:9,fontWeight:700,color:'#111',marginBottom:4}}>{params.nomSignataireEntreprise||"L'entreprise"}</div>
                         {(params as any).cachet?(
                           <img src={(params as any).cachet} alt="cachet" style={{height:params.tailleSignature==='petit'?16:params.tailleSignature==='grand'?44:28,maxWidth:'100%',objectFit:'contain',display:'block',transition:'height 0.2s'}}/>
