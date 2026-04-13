@@ -86,7 +86,7 @@ const DEFAULT_PARAMS={
 }
 
 export default function ParametresPage(){
-  const[tab,setTab]=useState('modeles')
+  const[tab,setTab]=useState('entete')
   const[params,setParams]=useState({...DEFAULT_PARAMS})
 const[saved,setSaved]=useState(false)
   const[hasChanges,setHasChanges]=useState(false)
