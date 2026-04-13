@@ -431,21 +431,8 @@ const[saved,setSaved]=useState(false)
                         style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',boxSizing:'border-box' as const,fontFamily:'monospace'}}/>
                       <div style={{fontSize:11,color:'#888',marginTop:4}}>Exemple : <strong>{formatEx(params.formatFacture)}</strong></div>
                     </div>
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:14}}>
-                      <div>
-                        <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>TVA par défaut</label>
-                        <select value={params.tvaDef} onChange={e=>set('tvaDef',e.target.value)}
-                          style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',background:'#fff'}}>
-                          {['0%','5.5%','10%','20%'].map(t=><option key={t}>{t}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Acompte par défaut (%)</label>
-                        <input type="number" value={params.acompteDef} onChange={e=>set('acompteDef',parseInt(e.target.value)||0)}
-                          style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',boxSizing:'border-box' as const}}/>
-                      </div>
-                    </div>
-                    <Field label="Nom affiché dans la signature" k="nomSignataire" placeholder="Ex : Alexandre Delcourt"/>
+
+                    <Field label="Nom affiché dans la signature" k="nomSignataireEntreprise" placeholder="Ex : Alexandre Delcourt"/>
                     <div style={{fontSize:11,color:'#888',marginTop:-10,marginBottom:14}}>Apparaît en bas du devis signé</div>
                     <div style={{marginBottom:14}}>
                       <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:8}}>Moyens de règlement par défaut</label>
@@ -778,7 +765,7 @@ const[saved,setSaved]=useState(false)
                     {/* 2. BLOC INFOS DEVIS */}
                     <div style={{padding:'8px 14px',borderBottom:'1px solid #e5e7eb',display:'flex',justifyContent:'space-between',alignItems:'flex-start',background:'#fafafa'}}>
                       <div>
-                        <div style={{fontSize:11,fontWeight:700,color:'#111'}}>Devis n° DEV-2026-001</div>
+                        <div style={{fontSize:11,fontWeight:700,color:'#111'}}>Devis n° {(params.formatDevis||'DEV-{YYYY}-{NUM}').replace('{YYYY}',new Date().getFullYear().toString()).replace('{NUM}','001')}</div>
                         <div style={{fontSize:8,color:'#888',marginTop:2}}>Valable {params.validiteDevis||60} jours</div>
                         <div style={{fontSize:8,color:'#888',fontStyle:'italic',marginTop:4}}>Adresse du projet :</div>
                         <div style={{background:'#f3f4f6',borderRadius:5,padding:'4px 8px',fontSize:8,color:'#555',marginTop:2,display:'inline-block'}}>12 rue de la Paix, 75001 Paris</div>
@@ -850,6 +837,20 @@ const[saved,setSaved]=useState(false)
                         </tbody>
                       </table>
                     </div>
+
+                    {/* Moyens de paiement */}
+                    {(params.moyensVirement||params.moyensCheque||params.moyensCarte||params.moyensEspeces)&&(
+                      <div style={{padding:'6px 14px',borderTop:'1px solid #f3f4f6',fontSize:7,color:'#555'}}>
+                        <span style={{fontWeight:600}}>Paiement : </span>
+                        {(()=>{
+                          const moyens=[params.moyensVirement?'virement bancaire':null,params.moyensCheque?'chèque':null,params.moyensCarte?'carte bancaire':null,params.moyensEspeces?'espèces':null].filter(Boolean) as string[]
+                          if(moyens.length===0) return ''
+                          const first=moyens[0].charAt(0).toUpperCase()+moyens[0].slice(1)
+                          if(moyens.length===1) return first+'.'
+                          return first+moyens.slice(1).map((m,i)=>i===moyens.length-2?' ou '+m:' / '+m).join('')+'.'
+                        })()}
+                      </div>
+                    )}
 
                     {/* 5. RÉCAPITULATIF */}
                     <div style={{padding:'8px 14px',borderTop:'2px solid #e5e7eb',display:'flex',justifyContent:'flex-end'}}>
