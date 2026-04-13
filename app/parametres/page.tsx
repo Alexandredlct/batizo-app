@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Sidebar from '../components/Sidebar'
 import SearchBar from '../components/SearchBar'
 
@@ -89,7 +89,31 @@ const DEFAULT_PARAMS={
 export default function ParametresPage(){
   const[tab,setTab]=useState('modeles')
   const[params,setParams]=useState({...DEFAULT_PARAMS})
-  const[saved,setSaved]=useState(false)
+const[saved,setSaved]=useState(false)
+  const[gardePdfThumb,setGardePdfThumb]=useState<string|null>(null)
+  const[compThumbs,setCompThumbs]=useState<Record<string,string>>({})
+
+  const renderPdfThumb=useCallback(async(data:string,id:string,isGarde=false)=>{
+    try{
+      const pdfjsLib=(window as any).pdfjsLib
+      if(!pdfjsLib)return
+      const base64=data.split(',')[1]
+      const binary=atob(base64)
+      const bytes=new Uint8Array(binary.length)
+      for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i)
+      const pdf=await pdfjsLib.getDocument({data:bytes}).promise
+      const page=await pdf.getPage(1)
+      const viewport=page.getViewport({scale:0.5})
+      const canvas=document.createElement('canvas')
+      canvas.width=viewport.width
+      canvas.height=viewport.height
+      const ctx=canvas.getContext('2d')
+      await page.render({canvasContext:ctx,viewport}).promise
+      const thumb=canvas.toDataURL()
+      if(isGarde) setGardePdfThumb(thumb)
+      else setCompThumbs(p=>({...p,[id]:thumb}))
+    }catch(e){console.error('PDF render error',e)}
+  },[])
   const[logoPreview,setLogoPreview]=useState<string|null>(null)
 
   const handleLogo=(e:React.ChangeEvent<HTMLInputElement>)=>{
@@ -115,6 +139,15 @@ export default function ParametresPage(){
   useEffect(()=>{
     const stored=localStorage.getItem('batizo_params')
     if(stored) setParams(JSON.parse(stored))
+    // Charger PDF.js
+    if(!(window as any).pdfjsLib){
+      const script=document.createElement('script')
+      script.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'
+      script.onload=()=>{
+        (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
+      }
+      document.head.appendChild(script)
+    }
   },[])
 
   const set=(key:string,val:any)=>setParams(p=>({...p,[key]:val}))
@@ -510,7 +543,11 @@ export default function ParametresPage(){
                             if(!file)return
                             if(file.size>5*1024*1024){alert('Fichier trop lourd — max 5 Mo');return}
                             const reader=new FileReader()
-                            reader.onload=(ev)=>{set('gardePdf',ev.target?.result);set('gardePdfNom',file.name)}
+                            reader.onload=(ev)=>{
+                            const result=ev.target?.result as string
+                            set('gardePdf',result);set('gardePdfNom',file.name)
+                            renderPdfThumb(result,'garde',true)
+                          }
                             reader.readAsDataURL(file)
                           }}/>
                         <label htmlFor="garde-upload">
@@ -622,13 +659,14 @@ export default function ParametresPage(){
                         if(file.size>5*1024*1024){alert('Fichier trop lourd — max 5 Mo');return}
                         const reader=new FileReader()
                         reader.onload=(ev)=>{
+                          const result=ev.target?.result as string
+                          const id=Math.random().toString(36).slice(2,8)
                           const arr=[...((params as any).pagesComp||[]),{
-                            id:Math.random().toString(36).slice(2,8),
-                            nom:file.name.replace('.pdf',''),
-                            active:true,devis:true,facture:true,
-                            data:ev.target?.result
+                            id,nom:file.name.replace('.pdf',''),
+                            active:true,devis:true,facture:true,data:result
                           }]
                           set('pagesComp',arr)
+                          renderPdfThumb(result,id,false)
                         }
                         reader.readAsDataURL(file)
                       }}/>
@@ -716,8 +754,28 @@ export default function ParametresPage(){
                   Aperçu live
                 </div>
 
-                {/* Mini aperçu document */}
-                <div style={{padding:14,background:'#f8f9fa'}}>
+                {/* Mini aperçu document — scroll vertical */}
+                <div style={{padding:14,background:'#f8f9fa',maxHeight:700,overflowY:'auto'}}>
+                  {/* PAGE DE GARDE */}
+                  {params.gardeActive&&(
+                    <div style={{marginBottom:12}}>
+                      <div style={{fontSize:9,color:'#888',fontWeight:600,marginBottom:4,textTransform:'uppercase' as const,letterSpacing:'0.05em'}}>Page de garde</div>
+                      <div style={{background:'#fff',borderRadius:8,boxShadow:'0 2px 8px rgba(0,0,0,0.1)',overflow:'hidden',minHeight:80,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                        {gardePdfThumb?(
+                          <img src={gardePdfThumb} alt="page de garde" style={{width:'100%',borderRadius:6}}/>
+                        ):(
+                          <div style={{padding:20,textAlign:'center' as const,color:'#aaa',fontSize:11}}>
+                            <div style={{fontSize:20,marginBottom:4}}>📄</div>
+                            PDF importé — aperçu disponible après import
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* DEVIS */}
+                  <div style={{marginBottom:12}}>
+                    <div style={{fontSize:9,color:'#888',fontWeight:600,marginBottom:4,textTransform:'uppercase' as const,letterSpacing:'0.05em'}}>Devis / Facture</div>
                   <div style={{background:'#fff',borderRadius:8,boxShadow:'0 2px 8px rgba(0,0,0,0.1)',overflow:'hidden',fontFamily:params.police||'system-ui',fontSize:'0.72em'}}>
 
                     {/* 1. EN-TÊTE — fond blanc, 2 colonnes */}
@@ -872,7 +930,7 @@ export default function ParametresPage(){
                           ].filter(Boolean).join(' ')
                           if(formeCapital) parts.push(formeCapital)
                           if(p.showSiegeSocial) parts.push(p.adresseLigne1+' '+p.codePostal+' '+p.ville)
-                          if(p.showRCS&&p.rcs) parts.push('Immatriculée au RCS de '+(p.ville||'')+ ' sous le numéro '+p.rcs)
+                          if(p.showRCS&&p.rcs) parts.push('Immatriculée au RCS de '+(p.ville||'')+' sous le numéro '+p.rcs)
                           if(p.showSiren&&p.siren) parts.push('SIREN : '+p.siren)
                           if(p.showSiretPied&&p.siret) parts.push('SIRET : '+p.siret)
                           if(p.showTvaIntraP&&p.tvaIntra) parts.push('TVA Intracommunautaire : '+p.tvaIntra)
@@ -882,8 +940,27 @@ export default function ParametresPage(){
                         })()}
                       </div>
                     </div>
-
                   </div>
+                  </div>
+
+                  {/* PAGES COMPLÉMENTAIRES */}
+                  {((params as any).pagesComp||[]).filter((p:any)=>p.active&&p.devis).map((page:any)=>(
+                    <div key={page.id} style={{marginBottom:12}}>
+                      <div style={{fontSize:9,color:'#888',fontWeight:600,marginBottom:4,textTransform:'uppercase' as const,letterSpacing:'0.05em'}}>
+                        📎 {page.nom}
+                      </div>
+                      <div style={{background:'#fff',borderRadius:8,boxShadow:'0 2px 8px rgba(0,0,0,0.1)',overflow:'hidden',minHeight:80,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                        {compThumbs[page.id]?(
+                          <img src={compThumbs[page.id]} alt={page.nom} style={{width:'100%',borderRadius:6}}/>
+                        ):(
+                          <div style={{padding:20,textAlign:'center' as const,color:'#aaa',fontSize:11}}>
+                            <div style={{fontSize:20,marginBottom:4}}>📄</div>
+                            {page.nom}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
                             </div>
             </div>
