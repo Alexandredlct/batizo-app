@@ -742,7 +742,7 @@ const[saved,setSaved]=useState(false)
                   <div style={{background:'#fff',borderRadius:8,boxShadow:'0 2px 8px rgba(0,0,0,0.1)',overflow:'hidden',fontFamily:params.police||'system-ui',fontSize:'0.72em'}}>
 
                     {/* 1. EN-TÊTE — fond blanc, 2 colonnes */}
-                    <div style={{padding:'12px 14px',borderBottom:'1px solid #e5e7eb',display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                    <div style={{padding:'12px 14px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
                       {/* Colonne gauche — Infos entreprise */}
                       <div>
                         {logoPreview&&<img src={logoPreview} alt="logo" style={{height:24,maxWidth:80,objectFit:'contain',marginBottom:5,display:'block'}}/>}
@@ -778,7 +778,7 @@ const[saved,setSaved]=useState(false)
 
                     {/* 3. OBJET / INTRO */}
                     {params.introDevis&&(
-                      <div style={{padding:'6px 14px',borderBottom:'1px solid #e5e7eb'}}>
+                      <div style={{padding:'6px 14px'}}>
                         <div style={{fontSize:8,color:'#555',fontStyle:'italic',lineHeight:1.5}}>{params.introDevis}</div>
                       </div>
                     )}
@@ -787,7 +787,7 @@ const[saved,setSaved]=useState(false)
                     <div style={{padding:'0 14px'}}>
                       <table style={{width:'100%',borderCollapse:'collapse',fontSize:8}}>
                         <thead>
-                          <tr style={{borderBottom:'2px solid #e5e7eb',background:'#f9fafb'}}>
+                          <tr style={{background:'#f9fafb'}}>
                             {['N°','Désignation','Qté','PU HT','TVA','Total HT'].map(h=>(
                               <th key={h} style={{padding:'5px 4px',textAlign:h==='N°'||h==='Qté'||h==='PU HT'||h==='TVA'||h==='Total HT'?'right' as const:'left' as const,fontSize:7,color:'#888',fontWeight:600}}>{h}</th>
                             ))}
@@ -840,7 +840,7 @@ const[saved,setSaved]=useState(false)
                     </div>
 
                     {/* 5. RÉCAPITULATIF */}
-                    <div style={{padding:'8px 14px',borderTop:'2px solid #e5e7eb',display:'flex',justifyContent:'space-between',gap:12,alignItems:'flex-start'}}>
+                    <div style={{padding:'8px 14px',display:'flex',justifyContent:'space-between',gap:12,alignItems:'flex-start'}}>
                       {/* Moyens de paiement — gauche */}
                       <div style={{flex:1,paddingTop:2}}>
                         {(params.moyensVirement||params.moyensCheque||params.moyensCarte||params.moyensEspeces)&&(
@@ -879,13 +879,13 @@ const[saved,setSaved]=useState(false)
 
                     {/* 6. TEXTE PIED DE DEVIS */}
                     {params.noteDevis&&(
-                      <div style={{padding:'6px 14px',borderTop:'1px solid #e5e7eb',background:'#fff'}}>
+                      <div style={{padding:'6px 14px',background:'#fff'}}>
                         <div style={{fontSize:7,color:'#555',fontStyle:'italic',lineHeight:1.5}}>{params.noteDevis}</div>
                       </div>
                     )}
 
                     {/* 7. SIGNATURES */}
-                    <div style={{padding:'10px 14px',borderTop:'1px solid #e5e7eb',display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,background:'#fff'}}>
+                    <div style={{padding:'10px 14px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,background:'#fff'}}>
                       <div style={{border:'1px solid #e5e7eb',borderRadius:6,padding:'7px 10px'}}>
                         <div style={{fontSize:9,fontWeight:700,color:'#111',marginBottom:4}}>{params.texteClient||'Le client'}</div>
                         <div style={{fontSize:7,color:'#555',fontStyle:'italic',marginBottom:6,lineHeight:1.5}}>{params.mentionClient}</div>
