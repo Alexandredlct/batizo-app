@@ -1,4 +1,5 @@
 'use client'
+import NouveauDevisModal from '../components/NouveauDevisModal'
 import SearchBar from '../components/SearchBar'
 import Sidebar from '../components/Sidebar'
 import { useState } from 'react'
@@ -58,6 +59,7 @@ type SortField = 'ref'|'montant'|'date'|'statut'
 type SortDir = 'asc'|'desc'
 
 export default function DevisPage() {
+  const[showNouveauDevis,setShowNouveauDevis]=useState(false)
   const [activeTab, setActiveTab] = useState('tous')
   const [search, setSearch] = useState('')
   const [expanded, setExpanded] = useState<Record<string,boolean>>({})
@@ -186,6 +188,7 @@ export default function DevisPage() {
   ]
 
   return (
+    <>
     <div style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}} onClick={() => { setActionMenu(null); setDocMenu(null) }}>
 
       <Sidebar activePage="devis"/>
@@ -199,7 +202,7 @@ export default function DevisPage() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Exporter
             </button>
-            <a href="/devis/nouveau" style={{padding:'8px 16px',background:G,color:'#fff',borderRadius:8,fontSize:13,fontWeight:600,textDecoration:'none',display:'flex',alignItems:'center'}}>+ Nouveau devis</a>
+            <a onClick={e=>{e.preventDefault();setShowNouveauDevis(true)}} href="#" style={{padding:'8px 16px',background:G,color:'#fff',borderRadius:8,fontSize:13,fontWeight:600,textDecoration:'none',display:'flex',alignItems:'center',cursor:'pointer'}}>+ Nouveau devis</a>
           </div>
         </div>
 
@@ -656,5 +659,7 @@ export default function DevisPage() {
         </div>
       )}
     </div>
+    {showNouveauDevis&&<NouveauDevisModal onClose={()=>setShowNouveauDevis(false)}/>}
+    </>
   )
 }
