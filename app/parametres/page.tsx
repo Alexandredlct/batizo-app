@@ -787,7 +787,7 @@ const[saved,setSaved]=useState(false)
                     <div style={{padding:'0 14px'}}>
                       <table style={{width:'100%',borderCollapse:'collapse',fontSize:8}}>
                         <thead>
-                          <tr style={{background:'#fff',borderBottom:'1px solid #e5e7eb'}}>
+                          <tr style={{background:'#fff'}}>
                             {['N°','Désignation','Qté','PU HT','TVA','Total HT'].map(h=>(
                               <th key={h} style={{padding:'5px 4px',textAlign:h==='Qté'||h==='PU HT'||h==='TVA'||h==='Total HT'?'right' as const:'left' as const,fontSize:7,color:'#111',fontWeight:700}}>{h}</th>
                             ))}
