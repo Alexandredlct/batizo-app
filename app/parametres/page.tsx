@@ -402,15 +402,7 @@ const[saved,setSaved]=useState(false)
                     </div>
                   </Section>
 
-                  <Section title="Options">
-                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                      <div>
-                        <div style={{fontSize:13,fontWeight:500,color:'#111'}}>Afficher les photos dans le devis</div>
-                        <div style={{fontSize:11,color:'#888'}}>Photos des matériaux et ouvrages</div>
-                      </div>
-                      <Toggle k="afficherPhotos"/>
-                    </div>
-                  </Section>
+
                 </div>
               )}
 
