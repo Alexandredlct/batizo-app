@@ -862,19 +862,21 @@ const[saved,setSaved]=useState(false)
                       {/* Montants — droite */}
                       <div style={{minWidth:160}}>
                         {[
-                          {label:'Sous-total HT',val:'6 235,00 €',bold:true},
-                          {label:'Total HT',val:'6 235,00 €',bold:true},
-                          {label:'TVA à 10%',val:'623,50 €',bold:false},
-                          {label:'Total TTC',val:'6 858,50 €',bold:true},
+                          {label:'Sous-total HT',val:'6 235,00 €',bold:true,neg:false},
+                          {label:'Remise exceptionnelle',val:'- 200,00 €',bold:false,neg:true},
+                          {label:'Total HT',val:'6 035,00 €',bold:true,neg:false},
+                          {label:'TVA à 10%',val:'603,50 €',bold:false,neg:false},
+                          {label:'Total TTC',val:'6 638,50 €',bold:true,neg:false},
+                          {label:'Prime Maprimerénov',val:'- 300,00 €',bold:false,neg:true},
                         ].map(row=>(
                           <div key={row.label} style={{display:'flex',justifyContent:'space-between',gap:16,paddingBottom:3,paddingTop:3,borderBottom:'1px solid #f3f4f6'}}>
                             <span style={{fontSize:8,color:'#111',fontWeight:row.bold?700:400}}>{row.label}</span>
-                            <span style={{fontSize:8,color:'#111',fontWeight:row.bold?700:400}}>{row.val}</span>
+                            <span style={{fontSize:8,color:row.neg?'#E24B4A':'#111',fontWeight:row.bold?700:400}}>{row.val}</span>
                           </div>
                         ))}
                         <div style={{paddingTop:3,display:'flex',justifyContent:'space-between',gap:16}}>
                           <span style={{fontSize:9,fontWeight:700,color:'#111'}}>Reste à payer</span>
-                          <span style={{fontSize:9,fontWeight:700,color:'#111'}}>6 858,50 €</span>
+                          <span style={{fontSize:9,fontWeight:700,color:'#111'}}>6 338,50 €</span>
                         </div>
                       </div>
                       </div>
