@@ -764,7 +764,7 @@ const[saved,setSaved]=useState(false)
                     </div>
 
                     {/* 2. BLOC INFOS DEVIS */}
-                    <div style={{padding:'8px 14px',borderBottom:'1px solid #e5e7eb',display:'flex',justifyContent:'space-between',alignItems:'flex-start',background:'#fafafa'}}>
+                    <div style={{padding:'8px 14px',display:'flex',justifyContent:'space-between',alignItems:'flex-start',background:'#fff'}}>
                       <div>
                         <div style={{fontSize:11,fontWeight:700,color:'#111'}}>Devis n° {(params.formatDevis||'DEV-{YYYY}-{NUM}').replace('{YYYY}',new Date().getFullYear().toString()).replace('{NUM}','001')}</div>
                         <div style={{fontSize:8,color:'#888',marginTop:2}}>Valable {params.validiteDevis||60} jours</div>
