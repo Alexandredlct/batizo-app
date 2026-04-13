@@ -410,17 +410,6 @@ const[saved,setSaved]=useState(false)
                     </div>
                   </Section>
 
-                  <Section title="Mise en page">
-                    <div style={{display:'flex',gap:10}}>
-                      {[{id:'aere',label:'Aérée',desc:'Plus d\'espacement'},{id:'compacte',label:'Compacte',desc:'Plus dense'}].map(m=>(
-                        <div key={m.id} onClick={()=>set('miseEnPage',m.id)}
-                          style={{flex:1,padding:'12px',border:`2px solid ${params.miseEnPage===m.id?G:BD}`,borderRadius:10,cursor:'pointer',background:params.miseEnPage===m.id?'#f0fdf4':'#fff',textAlign:'center' as const}}>
-                          <div style={{fontSize:13,fontWeight:700,color:params.miseEnPage===m.id?G:'#111'}}>{m.label} {params.miseEnPage===m.id?'✓':''}</div>
-                          <div style={{fontSize:11,color:'#888',marginTop:2}}>{m.desc}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </Section>
 
 
                 </div>
