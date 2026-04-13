@@ -864,7 +864,7 @@ const[saved,setSaved]=useState(false)
                           {label:'TVA (10%)',val:'623,50 €',bold:false},
                           {label:'Total TTC',val:'6 858,50 €',bold:true},
                         ].map(row=>(
-                          <div key={row.label} style={{display:'flex',justifyContent:'space-between',gap:16,marginBottom:2}}>
+                          <div key={row.label} style={{display:'flex',justifyContent:'space-between',gap:16,marginBottom:0,paddingBottom:3,paddingTop:3,borderBottom:'1px solid #f3f4f6'}}>
                             <span style={{fontSize:8,color:row.bold?'#111':'#888',fontWeight:row.bold?700:400}}>{row.label}</span>
                             <span style={{fontSize:8,color:'#111',fontWeight:row.bold?700:400}}>{row.val}</span>
                           </div>
