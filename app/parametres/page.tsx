@@ -885,20 +885,18 @@ const[saved,setSaved]=useState(false)
                     )}
 
                     {/* 7. SIGNATURES */}
-                    <div style={{padding:'10px 14px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,background:'#fff'}}>
+                    <div style={{padding:'10px 14px',display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:12,background:'#fff'}}>
                       {/* Client */}
-                      <div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',gap:4}}>
+                      <div style={{width:'45%',display:'flex',flexDirection:'column' as const,alignItems:'center',gap:4}}>
                         <div style={{fontSize:9,fontWeight:700,color:'#111',textAlign:'center' as const}}>{params.texteClient||'Le client'}</div>
                         {params.mentionClient&&<div style={{fontSize:7,color:'#555',fontStyle:'italic',textAlign:'center' as const,lineHeight:1.5}}>{params.mentionClient}</div>}
-                        <div style={{width:'100%',height:params.tailleSignature==='petit'?20:params.tailleSignature==='grand'?48:32,border:'1px solid #d1d5db',borderRadius:8,marginTop:6,transition:'height 0.2s',background:'#fafafa'}}/>
+                        <div style={{width:'100%',height:params.tailleSignature==='petit'?24:params.tailleSignature==='grand'?52:36,border:'1px solid #d1d5db',borderRadius:8,marginTop:6,background:'#fafafa'}}/>
                       </div>
                       {/* Entreprise */}
-                      <div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',gap:4}}>
+                      <div style={{width:'45%',display:'flex',flexDirection:'column' as const,alignItems:'center',gap:4}}>
                         <div style={{fontSize:9,fontWeight:700,color:'#111',textAlign:'center' as const}}>{params.nomSignataireEntreprise||"L'entreprise"}</div>
-                        {(params as any).cachet?(
-                          <img src={(params as any).cachet} alt="cachet" style={{height:24,maxWidth:'80%',objectFit:'contain'}}/>
-                        ):null}
-                        <div style={{width:'100%',height:params.tailleSignature==='petit'?20:params.tailleSignature==='grand'?48:32,border:'1px solid #d1d5db',borderRadius:8,marginTop:6,transition:'height 0.2s',background:'#fafafa'}}/>
+                        {(params as any).cachet&&<img src={(params as any).cachet} alt="cachet" style={{height:20,maxWidth:'80%',objectFit:'contain'}}/>}
+                        <div style={{width:'100%',height:params.tailleSignature==='petit'?24:params.tailleSignature==='grand'?52:36,border:'1px solid #d1d5db',borderRadius:8,marginTop:6,background:'#fafafa'}}/>
                       </div>
                     </div>
 
