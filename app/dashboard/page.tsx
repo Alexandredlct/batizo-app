@@ -78,7 +78,7 @@ export default function DashboardPage() {
           <div style={{fontSize:16,fontWeight:700,color:'#111',flexShrink:0}}>Tableau de bord</div><SearchBar/>
           <div style={{display:'flex',gap:10}}>
             <button style={{padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer'}}>+ Nouveau client</button>
-            <button style={{padding:'8px 16px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>+ Nouveau devis</button>
+            <button onClick={()=>setShowNouveauDevis(true)} style={{padding:'8px 16px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>+ Nouveau devis</button>
           </div>
         </div>
 
