@@ -753,9 +753,9 @@ const[saved,setSaved]=useState(false)
                         {params.showSiteWeb&&<div style={{fontSize:9,color:'#555'}}>{params.siteWeb}</div>}
                       </div>
                       {/* Colonne droite — Destinataire */}
-                      <div style={{paddingTop:12}}>
+                      <div style={{paddingTop:24}}>
 <div style={{background:'#f3f4f6',borderRadius:6,padding:'8px 10px'}}>
-                          <div style={{fontSize:10,fontWeight:400,color:'#111'}}>Jean Dupont</div>
+                          <div style={{fontSize:8,color:'#555'}}>Jean Dupont</div>
                           <div style={{fontSize:8,color:'#555',marginTop:2}}>Dupont Immobilier SAS</div>
                           <div style={{fontSize:8,color:'#555'}}>45 avenue des Champs</div>
                           <div style={{fontSize:8,color:'#555'}}>75008 Paris</div>
