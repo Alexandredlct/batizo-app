@@ -717,76 +717,152 @@ export default function ParametresPage(){
                 </div>
 
                 {/* Mini aperçu document */}
-                <div style={{padding:16,background:'#f8f9fa'}}>
-                  <div style={{background:'#fff',borderRadius:8,boxShadow:'0 2px 8px rgba(0,0,0,0.1)',overflow:'hidden',fontSize:'0.85em'}}>
+                <div style={{padding:14,background:'#f8f9fa'}}>
+                  <div style={{background:'#fff',borderRadius:8,boxShadow:'0 2px 8px rgba(0,0,0,0.1)',overflow:'hidden',fontFamily:params.police||'system-ui',fontSize:'0.72em'}}>
 
-                    {/* En-tête aperçu */}
-                    <div style={{background:params.couleurPrincipale,padding:'16px 18px',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
-                      <div style={{color:'#fff',display:'flex',alignItems:'flex-start',gap:10}}>
-                        <div>
-                        {logoPreview&&(
-                          <img src={logoPreview} alt="logo" style={{height:36,maxWidth:120,objectFit:'contain',marginBottom:6,display:'block',filter:'brightness(0) invert(1)',opacity:0.95}}/>
-                        )}
-                        {params.showNom&&<div style={{fontWeight:700,fontSize:14}}>{params.nomEntreprise}</div>}
-                        {params.showAdresse&&<div style={{fontSize:10,opacity:0.9,marginTop:1}}>{params.adresseLigne1||params.adresse}{params.codePostal?` ${params.codePostal}`:''}{params.ville?` ${params.ville}`:''}</div>}
-                        {params.showTel&&<div style={{fontSize:10,opacity:0.9}}>{params.tel}</div>}
-                        {params.showEmail&&<div style={{fontSize:10,opacity:0.9}}>{params.email}</div>}
-                        {params.showSiteWeb&&<div style={{fontSize:10,opacity:0.9}}>{params.siteWeb}</div>}
-                        {params.showSlogan&&params.slogan&&<div style={{fontSize:9,opacity:0.8,fontStyle:'italic'}}>{params.slogan}</div>}
+                    {/* 1. EN-TÊTE — fond blanc, 2 colonnes */}
+                    <div style={{padding:'12px 14px',borderBottom:'1px solid #e5e7eb',display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      {/* Colonne gauche — Infos entreprise */}
+                      <div>
+                        {logoPreview&&<img src={logoPreview} alt="logo" style={{height:24,maxWidth:80,objectFit:'contain',marginBottom:5,display:'block'}}/>}
+                        {params.showNom&&<div style={{fontWeight:700,fontSize:12,color:'#111',marginBottom:2}}>{params.nomEntreprise}{params.showFormeJuridique&&params.formeJuridique?' — '+params.formeJuridique:''}</div>}
+                        {params.showAdresse&&<div style={{fontSize:9,color:'#555'}}>{params.adresseLigne1||params.adresse}{params.codePostal?' '+params.codePostal:''}{params.ville?' '+params.ville:''}</div>}
+                        {params.showTel&&<div style={{fontSize:9,color:'#555'}}>{params.tel}</div>}
+                        {params.showEmail&&<div style={{fontSize:9,color:'#555'}}>{params.email}</div>}
+                        {params.showSiteWeb&&<div style={{fontSize:9,color:'#555'}}>{params.siteWeb}</div>}
+                      </div>
+                      {/* Colonne droite — Destinataire */}
+                      <div>
+                        <div style={{fontSize:8,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.05em',marginBottom:4}}>Destinataire</div>
+                        <div style={{background:'#f3f4f6',borderRadius:6,padding:'8px 10px'}}>
+                          <div style={{fontSize:10,fontWeight:700,color:'#111'}}>Jean Dupont</div>
+                          <div style={{fontSize:8,color:'#555',marginTop:2}}>Dupont Immobilier SAS</div>
+                          <div style={{fontSize:8,color:'#555'}}>45 avenue des Champs</div>
+                          <div style={{fontSize:8,color:'#555'}}>75008 Paris</div>
                         </div>
                       </div>
-                      <div style={{color:'#fff',textAlign:'right' as const}}>
-                        <div style={{fontSize:12,fontWeight:700}}>DEVIS</div>
-                        <div style={{fontSize:9,opacity:0.8}}>DEV-2026-001</div>
-                        <div style={{fontSize:9,opacity:0.8}}>12/04/2026</div>
+                    </div>
+
+                    {/* 2. BLOC INFOS DEVIS */}
+                    <div style={{padding:'8px 14px',borderBottom:'1px solid #e5e7eb',display:'flex',justifyContent:'space-between',alignItems:'flex-start',background:'#fafafa'}}>
+                      <div>
+                        <div style={{fontSize:11,fontWeight:700,color:'#111'}}>Devis n° DEV-2026-001</div>
+                        <div style={{fontSize:8,color:'#888',marginTop:2}}>Valable {params.validiteDevis||60} jours</div>
+                        <div style={{fontSize:8,color:'#888',fontStyle:'italic',marginTop:4}}>Adresse du projet :</div>
+                        <div style={{background:'#f3f4f6',borderRadius:5,padding:'4px 8px',fontSize:8,color:'#555',marginTop:2,display:'inline-block'}}>12 rue de la Paix, 75001 Paris</div>
+                      </div>
+                      <div style={{textAlign:'right' as const}}>
+                        <div style={{fontSize:8,color:'#555'}}>En date du {new Date().toLocaleDateString('fr-FR')}</div>
                       </div>
                     </div>
 
-                    {/* Client */}
-                    <div style={{padding:'12px 16px',borderBottom:`1px solid ${BD}`}}>
-                      <div style={{fontSize:9,color:'#888',marginBottom:2}}>DESTINATAIRE</div>
-                      <div style={{fontSize:11,fontWeight:600,color:'#111'}}>Jean Dupont</div>
-                      <div style={{fontSize:9,color:'#555'}}>45 avenue des Champs, 75008 Paris</div>
+                    {/* 3. OBJET / INTRO */}
+                    {params.introDevis&&(
+                      <div style={{padding:'6px 14px',borderBottom:'1px solid #e5e7eb'}}>
+                        <div style={{fontSize:8,color:'#555',fontStyle:'italic',lineHeight:1.5}}>{params.introDevis}</div>
+                      </div>
+                    )}
+
+                    {/* 4. TABLEAU */}
+                    <div style={{padding:'0 14px'}}>
+                      <table style={{width:'100%',borderCollapse:'collapse',fontSize:8}}>
+                        <thead>
+                          <tr style={{borderBottom:'2px solid #e5e7eb',background:'#f9fafb'}}>
+                            {['N°','Désignation','Qté','PU HT','TVA','Total HT'].map(h=>(
+                              <th key={h} style={{padding:'5px 4px',textAlign:h==='N°'||h==='Qté'||h==='PU HT'||h==='TVA'||h==='Total HT'?'right' as const:'left' as const,fontSize:7,color:'#888',fontWeight:600}}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {/* Catégorie */}
+                          <tr style={{background:params.couleurPrincipale+'18',borderBottom:'1px solid #e5e7eb'}}>
+                            <td style={{padding:'4px',fontWeight:700,color:params.couleurPrincipale,fontSize:8}}>1.</td>
+                            <td colSpan={4} style={{padding:'4px',fontWeight:700,color:params.couleurPrincipale,fontSize:8}}>Entrée</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:700,color:params.couleurPrincipale,fontSize:8}}>6 235 €</td>
+                          </tr>
+                          {/* Sous-catégorie */}
+                          <tr style={{background:params.couleurPrincipale+'0D',borderBottom:'1px solid #e5e7eb'}}>
+                            <td style={{padding:'4px',fontWeight:600,color:params.couleurPrincipale,fontSize:8}}>1.1</td>
+                            <td colSpan={4} style={{padding:'4px',fontWeight:600,color:params.couleurPrincipale,fontSize:8}}>Peinture</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:600,color:params.couleurPrincipale,fontSize:8}}>1 600 €</td>
+                          </tr>
+                          {/* Ouvrage */}
+                          <tr style={{background:'#fff',borderBottom:'1px solid #f3f4f6'}}>
+                            <td style={{padding:'4px',color:'#888',fontSize:7}}>1.1.1</td>
+                            <td style={{padding:'4px'}}>
+                              <div style={{fontSize:8,fontWeight:500,color:'#111'}}>Peinture entrée</div>
+                              <div style={{fontSize:7,color:'#888',fontStyle:'italic'}}>Préparation + 2 couches mat</div>
+                            </td>
+                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8}}>2 forf.</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8}}>800 €</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8}}>10%</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:600,color:'#111',fontSize:8}}>1 600 €</td>
+                          </tr>
+                          {/* Sous-catégorie 2 */}
+                          <tr style={{background:params.couleurPrincipale+'0D',borderBottom:'1px solid #e5e7eb'}}>
+                            <td style={{padding:'4px',fontWeight:600,color:params.couleurPrincipale,fontSize:8}}>1.2</td>
+                            <td colSpan={4} style={{padding:'4px',fontWeight:600,color:params.couleurPrincipale,fontSize:8}}>Parquet</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:600,color:params.couleurPrincipale,fontSize:8}}>4 635 €</td>
+                          </tr>
+                          <tr style={{background:'#fff',borderBottom:'1px solid #f3f4f6'}}>
+                            <td style={{padding:'4px',color:'#888',fontSize:7}}>1.2.1</td>
+                            <td style={{padding:'4px'}}>
+                              <div style={{fontSize:8,fontWeight:500,color:'#111'}}>Pose parquet chêne</div>
+                              <div style={{fontSize:7,color:'#888',fontStyle:'italic'}}>Parquet chêne massif 12mm</div>
+                            </td>
+                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8}}>45 m²</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8}}>103 €</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8}}>10%</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:600,color:'#111',fontSize:8}}>4 635 €</td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
 
-                    {/* Lignes */}
-                    <div style={{padding:'12px 16px'}}>
-                      <div style={{display:'grid',gridTemplateColumns:'1fr 50px 50px 60px',gap:4,marginBottom:4,borderBottom:`1px solid ${BD}`,paddingBottom:4}}>
-                        <div style={{fontSize:8,color:'#888',fontWeight:600}}>DÉSIGNATION</div>
-                        <div style={{fontSize:8,color:'#888',fontWeight:600,textAlign:'right' as const}}>QTÉ</div>
-                        <div style={{fontSize:8,color:'#888',fontWeight:600,textAlign:'right' as const}}>PU HT</div>
-                        <div style={{fontSize:8,color:'#888',fontWeight:600,textAlign:'right' as const}}>TOTAL HT</div>
-                      </div>
-                      {[{d:'Pose parquet chêne',q:'45 m²',pu:'103 €',t:'4 635 €'},{d:'Peinture salon',q:'2 forf.',pu:'800 €',t:'1 600 €'}].map((l,i)=>(
-                        <div key={i} style={{display:'grid',gridTemplateColumns:'1fr 50px 50px 60px',gap:4,marginBottom:3}}>
-                          <div style={{fontSize:9,color:'#111'}}>{l.d}</div>
-                          <div style={{fontSize:9,color:'#555',textAlign:'right' as const}}>{l.q}</div>
-                          <div style={{fontSize:9,color:'#555',textAlign:'right' as const}}>{l.pu}</div>
-                          <div style={{fontSize:9,fontWeight:600,color:'#111',textAlign:'right' as const}}>{l.t}</div>
+                    {/* 5. RÉCAPITULATIF */}
+                    <div style={{padding:'8px 14px',borderTop:'2px solid #e5e7eb',display:'flex',justifyContent:'flex-end'}}>
+                      <div style={{minWidth:160}}>
+                        {[
+                          {label:'Sous-total HT',val:'6 235,00 €',bold:false},
+                          {label:'Total HT',val:'6 235,00 €',bold:true},
+                          {label:'TVA (10%)',val:'623,50 €',bold:false},
+                          {label:'Total TTC',val:'6 858,50 €',bold:true},
+                        ].map(row=>(
+                          <div key={row.label} style={{display:'flex',justifyContent:'space-between',gap:16,marginBottom:2}}>
+                            <span style={{fontSize:8,color:row.bold?'#111':'#888',fontWeight:row.bold?700:400}}>{row.label}</span>
+                            <span style={{fontSize:8,color:'#111',fontWeight:row.bold?700:400}}>{row.val}</span>
+                          </div>
+                        ))}
+                        <div style={{borderTop:'2px solid #111',paddingTop:4,marginTop:4,display:'flex',justifyContent:'space-between',gap:16}}>
+                          <span style={{fontSize:9,fontWeight:800,color:'#111'}}>Net à payer</span>
+                          <span style={{fontSize:10,fontWeight:800,color:params.couleurPrincipale}}>6 858,50 €</span>
                         </div>
-                      ))}
-                      <div style={{borderTop:`2px solid ${BD}`,paddingTop:4,display:'flex',justifyContent:'space-between',marginTop:4}}>
-                        <div style={{fontSize:9,fontWeight:700,color:'#111'}}>Net à payer</div>
-                        <div style={{fontSize:11,fontWeight:800,color:params.couleurPrincipale}}>7 535,50 €</div>
                       </div>
                     </div>
 
-                    {/* Signature aperçu */}
-                    <div style={{padding:'12px 16px',borderTop:`1px solid ${BD}`,display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-                      <div style={{border:`1px solid ${BD}`,borderRadius:4,padding:'6px 8px'}}>
-                        <div style={{fontSize:9,fontWeight:600,color:'#111',marginBottom:3}}>{params.texteClient||'Le client'}</div>
-                        <div style={{fontSize:7,color:'#555',fontStyle:'italic',marginBottom:4,lineHeight:1.4}}>{params.mentionClient}</div>
+                    {/* 6. TEXTE PIED DE DEVIS */}
+                    {params.noteDevis&&(
+                      <div style={{padding:'6px 14px',borderTop:'1px solid #e5e7eb'}}>
+                        <div style={{fontSize:7,color:'#555',fontStyle:'italic',lineHeight:1.5}}>{params.noteDevis}</div>
+                      </div>
+                    )}
+
+                    {/* 7. SIGNATURES */}
+                    <div style={{padding:'10px 14px',borderTop:'1px solid #e5e7eb',display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      <div style={{border:'1px solid #e5e7eb',borderRadius:6,padding:'7px 10px'}}>
+                        <div style={{fontSize:9,fontWeight:700,color:'#111',marginBottom:4}}>{params.texteClient||'Le client'}</div>
+                        <div style={{fontSize:7,color:'#555',fontStyle:'italic',marginBottom:6,lineHeight:1.5}}>{params.mentionClient}</div>
                         <div style={{height:params.tailleSignature==='petit'?16:params.tailleSignature==='grand'?44:28,transition:'height 0.2s'}}/>
                       </div>
-                      <div style={{border:`1px solid ${BD}`,borderRadius:4,padding:'6px 8px'}}>
-                        <div style={{fontSize:9,fontWeight:600,color:'#111',marginBottom:3}}>{params.nomSignataireEntreprise||"L'entreprise"}</div>
+                      <div style={{border:'1px solid #e5e7eb',borderRadius:6,padding:'7px 10px'}}>
+                        <div style={{fontSize:9,fontWeight:700,color:'#111',marginBottom:4}}>{params.nomSignataireEntreprise||"L'entreprise"}</div>
                         <div style={{height:params.tailleSignature==='petit'?16:params.tailleSignature==='grand'?44:28,transition:'height 0.2s'}}/>
                       </div>
                     </div>
 
-                    {/* Pied de page aperçu */}
-                    <div style={{padding:'10px 16px',background:'#f9fafb',borderTop:`1px solid ${BD}`}}>
-                      <div style={{fontSize:7,color:'#888',textAlign:'center' as const,lineHeight:1.8}}>
+                    {/* 8. PIED DE PAGE LÉGAL */}
+                    <div style={{padding:'8px 14px',background:'#f9fafb',borderTop:'1px solid #e5e7eb'}}>
+                      <div style={{fontSize:6.5,color:'#888',textAlign:'center' as const,lineHeight:1.8,fontFamily:params.police||'system-ui'}}>
                         {(()=>{
                           const p=params as any
                           const parts:string[]=[p.nomEntreprise]
@@ -795,25 +871,21 @@ export default function ParametresPage(){
                             p.showCapital&&p.capitalSocial?'au capital de '+p.capitalSocial:''
                           ].filter(Boolean).join(' ')
                           if(formeCapital) parts.push(formeCapital)
-                          if(p.showRCS&&p.rcs){
-                            const ville=p.ville||'[ville]'
-                            const num=p.rcs.replace(/^RCSs+w+s+ws+/,'')
-                            parts.push('Immatriculée au RCS de '+ville+' sous le numéro '+num)
-                          }
+                          if(p.showSiegeSocial) parts.push(p.adresseLigne1+' '+p.codePostal+' '+p.ville)
+                          if(p.showRCS&&p.rcs) parts.push('Immatriculée au RCS de '+(p.ville||'')+ ' sous le numéro '+p.rcs)
                           if(p.showSiren&&p.siren) parts.push('SIREN : '+p.siren)
                           if(p.showSiretPied&&p.siret) parts.push('SIRET : '+p.siret)
-                          if(p.showRM&&p.rm) parts.push('RM : '+p.rm)
                           if(p.showTvaIntraP&&p.tvaIntra) parts.push('TVA Intracommunautaire : '+p.tvaIntra)
-                          if(p.showCodeAPEPied&&p.codeAPE) parts.push('Code APE : '+p.codeAPE)
                           if(p.showDecennalePied&&p.decennale) parts.push('Assurance Décennale : N° '+p.decennale)
                           if(p.showIBANPied&&p.iban) parts.push('IBAN : '+p.iban)
                           return parts.join(' — ')
                         })()}
                       </div>
                     </div>
+
                   </div>
                 </div>
-              </div>
+                            </div>
             </div>
           </div>
         </div>
