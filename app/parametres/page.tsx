@@ -753,7 +753,7 @@ const[saved,setSaved]=useState(false)
                         {params.showSiteWeb&&<div style={{fontSize:9,color:'#555'}}>{params.siteWeb}</div>}
                       </div>
                       {/* Colonne droite — Destinataire */}
-                      <div>
+                      <div style={{paddingTop:12}}>
 <div style={{background:'#f3f4f6',borderRadius:6,padding:'8px 10px'}}>
                           <div style={{fontSize:10,fontWeight:700,color:'#111'}}>Jean Dupont</div>
                           <div style={{fontSize:8,color:'#555',marginTop:2}}>Dupont Immobilier SAS</div>
@@ -767,12 +767,12 @@ const[saved,setSaved]=useState(false)
                     <div style={{padding:'8px 14px',display:'flex',justifyContent:'space-between',alignItems:'flex-start',background:'#fff'}}>
                       <div>
                         <div style={{fontSize:11,fontWeight:700,color:'#111'}}>Devis n° {(params.formatDevis||'DEV-{YYYY}-{NUM}').replace('{YYYY}',new Date().getFullYear().toString()).replace('{NUM}','001')}</div>
-                        <div style={{fontSize:8,color:'#888',marginTop:2}}>Valable {params.validiteDevis||60} jours</div>
-                        <div style={{fontSize:8,color:'#888',fontStyle:'italic',marginTop:4}}>Adresse du projet :</div>
+                        <div style={{fontSize:8,color:'#444',marginTop:2}}>Valable {params.validiteDevis||60} jours</div>
+                        <div style={{fontSize:8,color:'#444',fontStyle:'italic',marginTop:4}}>Adresse du projet :</div>
                         <div style={{fontSize:8,color:'#555',marginTop:2}}>12 rue de la Paix, 75001 Paris</div>
                       </div>
                       <div style={{textAlign:'right' as const}}>
-                        <div style={{fontSize:8,color:'#555'}}>En date du {new Date().toLocaleDateString('fr-FR')}</div>
+                        <div style={{fontSize:8,color:'#444'}}>En date du {new Date().toLocaleDateString('fr-FR')}</div>
                       </div>
                     </div>
 
