@@ -755,7 +755,7 @@ const[saved,setSaved]=useState(false)
                       {/* Colonne droite — Destinataire */}
                       <div style={{paddingTop:12}}>
 <div style={{background:'#f3f4f6',borderRadius:6,padding:'8px 10px'}}>
-                          <div style={{fontSize:10,fontWeight:700,color:'#111'}}>Jean Dupont</div>
+                          <div style={{fontSize:10,fontWeight:400,color:'#111'}}>Jean Dupont</div>
                           <div style={{fontSize:8,color:'#555',marginTop:2}}>Dupont Immobilier SAS</div>
                           <div style={{fontSize:8,color:'#555'}}>45 avenue des Champs</div>
                           <div style={{fontSize:8,color:'#555'}}>75008 Paris</div>
@@ -769,7 +769,7 @@ const[saved,setSaved]=useState(false)
                         <div style={{fontSize:11,fontWeight:700,color:'#111'}}>Devis n° {(params.formatDevis||'DEV-{YYYY}-{NUM}').replace('{YYYY}',new Date().getFullYear().toString()).replace('{NUM}','001')}</div>
                         <div style={{fontSize:8,color:'#444',marginTop:2}}>Valable {params.validiteDevis||60} jours</div>
                         <div style={{fontSize:8,color:'#444',fontStyle:'italic',marginTop:4}}>Adresse du projet :</div>
-                        <div style={{fontSize:8,color:'#555',marginTop:2}}>12 rue de la Paix, 75001 Paris</div>
+                        <div style={{fontSize:8,color:'#555',marginTop:2,background:'#f3f4f6',borderRadius:4,padding:'2px 6px',display:'inline-block'}}>12 rue de la Paix, 75001 Paris</div>
                       </div>
                       <div style={{textAlign:'right' as const}}>
                         <div style={{fontSize:8,color:'#444'}}>En date du {new Date().toLocaleDateString('fr-FR')}</div>
