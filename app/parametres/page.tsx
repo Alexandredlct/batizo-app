@@ -795,12 +795,14 @@ const[saved,setSaved]=useState(false)
                         </thead>
                         <tbody>
                           {/* Catégorie */}
+                          <tr><td colSpan={6} style={{height:6,background:'#fff'}}></td></tr>
                           <tr style={{background:params.couleurPrincipale+'30'}}>
                             <td style={{padding:'4px 4px',fontWeight:400,color:'#111',fontSize:9}}>1</td>
                             <td colSpan={4} style={{padding:'4px',fontWeight:700,color:'#111',fontSize:9}}>Entrée</td>
                             <td style={{padding:'4px 6px',textAlign:'right' as const,fontWeight:700,color:'#111',fontSize:9}}>6 235 €</td>
                           </tr>
                           {/* Sous-catégorie */}
+                          <tr><td colSpan={6} style={{height:4,background:'#fff'}}></td></tr>
                           <tr style={{background:params.couleurPrincipale+'1A'}}>
                             <td style={{padding:'4px',fontWeight:400,color:'#111',fontSize:8}}>1.1</td>
                             <td colSpan={4} style={{padding:'4px',fontWeight:600,color:'#111',fontSize:8}}>Peinture</td>
@@ -819,6 +821,7 @@ const[saved,setSaved]=useState(false)
                             <td style={{padding:'4px',textAlign:'right' as const,fontWeight:600,color:'#111',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>1 600 €</td>
                           </tr>
                           {/* Sous-catégorie 2 */}
+                          <tr><td colSpan={6} style={{height:4,background:'#fff'}}></td></tr>
                           <tr style={{background:params.couleurPrincipale+'1A'}}>
                             <td style={{padding:'4px',fontWeight:400,color:'#111',fontSize:8}}>1.2</td>
                             <td colSpan={4} style={{padding:'4px',fontWeight:600,color:'#111',fontSize:8}}>Parquet</td>
