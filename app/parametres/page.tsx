@@ -739,7 +739,7 @@ const[saved,setSaved]=useState(false)
                   {/* DEVIS */}
                   <div style={{marginBottom:12}}>
                     <div style={{fontSize:9,color:'#888',fontWeight:600,marginBottom:4,textTransform:'uppercase' as const,letterSpacing:'0.05em'}}>Devis / Facture</div>
-                  <div style={{background:'#fff',borderRadius:0,boxShadow:'0 2px 8px rgba(0,0,0,0.1)',overflow:'hidden',fontFamily:params.police||'system-ui',fontSize:'0.72em',border:'1px solid #e5e7eb'}}>
+                  <div style={{background:'#fff',borderRadius:0,overflow:'hidden',fontFamily:params.police||'system-ui',fontSize:'0.72em'}}>
 
                     {/* 1. EN-TÊTE — fond blanc, 2 colonnes */}
                     <div style={{padding:'12px 14px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
@@ -887,16 +887,20 @@ const[saved,setSaved]=useState(false)
                     {/* 7. SIGNATURES */}
                     <div style={{padding:'10px 14px',display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:12,background:'#fff'}}>
                       {/* Client */}
-                      <div style={{width:'45%',display:'flex',flexDirection:'column' as const,alignItems:'center',gap:4}}>
-                        <div style={{fontSize:9,fontWeight:700,color:'#111',textAlign:'center' as const}}>{params.texteClient||'Le client'}</div>
-                        {params.mentionClient&&<div style={{fontSize:7,color:'#555',fontStyle:'italic',textAlign:'center' as const,lineHeight:1.5}}>{params.mentionClient}</div>}
-                        <div style={{width:'100%',height:params.tailleSignature==='petit'?24:params.tailleSignature==='grand'?52:36,border:'1px solid #d1d5db',borderRadius:8,marginTop:6,background:'#fafafa'}}/>
+                      <div style={{width:'45%',display:'flex',flexDirection:'column' as const,alignItems:'center'}}>
+                        <div style={{height:36,display:'flex',flexDirection:'column' as const,alignItems:'center',justifyContent:'flex-end',gap:2,width:'100%'}}>
+                          <div style={{fontSize:9,fontWeight:700,color:'#111',textAlign:'center' as const}}>{params.texteClient||'Le client'}</div>
+                          {params.mentionClient&&<div style={{fontSize:7,color:'#555',fontStyle:'italic',textAlign:'center' as const,lineHeight:1.4}}>{params.mentionClient}</div>}
+                        </div>
+                        <div style={{width:'100%',height:params.tailleSignature==='petit'?24:params.tailleSignature==='grand'?52:36,border:'1px solid #d1d5db',borderRadius:8,marginTop:4,background:'#fafafa'}}/>
                       </div>
                       {/* Entreprise */}
-                      <div style={{width:'45%',display:'flex',flexDirection:'column' as const,alignItems:'center',gap:4}}>
-                        <div style={{fontSize:9,fontWeight:700,color:'#111',textAlign:'center' as const}}>{params.nomSignataireEntreprise||"L'entreprise"}</div>
-                        {(params as any).cachet&&<img src={(params as any).cachet} alt="cachet" style={{height:20,maxWidth:'80%',objectFit:'contain'}}/>}
-                        <div style={{width:'100%',height:params.tailleSignature==='petit'?24:params.tailleSignature==='grand'?52:36,border:'1px solid #d1d5db',borderRadius:8,marginTop:6,background:'#fafafa'}}/>
+                      <div style={{width:'45%',display:'flex',flexDirection:'column' as const,alignItems:'center'}}>
+                        <div style={{height:36,display:'flex',flexDirection:'column' as const,alignItems:'center',justifyContent:'flex-end',gap:2,width:'100%'}}>
+                          <div style={{fontSize:9,fontWeight:700,color:'#111',textAlign:'center' as const}}>{params.nomSignataireEntreprise||"L'entreprise"}</div>
+                          {(params as any).cachet&&<img src={(params as any).cachet} alt="cachet" style={{height:16,maxWidth:'80%',objectFit:'contain'}}/>}
+                        </div>
+                        <div style={{width:'100%',height:params.tailleSignature==='petit'?24:params.tailleSignature==='grand'?52:36,border:'1px solid #d1d5db',borderRadius:8,marginTop:4,background:'#fafafa'}}/>
                       </div>
                     </div>
 
