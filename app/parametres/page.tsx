@@ -118,7 +118,7 @@ const Field=({label,k,placeholder,type='text',rows,params,set}:{label:string,k:s
 )
 const Section=({title,children}:{title:string,children:any})=>(
   <div style={{marginBottom:24}}>
-    <div style={{fontSize:13,fontWeight:700,color:'#111',marginBottom:12,paddingBottom:8,borderBottom:'1px solid #e5e7eb'}}>{title}</div>
+    <div style={{fontSize:13,fontWeight:700,color:'#111',marginBottom:12,paddingBottom:8}}>{title}</div>
     {children}
   </div>
 )
@@ -796,47 +796,47 @@ const[saved,setSaved]=useState(false)
                         <tbody>
                           {/* Catégorie */}
                           <tr><td colSpan={6} style={{height:8,background:'#fff'}}></td></tr>
-                          <tr style={{background:params.couleurPrincipale+'30',borderBottom:'1px solid #e5e7eb'}}>
-                            <td style={{padding:'4px 4px',fontWeight:400,color:'#111',fontSize:9,borderRight:'1px solid #e5e7eb'}}>1</td>
+                          <tr style={{background:params.couleurPrincipale+'30'}}>
+                            <td style={{padding:'4px 4px',fontWeight:400,color:'#111',fontSize:9}}>1</td>
                             <td colSpan={4} style={{padding:'4px',fontWeight:700,color:'#111',fontSize:9}}>Entrée</td>
                             <td style={{padding:'4px 6px',textAlign:'right' as const,fontWeight:700,color:'#111',fontSize:9}}>6 235 €</td>
                           </tr>
                           {/* Sous-catégorie */}
                           <tr><td colSpan={6} style={{height:4,background:'#fff'}}></td></tr>
-                          <tr style={{background:params.couleurPrincipale+'1A',borderBottom:'1px solid #e5e7eb'}}>
-                            <td style={{padding:'4px',fontWeight:400,color:'#111',fontSize:8,borderRight:'1px solid #e5e7eb'}}>1.1</td>
+                          <tr style={{background:params.couleurPrincipale+'1A'}}>
+                            <td style={{padding:'4px',fontWeight:400,color:'#111',fontSize:8}}>1.1</td>
                             <td colSpan={4} style={{padding:'4px',fontWeight:600,color:'#111',fontSize:8}}>Peinture</td>
                             <td style={{padding:'4px 6px',textAlign:'right' as const,fontWeight:600,color:'#111',fontSize:8}}>1 600 €</td>
                           </tr>
                           {/* Ouvrage */}
                           <tr style={{background:'#fff',borderBottom:'1px solid #f3f4f6'}}>
-                            <td style={{padding:'4px',color:'#111',fontSize:7,borderRight:'1px solid #e5e7eb',fontWeight:400}}>1.1.1</td>
+                            <td style={{padding:'4px',color:'#111',fontSize:7,fontWeight:400}}>1.1.1</td>
                             <td style={{padding:'4px'}}>
                               <div style={{fontSize:8,fontWeight:500,color:'#111'}}>Peinture entrée</div>
                               <div style={{fontSize:7,color:'#888',fontStyle:'italic'}}>Préparation + 2 couches mat</div>
                             </td>
-                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8}}>2 forf.</td>
-                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8}}>800 €</td>
-                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8}}>10%</td>
-                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:600,color:'#111',fontSize:8}}>1 600 €</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>2 forf.</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>800 €</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>10%</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:600,color:'#111',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>1 600 €</td>
                           </tr>
                           {/* Sous-catégorie 2 */}
                           <tr><td colSpan={6} style={{height:4,background:'#fff'}}></td></tr>
-                          <tr style={{background:params.couleurPrincipale+'1A',borderBottom:'1px solid #e5e7eb'}}>
-                            <td style={{padding:'4px',fontWeight:400,color:'#111',fontSize:8,borderRight:'1px solid #e5e7eb'}}>1.2</td>
+                          <tr style={{background:params.couleurPrincipale+'1A'}}>
+                            <td style={{padding:'4px',fontWeight:400,color:'#111',fontSize:8}}>1.2</td>
                             <td colSpan={4} style={{padding:'4px',fontWeight:600,color:'#111',fontSize:8}}>Parquet</td>
                             <td style={{padding:'4px 6px',textAlign:'right' as const,fontWeight:600,color:'#111',fontSize:8}}>4 635 €</td>
                           </tr>
                           <tr style={{background:'#fff',borderBottom:'1px solid #f3f4f6'}}>
-                            <td style={{padding:'4px',color:'#111',fontSize:7,borderRight:'1px solid #e5e7eb',fontWeight:400}}>1.2.1</td>
+                            <td style={{padding:'4px',color:'#111',fontSize:7,fontWeight:400}}>1.2.1</td>
                             <td style={{padding:'4px'}}>
                               <div style={{fontSize:8,fontWeight:500,color:'#111'}}>Pose parquet chêne</div>
                               <div style={{fontSize:7,color:'#888',fontStyle:'italic'}}>Parquet chêne massif 12mm</div>
                             </td>
-                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8}}>45 m²</td>
-                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8}}>103 €</td>
-                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8}}>10%</td>
-                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:600,color:'#111',fontSize:8}}>4 635 €</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>45 m²</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>103 €</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>10%</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:600,color:'#111',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>4 635 €</td>
                           </tr>
                         </tbody>
                       </table>
