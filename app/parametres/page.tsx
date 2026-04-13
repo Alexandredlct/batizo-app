@@ -890,7 +890,7 @@ const[saved,setSaved]=useState(false)
                       <div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',gap:4}}>
                         <div style={{fontSize:9,fontWeight:700,color:'#111',textAlign:'center' as const}}>{params.texteClient||'Le client'}</div>
                         {params.mentionClient&&<div style={{fontSize:7,color:'#555',fontStyle:'italic',textAlign:'center' as const,lineHeight:1.5}}>{params.mentionClient}</div>}
-                        <div style={{width:'100%',height:params.tailleSignature==='petit'?20:params.tailleSignature==='grand'?48:32,border:'1px solid #e5e7eb',borderRadius:6,marginTop:4,transition:'height 0.2s'}}/>
+                        <div style={{width:'100%',height:params.tailleSignature==='petit'?20:params.tailleSignature==='grand'?48:32,border:'1px solid #d1d5db',borderRadius:8,marginTop:6,transition:'height 0.2s',background:'#fafafa'}}/>
                       </div>
                       {/* Entreprise */}
                       <div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',gap:4}}>
@@ -898,12 +898,12 @@ const[saved,setSaved]=useState(false)
                         {(params as any).cachet?(
                           <img src={(params as any).cachet} alt="cachet" style={{height:24,maxWidth:'80%',objectFit:'contain'}}/>
                         ):null}
-                        <div style={{width:'100%',height:params.tailleSignature==='petit'?20:params.tailleSignature==='grand'?48:32,border:'1px solid #e5e7eb',borderRadius:6,marginTop:4,transition:'height 0.2s'}}/>
+                        <div style={{width:'100%',height:params.tailleSignature==='petit'?20:params.tailleSignature==='grand'?48:32,border:'1px solid #d1d5db',borderRadius:8,marginTop:6,transition:'height 0.2s',background:'#fafafa'}}/>
                       </div>
                     </div>
 
                     {/* 8. PIED DE PAGE LÉGAL */}
-                    <div style={{padding:'8px 14px',background:'#fff',borderTop:'1px solid #e5e7eb'}}>
+                    <div style={{padding:'8px 14px',background:'#fff'}}>
                       <div style={{fontSize:6.5,color:'#888',textAlign:'center' as const,lineHeight:1.8,fontFamily:params.police||'system-ui'}}>
                         {(()=>{
                           const p=params as any
