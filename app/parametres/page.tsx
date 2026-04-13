@@ -90,6 +90,7 @@ export default function ParametresPage(){
   const[tab,setTab]=useState('modeles')
   const[params,setParams]=useState({...DEFAULT_PARAMS})
 const[saved,setSaved]=useState(false)
+  const[hasChanges,setHasChanges]=useState(false)
   const[gardePdfThumb,setGardePdfThumb]=useState<string|null>(null)
   const[gardePdfThumbs,setGardePdfThumbs]=useState<string[]>([])
   const[compThumbs,setCompThumbs]=useState<Record<string,string[]>>({})
@@ -156,11 +157,13 @@ const[saved,setSaved]=useState(false)
     }
   },[])
 
-  const set=(key:string,val:any)=>setParams(p=>({...p,[key]:val}))
+  const set=(key:string,val:any)=>{setParams(p=>({...p,[key]:val}));setHasChanges(true)}
 
   const enregistrer=()=>{
+    if(!hasChanges)return
     localStorage.setItem('batizo_params',JSON.stringify(params))
     setSaved(true)
+    setHasChanges(false)
     setTimeout(()=>setSaved(false),3000)
   }
 
@@ -168,6 +171,7 @@ const[saved,setSaved]=useState(false)
     setParams({...DEFAULT_PARAMS})
     localStorage.removeItem('batizo_params')
     setShowReset(false)
+    setHasChanges(false)
   }
 
   // Helpers UI
@@ -223,8 +227,8 @@ const[saved,setSaved]=useState(false)
               style={{padding:'8px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',color:'#555',fontWeight:500}}>
               Réinitialiser
             </button>
-            <button onClick={enregistrer}
-              style={{padding:'8px 18px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>
+            <button onClick={enregistrer} disabled={!hasChanges}
+              style={{padding:'8px 18px',background:hasChanges?G:'#e5e7eb',color:hasChanges?'#fff':'#aaa',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:hasChanges?'pointer':'not-allowed',transition:'all 0.2s'}}>
               Enregistrer
             </button>
           </div>
