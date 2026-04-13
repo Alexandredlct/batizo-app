@@ -3,7 +3,7 @@ import { useState } from 'react'
 
 const G = '#1D9E75'
 
-export default function SupportWidget({ prenom = 'Mon compte' }: { prenom?: string }) {
+export default function SupportWidget({ prenom = 'Mon compte', onNouveauDevis }: { prenom?: string, onNouveauDevis?: ()=>void }) {
   const [open, setOpen] = useState(false)
   const [tab, setTab] = useState<'home' | 'messages' | 'aide'>('home')
   const [msg, setMsg] = useState('')
@@ -72,7 +72,7 @@ export default function SupportWidget({ prenom = 'Mon compte' }: { prenom?: stri
                 </div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Liens rapides</div>
                 {[
-                  { icon: '📄', label: 'Créer un devis', href: '/devis' },
+                  { icon: '📄', label: 'Créer un devis', href: '/devis', modal: true },
                   { icon: '👥', label: 'Gérer mes clients', href: '/clients' },
                   { icon: '📚', label: 'Ma bibliothèque', href: '/bibliotheque' },
                   { icon: '💳', label: 'Mon abonnement', href: '/abonnement' },

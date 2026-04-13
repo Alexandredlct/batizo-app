@@ -1,5 +1,6 @@
 'use client'
 import SupportWidget from './SupportWidget'
+import NouveauDevisModal from './NouveauDevisModal'
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { usePhoto } from '../context/PhotoContext'
@@ -30,6 +31,7 @@ const menuItems = [
 
 export default function Sidebar({ activePage }: { activePage: string }) {
   const [collapsed, setCollapsed] = useState(false)
+  const [showNouveauDevis, setShowNouveauDevis] = useState(false)
   const [searchGlobal, setSearchGlobal] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [userMenu, setUserMenu] = useState(false)
@@ -170,7 +172,8 @@ export default function Sidebar({ activePage }: { activePage: string }) {
         </div>
       )}
     </div>
-    <SupportWidget prenom={prenom}/>
+    <SupportWidget prenom={prenom} onNouveauDevis={()=>setShowNouveauDevis(true)}/>
+    {showNouveauDevis&&<NouveauDevisModal onClose={()=>setShowNouveauDevis(false)}/>}
     </>
   )
 }
