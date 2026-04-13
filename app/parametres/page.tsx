@@ -85,6 +85,44 @@ const DEFAULT_PARAMS={
   cachet:'',
 }
 
+
+// ===== COMPOSANTS EXTERNES (évite re-render) =====
+const Toggle=({k,params,set}:{k:string,params:any,set:(k:string,v:any)=>void})=>(
+  <div onClick={()=>set(k,!params[k])}
+    style={{width:42,height:24,borderRadius:12,background:params[k]?'#1D9E75':'#d1d5db',cursor:'pointer',position:'relative',transition:'background 0.2s',flexShrink:0}}>
+    <div style={{position:'absolute',top:2,left:params[k]?20:2,width:20,height:20,borderRadius:'50%',background:'#fff',transition:'left 0.2s',boxShadow:'0 1px 3px rgba(0,0,0,0.2)'}}/>
+  </div>
+)
+const CheckRow=({label,k,params,set,children}:{label:string,k:string,params:any,set:(k:string,v:any)=>void,children?:any})=>(
+  <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
+    <input type="checkbox" checked={params[k]||false} onChange={e=>set(k,e.target.checked)} style={{accentColor:'#1D9E75',width:15,height:15,flexShrink:0}}/>
+    <span style={{fontSize:13,color:'#333',minWidth:160}}>{label}</span>
+    {children}
+  </div>
+)
+const Field=({label,k,placeholder,type='text',rows,params,set}:{label:string,k:string,placeholder?:string,type?:string,rows?:number,params:any,set:(k:string,v:any)=>void})=>(
+  <div style={{marginBottom:14}}>
+    <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>{label}</label>
+    {rows?(
+      <textarea value={params[k]||''} onChange={e=>set(k,e.target.value)} rows={rows} placeholder={placeholder}
+        style={{width:'100%',padding:'8px 10px',border:'1px solid #e5e7eb',borderRadius:7,fontSize:13,color:'#111',outline:'none',resize:'none' as const,fontFamily:'system-ui',boxSizing:'border-box' as const}}
+        onFocus={e=>(e.currentTarget as HTMLTextAreaElement).style.borderColor='#1D9E75'}
+        onBlur={e=>(e.currentTarget as HTMLTextAreaElement).style.borderColor='#e5e7eb'}/>
+    ):(
+      <input type={type} value={params[k]||''} onChange={e=>set(k,e.target.value)} placeholder={placeholder}
+        style={{width:'100%',padding:'8px 10px',border:'1px solid #e5e7eb',borderRadius:7,fontSize:13,color:'#111',outline:'none',boxSizing:'border-box' as const}}
+        onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor='#1D9E75'}
+        onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor='#e5e7eb'}/>
+    )}
+  </div>
+)
+const Section=({title,children}:{title:string,children:any})=>(
+  <div style={{marginBottom:24}}>
+    <div style={{fontSize:13,fontWeight:700,color:'#111',marginBottom:12,paddingBottom:8,borderBottom:'1px solid #e5e7eb'}}>{title}</div>
+    {children}
+  </div>
+)
+
 export default function ParametresPage(){
   const[tab,setTab]=useState('entete')
   const[params,setParams]=useState({...DEFAULT_PARAMS})
@@ -194,42 +232,6 @@ const[saved,setSaved]=useState(false)
   }
 
   // Helpers UI
-  const Toggle=({k}:{k:string})=>(
-    <div onClick={()=>set(k,!(params as any)[k])}
-      style={{width:42,height:24,borderRadius:12,background:(params as any)[k]?G:'#d1d5db',cursor:'pointer',position:'relative',transition:'background 0.2s',flexShrink:0}}>
-      <div style={{position:'absolute',top:2,left:(params as any)[k]?20:2,width:20,height:20,borderRadius:'50%',background:'#fff',transition:'left 0.2s',boxShadow:'0 1px 3px rgba(0,0,0,0.2)'}}/>
-    </div>
-  )
-  const CheckRow=({label,k,children}:{label:string,k:string,children?:any})=>(
-    <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
-      <input type="checkbox" checked={(params as any)[k]} onChange={e=>set(k,e.target.checked)} style={{accentColor:G,width:15,height:15,flexShrink:0}}/>
-      <span style={{fontSize:13,color:'#333',minWidth:160}}>{label}</span>
-      {children}
-    </div>
-  )
-  const Field=({label,k,placeholder,type='text',rows}:{label:string,k:string,placeholder?:string,type?:string,rows?:number})=>(
-    <div style={{marginBottom:14}}>
-      <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>{label}</label>
-      {rows?(
-        <textarea value={(params as any)[k]||''} onChange={e=>set(k,e.target.value)} rows={rows} placeholder={placeholder}
-          style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',resize:'none' as const,fontFamily:'system-ui',boxSizing:'border-box' as const}}
-          onFocus={e=>(e.currentTarget as HTMLTextAreaElement).style.borderColor=G}
-          onBlur={e=>(e.currentTarget as HTMLTextAreaElement).style.borderColor=BD}/>
-      ):(
-        <input type={type} value={(params as any)[k]||''} onChange={e=>set(k,e.target.value)} placeholder={placeholder}
-          style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',boxSizing:'border-box' as const}}
-          onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
-          onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
-      )}
-    </div>
-  )
-  const Section=({title,children}:{title:string,children:any})=>(
-    <div style={{marginBottom:24}}>
-      <div style={{fontSize:13,fontWeight:700,color:'#111',marginBottom:12,paddingBottom:8,borderBottom:`1px solid ${BD}`}}>{title}</div>
-      {children}
-    </div>
-  )
-
   const formatEx=(fmt:string)=>fmt.replace('{YYYY}',new Date().getFullYear().toString()).replace('{NUM}','001')
 
   return(
@@ -432,12 +434,12 @@ const[saved,setSaved]=useState(false)
                       <div style={{fontSize:11,color:'#888',marginTop:4}}>Exemple : <strong>{formatEx(params.formatFacture)}</strong></div>
                     </div>
 
-                    <Field label="Nom affiché dans la signature" k="nomSignataireEntreprise" placeholder="Ex : Alexandre Delcourt"/>
+                    <Field params={params} set={set} label="Nom affiché dans la signature" k="nomSignataireEntreprise" placeholder="Ex : Alexandre Delcourt"/>
                     <div style={{fontSize:11,color:'#888',marginTop:-10,marginBottom:14}}>Apparaît en bas du devis signé</div>
                     <div style={{marginBottom:14}}>
                       <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:8}}>Moyens de règlement par défaut</label>
                       {[['moyensVirement','Virement bancaire'],['moyensCheque','Chèque'],['moyensCarte','Carte bancaire'],['moyensEspeces','Espèces']].map(([k,l])=>(
-                        <CheckRow key={k} label={l} k={k}/>
+                        <CheckRow key={k} params={params} set={set} label={l} k={k}/>
                       ))}
                     </div>
                   </Section>
@@ -448,8 +450,8 @@ const[saved,setSaved]=useState(false)
                       <input type="number" value={params.validiteDevis} onChange={e=>set('validiteDevis',parseInt(e.target.value)||0)}
                         style={{width:100,padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,color:'#111',outline:'none'}}/>
                     </div>
-                    <Field label="Texte d'introduction" k="introDevis" rows={3} placeholder="Suite à notre rencontre..."/>
-                    <Field label="Note de fin de devis" k="noteDevis" rows={3} placeholder="Ce texte apparaît en bas du devis, avant la zone de signature."/>
+                    <Field params={params} set={set} label="Texte d'introduction" k="introDevis" rows={3} placeholder="Suite à notre rencontre..."/>
+                    <Field params={params} set={set} label="Note de fin de devis" k="noteDevis" rows={3} placeholder="Ce texte apparaît en bas du devis, avant la zone de signature."/>
                   </Section>
 
                   <Section title="Spécifique aux factures">
@@ -478,7 +480,7 @@ const[saved,setSaved]=useState(false)
                       </div>
                       <div style={{fontSize:11,color:'#888',marginTop:4}}>Obligatoire pour les professionnels (décret 2012)</div>
                     </div>
-                    <Field label="Note de fin de facture" k="noteFacture" rows={3}/>
+                    <Field params={params} set={set} label="Note de fin de facture" k="noteFacture" rows={3}/>
                   </Section>
                 </div>
               )}
@@ -492,7 +494,7 @@ const[saved,setSaved]=useState(false)
                         <div style={{fontSize:13,fontWeight:600,color:'#111'}}>Activer la page de garde</div>
                 
                       </div>
-                      <Toggle k="gardeActive"/>
+                      <Toggle params={params} set={set} k="gardeActive"/>
                     </div>
                     {params.gardeActive&&(
                       <div style={{marginTop:4}}>
@@ -647,8 +649,8 @@ const[saved,setSaved]=useState(false)
                             {tab==='signature'&&(
                 <div>
                   <Section title="Zone de signature client">
-                    <Field label="Texte au-dessus de la signature" k="texteClient" placeholder="Le client"/>
-                    <Field label="Mention obligatoire" k="mentionClient" rows={3}/>
+                    <Field params={params} set={set} label="Texte au-dessus de la signature" k="texteClient" placeholder="Le client"/>
+                    <Field params={params} set={set} label="Mention obligatoire" k="mentionClient" rows={3}/>
                     <div style={{padding:'10px 12px',background:'#fffbeb',border:'1px solid #fde68a',borderRadius:8,fontSize:12,color:AM,marginBottom:14}}>
                       ⚠ Mention recommandée pour la valeur juridique du devis
                     </div>
@@ -666,7 +668,7 @@ const[saved,setSaved]=useState(false)
                   </Section>
 
                   <Section title="Zone de signature entreprise">
-                    <Field label="Texte au-dessus de la signature" k="nomSignataireEntreprise" placeholder="Ex : Alexandre Delcourt — Gérant"/>
+                    <Field params={params} set={set} label="Texte au-dessus de la signature" k="nomSignataireEntreprise" placeholder="Ex : Alexandre Delcourt — Gérant"/>
                   </Section>
 
                   <Section title="Cachet / Tampon">
