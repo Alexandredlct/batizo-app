@@ -91,27 +91,33 @@ export default function ParametresPage(){
   const[params,setParams]=useState({...DEFAULT_PARAMS})
 const[saved,setSaved]=useState(false)
   const[gardePdfThumb,setGardePdfThumb]=useState<string|null>(null)
-  const[compThumbs,setCompThumbs]=useState<Record<string,string>>({})
-
+  const[gardePdfThumbs,setGardePdfThumbs]=useState<string[]>([])
+  const[compThumbs,setCompThumbs]=useState<Record<string,string[]>>({})
+  
   const renderPdfThumb=useCallback(async(data:string,id:string,isGarde=false)=>{
     try{
       const pdfjsLib=(window as any).pdfjsLib
-      if(!pdfjsLib)return
+      if(!pdfjsLib){setTimeout(()=>renderPdfThumb(data,id,isGarde),1000);return}
       const base64=data.split(',')[1]
       const binary=atob(base64)
       const bytes=new Uint8Array(binary.length)
       for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i)
       const pdf=await pdfjsLib.getDocument({data:bytes}).promise
-      const page=await pdf.getPage(1)
-      const viewport=page.getViewport({scale:0.5})
-      const canvas=document.createElement('canvas')
-      canvas.width=viewport.width
-      canvas.height=viewport.height
-      const ctx=canvas.getContext('2d')
-      await page.render({canvasContext:ctx,viewport}).promise
-      const thumb=canvas.toDataURL()
-      if(isGarde) setGardePdfThumb(thumb)
-      else setCompThumbs(p=>({...p,[id]:thumb}))
+      const numPages=pdf.numPages
+      const thumbs:string[]=[]
+      for(let pageNum=1;pageNum<=numPages;pageNum++){
+        const page=await pdf.getPage(pageNum)
+        const scale=2.5 // haute résolution
+        const viewport=page.getViewport({scale})
+        const canvas=document.createElement('canvas')
+        canvas.width=viewport.width
+        canvas.height=viewport.height
+        const ctx=canvas.getContext('2d')
+        await page.render({canvasContext:ctx,viewport}).promise
+        thumbs.push(canvas.toDataURL('image/jpeg',0.92))
+      }
+      if(isGarde){setGardePdfThumb(thumbs[0]);setGardePdfThumbs(thumbs)}
+      else setCompThumbs(p=>({...p,[id]:thumbs}))
     }catch(e){console.error('PDF render error',e)}
   },[])
   const[logoPreview,setLogoPreview]=useState<string|null>(null)
@@ -761,8 +767,10 @@ const[saved,setSaved]=useState(false)
                     <div style={{marginBottom:12}}>
                       <div style={{fontSize:9,color:'#888',fontWeight:600,marginBottom:4,textTransform:'uppercase' as const,letterSpacing:'0.05em'}}>Page de garde</div>
                       <div style={{background:'#fff',borderRadius:8,boxShadow:'0 2px 8px rgba(0,0,0,0.1)',overflow:'hidden',minHeight:80,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                        {gardePdfThumb?(
-                          <img src={gardePdfThumb} alt="page de garde" style={{width:'100%',borderRadius:6}}/>
+                        {gardePdfThumbs.length>0?(
+                          <div>{gardePdfThumbs.map((thumb,i)=>(
+                            <img key={i} src={thumb} alt={`page ${i+1}`} style={{width:'100%',display:'block',marginBottom:i<gardePdfThumbs.length-1?4:0}}/>
+                          ))}</div>
                         ):(
                           <div style={{padding:20,textAlign:'center' as const,color:'#aaa',fontSize:11}}>
                             <div style={{fontSize:20,marginBottom:4}}>📄</div>
@@ -950,8 +958,10 @@ const[saved,setSaved]=useState(false)
                         📎 {page.nom}
                       </div>
                       <div style={{background:'#fff',borderRadius:8,boxShadow:'0 2px 8px rgba(0,0,0,0.1)',overflow:'hidden',minHeight:80,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                        {compThumbs[page.id]?(
-                          <img src={compThumbs[page.id]} alt={page.nom} style={{width:'100%',borderRadius:6}}/>
+                        {compThumbs[page.id]?.length>0?(
+                          <div>{(compThumbs[page.id]||[]).map((thumb:string,i:number)=>(
+                            <img key={i} src={thumb} alt={`page ${i+1}`} style={{width:'100%',display:'block',marginBottom:i<(compThumbs[page.id]||[]).length-1?4:0}}/>
+                          ))}</div>
                         ):(
                           <div style={{padding:20,textAlign:'center' as const,color:'#aaa',fontSize:11}}>
                             <div style={{fontSize:20,marginBottom:4}}>📄</div>
