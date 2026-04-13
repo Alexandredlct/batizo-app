@@ -270,8 +270,7 @@ const[saved,setSaved]=useState(false)
                           </div>
                         ):(
                           <>
-                            <div style={{fontSize:28,marginBottom:6}}>🖼</div>
-                            <div style={{fontSize:13,color:'#555',fontWeight:600}}>Cliquez pour importer votre logo</div>
+                                                        <div style={{fontSize:13,color:'#555',fontWeight:600}}>Cliquez pour importer votre logo</div>
                             <div style={{fontSize:11,color:'#888',marginTop:4}}>PNG, JPG ou SVG — max 2 Mo</div>
                           </>
                         )}
