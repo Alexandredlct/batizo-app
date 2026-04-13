@@ -840,7 +840,7 @@ const[saved,setSaved]=useState(false)
                     </div>
 
                     {/* 5. RÉCAPITULATIF */}
-                    <div style={{padding:'8px 14px',display:'flex',justifyContent:'space-between',gap:12,alignItems:'flex-start'}}>
+                    <div style={{padding:'8px 14px',display:'flex',justifyContent:'space-between',gap:12,borderBottom:'none',alignItems:'flex-start'}}>
                       {/* Moyens de paiement — gauche */}
                       <div style={{flex:1,paddingTop:2}}>
                         {(params.moyensVirement||params.moyensCheque||params.moyensCarte||params.moyensEspeces)&&(
@@ -901,7 +901,7 @@ const[saved,setSaved]=useState(false)
                     </div>
 
                     {/* 8. PIED DE PAGE LÉGAL */}
-                    <div style={{padding:'8px 14px',background:'#fff'}}>
+                    <div style={{padding:'8px 14px',background:'#fff',borderTop:'1px solid #e5e7eb'}}>
                       <div style={{fontSize:6.5,color:'#888',textAlign:'center' as const,lineHeight:1.8,fontFamily:params.police||'system-ui'}}>
                         {(()=>{
                           const p=params as any
