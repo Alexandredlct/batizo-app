@@ -78,7 +78,8 @@ export default function SupportWidget({ prenom = 'Mon compte', onNouveauDevis }:
                   { icon: '💳', label: 'Mon abonnement', href: '/abonnement' },
                   { icon: '⚙️', label: 'Paramètres', href: '/parametres' },
                 ].map((link, i) => (
-                  <a key={i} href={link.href}
+                  <a key={i} href={(link as any).modal?'#':link.href}
+                    onClick={(link as any).modal?e=>{e.preventDefault();setOpen(false);onNouveauDevis&&onNouveauDevis()}:undefined}
                     style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', fontSize: 13, border: '1px solid #e5e7eb', borderRadius: 8, marginBottom: 6, background: '#fff', textDecoration: 'none', color: '#333', transition: 'all 0.1s' }}
                     onMouseEnter={e => { const d = e.currentTarget as HTMLAnchorElement; d.style.borderColor = G; d.style.background = '#f0fdf4' }}
                     onMouseLeave={e => { const d = e.currentTarget as HTMLAnchorElement; d.style.borderColor = '#e5e7eb'; d.style.background = '#fff' }}>
