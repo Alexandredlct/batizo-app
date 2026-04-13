@@ -787,9 +787,9 @@ const[saved,setSaved]=useState(false)
                     <div style={{padding:'0 14px'}}>
                       <table style={{width:'100%',borderCollapse:'collapse',fontSize:8}}>
                         <thead>
-                          <tr style={{background:'#f9fafb'}}>
+                          <tr style={{background:'#fff',borderBottom:'1px solid #e5e7eb'}}>
                             {['N°','Désignation','Qté','PU HT','TVA','Total HT'].map(h=>(
-                              <th key={h} style={{padding:'5px 4px',textAlign:h==='N°'||h==='Qté'||h==='PU HT'||h==='TVA'||h==='Total HT'?'right' as const:'left' as const,fontSize:7,color:'#111',fontWeight:700}}>{h}</th>
+                              <th key={h} style={{padding:'5px 4px',textAlign:h==='Qté'||h==='PU HT'||h==='TVA'||h==='Total HT'?'right' as const:'left' as const,fontSize:7,color:'#111',fontWeight:700}}>{h}</th>
                             ))}
                           </tr>
                         </thead>
@@ -809,16 +809,16 @@ const[saved,setSaved]=useState(false)
                             <td style={{padding:'4px 6px',textAlign:'right' as const,fontWeight:600,color:'#111',fontSize:8}}>1 600 €</td>
                           </tr>
                           {/* Ouvrage */}
-                          <tr style={{background:'#fff',borderBottom:'1px solid #f3f4f6'}}>
+                          <tr style={{background:'#fff'}}>
                             <td style={{padding:'4px',color:'#111',fontSize:7,fontWeight:400,borderRight:'1px solid #e5e7eb'}}>1.1.1</td>
                             <td style={{padding:'4px'}}>
                               <div style={{fontSize:8,fontWeight:500,color:'#111'}}>Peinture entrée</div>
-                              <div style={{fontSize:7,color:'#888',fontStyle:'italic'}}>Préparation + 2 couches mat</div>
+                              <div style={{fontSize:7,color:'#111',fontStyle:'italic'}}>Préparation + 2 couches mat</div>
                             </td>
                             <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>2 forf.</td>
                             <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>800 €</td>
                             <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>10%</td>
-                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:600,color:'#111',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>1 600 €</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:400,color:'#111',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>1 600 €</td>
                           </tr>
                           {/* Sous-catégorie 2 */}
                           <tr><td colSpan={6} style={{height:4,background:'#fff'}}></td></tr>
@@ -831,12 +831,12 @@ const[saved,setSaved]=useState(false)
                             <td style={{padding:'4px',color:'#111',fontSize:7,fontWeight:400,borderRight:'1px solid #e5e7eb'}}>1.2.1</td>
                             <td style={{padding:'4px'}}>
                               <div style={{fontSize:8,fontWeight:500,color:'#111'}}>Pose parquet chêne</div>
-                              <div style={{fontSize:7,color:'#888',fontStyle:'italic'}}>Parquet chêne massif 12mm</div>
+                              <div style={{fontSize:7,color:'#111',fontStyle:'italic'}}>Parquet chêne massif 12mm</div>
                             </td>
                             <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>45 m²</td>
                             <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>103 €</td>
                             <td style={{padding:'4px',textAlign:'right' as const,color:'#333',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>10%</td>
-                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:600,color:'#111',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>4 635 €</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:400,color:'#111',fontSize:8,borderLeft:'1px solid #e5e7eb'}}>4 635 €</td>
                           </tr>
                         </tbody>
                       </table>
