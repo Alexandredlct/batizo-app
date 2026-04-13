@@ -6,7 +6,6 @@ import SearchBar from '../components/SearchBar'
 const G='#1D9E75',AM='#BA7517',RD='#E24B4A',BD='#e5e7eb'
 
 const TABS=[
-  {id:'modeles',label:'Modèles'},
   {id:'entete',label:'En-tête'},
   {id:'pied',label:'Pied de page'},
   {id:'style',label:'Style'},
@@ -253,43 +252,6 @@ const[saved,setSaved]=useState(false)
             <div>
 
               {/* ===== MODÈLES ===== */}
-              {tab==='modeles'&&(
-                <div>
-                  <div style={{fontSize:16,fontWeight:700,color:'#111',marginBottom:4}}>Choisir un modèle prédéfini</div>
-                  <div style={{fontSize:13,color:'#888',marginBottom:20}}>Sélectionnez un thème de base, puis personnalisez-le dans les autres onglets.</div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
-                    {[
-                      {id:'classique',label:'Classique',desc:'Sobre et professionnel',color:'#111'},
-                      {id:'moderne',label:'Moderne',desc:'Coloré et dynamique',color:G},
-                      {id:'minimaliste',label:'Minimaliste',desc:'Épuré et élégant',color:'#555'},
-                      {id:'pro-dark',label:'Pro Dark',desc:'Sombre et premium',color:'#1a1a1a'},
-                    ].map(m=>(
-                      <div key={m.id} onClick={()=>set('modele',m.id)}
-                        style={{border:`2px solid ${(params as any).modele===m.id?G:BD}`,borderRadius:12,overflow:'hidden',cursor:'pointer',transition:'all 0.2s',boxShadow:(params as any).modele===m.id?`0 0 0 3px ${G}20`:''}}>
-                        {/* Mini aperçu */}
-                        <div style={{height:120,background:m.id==='pro-dark'?'#1a1a1a':'#f8f9fa',position:'relative',padding:12}}>
-                          <div style={{background:m.color,height:8,borderRadius:4,marginBottom:6,width:'60%'}}/>
-                          <div style={{background:'#e5e7eb',height:4,borderRadius:2,marginBottom:3,width:'80%'}}/>
-                          <div style={{background:'#e5e7eb',height:4,borderRadius:2,marginBottom:3,width:'65%'}}/>
-                          <div style={{background:'#e5e7eb',height:4,borderRadius:2,width:'45%'}}/>
-                          <div style={{position:'absolute',bottom:8,right:10,background:m.color,color:'#fff',fontSize:9,padding:'2px 8px',borderRadius:4,fontWeight:700}}>
-                            {fmt2(12400)} €
-                          </div>
-                          {(params as any).modele===m.id&&(
-                            <div style={{position:'absolute',top:8,right:8,width:20,height:20,borderRadius:'50%',background:G,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:700}}>✓</div>
-                          )}
-                        </div>
-                        <div style={{padding:'10px 12px',background:'#fff'}}>
-                          <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{m.label}</div>
-                          <div style={{fontSize:11,color:'#888'}}>{m.desc}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* ===== EN-TÊTE ===== */}
               {tab==='entete'&&(
                 <div>
                   <Section title="Logo">
