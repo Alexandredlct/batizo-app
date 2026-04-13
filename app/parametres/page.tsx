@@ -879,7 +879,11 @@ const[saved,setSaved]=useState(false)
                       </div>
                       <div style={{border:'1px solid #e5e7eb',borderRadius:6,padding:'7px 10px'}}>
                         <div style={{fontSize:9,fontWeight:700,color:'#111',marginBottom:4}}>{params.nomSignataireEntreprise||"L'entreprise"}</div>
-                        <div style={{height:params.tailleSignature==='petit'?16:params.tailleSignature==='grand'?44:28,transition:'height 0.2s'}}/>
+                        {(params as any).cachet?(
+                          <img src={(params as any).cachet} alt="cachet" style={{height:params.tailleSignature==='petit'?16:params.tailleSignature==='grand'?44:28,maxWidth:'100%',objectFit:'contain',display:'block',transition:'height 0.2s'}}/>
+                        ):(
+                          <div style={{height:params.tailleSignature==='petit'?16:params.tailleSignature==='grand'?44:28,transition:'height 0.2s'}}/>
+                        )}
                       </div>
                     </div>
 
