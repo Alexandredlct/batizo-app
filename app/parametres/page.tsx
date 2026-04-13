@@ -869,7 +869,7 @@ const[saved,setSaved]=useState(false)
                             <span style={{fontSize:8,color:'#111',fontWeight:row.bold?700:400}}>{row.val}</span>
                           </div>
                         ))}
-                        <div style={{borderTop:'2px solid #111',paddingTop:4,marginTop:4,display:'flex',justifyContent:'space-between',gap:16}}>
+                        <div style={{paddingTop:3,marginTop:0,display:'flex',justifyContent:'space-between',gap:16}}>
                           <span style={{fontSize:9,fontWeight:800,color:'#111'}}>Net à payer</span>
                           <span style={{fontSize:10,fontWeight:800,color:'#111'}}>6 858,50 €</span>
                         </div>
