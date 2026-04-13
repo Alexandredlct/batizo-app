@@ -144,7 +144,27 @@ const[saved,setSaved]=useState(false)
 
   useEffect(()=>{
     const stored=localStorage.getItem('batizo_params')
-    if(stored) setParams(JSON.parse(stored))
+    if(stored){
+      const p=JSON.parse(stored)
+      setParams(p)
+      // Recharger les thumbnails PDF après chargement de PDF.js
+      const reloadThumbs=()=>{
+        if(p.gardePdf) renderPdfThumb(p.gardePdf,'garde',true)
+        if(p.pagesComp?.length>0){
+          p.pagesComp.forEach((page:any)=>{
+            if(page.data) renderPdfThumb(page.data,page.id,false)
+          })
+        }
+      }
+      // Attendre que PDF.js soit chargé
+      const waitForPdfjs=setInterval(()=>{
+        if((window as any).pdfjsLib){
+          clearInterval(waitForPdfjs)
+          reloadThumbs()
+        }
+      },500)
+      setTimeout(()=>clearInterval(waitForPdfjs),10000)
+    }
     // Charger PDF.js
     if(!(window as any).pdfjsLib){
       const script=document.createElement('script')
