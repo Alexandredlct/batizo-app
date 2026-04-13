@@ -807,15 +807,15 @@ const[saved,setSaved]=useState(false)
                         <tbody>
                           {/* Catégorie */}
                           <tr style={{background:params.couleurPrincipale+'18',borderBottom:'1px solid #e5e7eb'}}>
-                            <td style={{padding:'4px',fontWeight:700,color:params.couleurPrincipale,fontSize:8}}>1.</td>
-                            <td colSpan={4} style={{padding:'4px',fontWeight:700,color:params.couleurPrincipale,fontSize:8}}>Entrée</td>
-                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:700,color:params.couleurPrincipale,fontSize:8}}>6 235 €</td>
+                            <td style={{padding:'4px',fontWeight:700,color:'#111',fontSize:8}}>1.</td>
+                            <td colSpan={4} style={{padding:'4px',fontWeight:700,color:'#111',fontSize:8}}>Entrée</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:700,color:'#111',fontSize:8}}>6 235 €</td>
                           </tr>
                           {/* Sous-catégorie */}
                           <tr style={{background:params.couleurPrincipale+'0D',borderBottom:'1px solid #e5e7eb'}}>
-                            <td style={{padding:'4px',fontWeight:600,color:params.couleurPrincipale,fontSize:8}}>1.1</td>
-                            <td colSpan={4} style={{padding:'4px',fontWeight:600,color:params.couleurPrincipale,fontSize:8}}>Peinture</td>
-                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:600,color:params.couleurPrincipale,fontSize:8}}>1 600 €</td>
+                            <td style={{padding:'4px',fontWeight:600,color:'#111',fontSize:8}}>1.1</td>
+                            <td colSpan={4} style={{padding:'4px',fontWeight:600,color:'#111',fontSize:8}}>Peinture</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:600,color:'#111',fontSize:8}}>1 600 €</td>
                           </tr>
                           {/* Ouvrage */}
                           <tr style={{background:'#fff',borderBottom:'1px solid #f3f4f6'}}>
@@ -831,9 +831,9 @@ const[saved,setSaved]=useState(false)
                           </tr>
                           {/* Sous-catégorie 2 */}
                           <tr style={{background:params.couleurPrincipale+'0D',borderBottom:'1px solid #e5e7eb'}}>
-                            <td style={{padding:'4px',fontWeight:600,color:params.couleurPrincipale,fontSize:8}}>1.2</td>
-                            <td colSpan={4} style={{padding:'4px',fontWeight:600,color:params.couleurPrincipale,fontSize:8}}>Parquet</td>
-                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:600,color:params.couleurPrincipale,fontSize:8}}>4 635 €</td>
+                            <td style={{padding:'4px',fontWeight:600,color:'#111',fontSize:8}}>1.2</td>
+                            <td colSpan={4} style={{padding:'4px',fontWeight:600,color:'#111',fontSize:8}}>Parquet</td>
+                            <td style={{padding:'4px',textAlign:'right' as const,fontWeight:600,color:'#111',fontSize:8}}>4 635 €</td>
                           </tr>
                           <tr style={{background:'#fff',borderBottom:'1px solid #f3f4f6'}}>
                             <td style={{padding:'4px',color:'#888',fontSize:7}}>1.2.1</td>
@@ -866,7 +866,7 @@ const[saved,setSaved]=useState(false)
                         ))}
                         <div style={{borderTop:'2px solid #111',paddingTop:4,marginTop:4,display:'flex',justifyContent:'space-between',gap:16}}>
                           <span style={{fontSize:9,fontWeight:800,color:'#111'}}>Net à payer</span>
-                          <span style={{fontSize:10,fontWeight:800,color:params.couleurPrincipale}}>6 858,50 €</span>
+                          <span style={{fontSize:10,fontWeight:800,color:'#111'}}>6 858,50 €</span>
                         </div>
                       </div>
                     </div>
