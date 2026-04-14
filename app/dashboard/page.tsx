@@ -66,11 +66,11 @@ export default function DashboardPage() {
       return true
     })
   }
-  const topClientsData:{nom:string,n:number,ca:string}[] = [
-    { nom:'SCI Les Pins', n:3, ca:'38 400 €' },
-    { nom:'SARL Bâti Pro', n:2, ca:'22 100 €' },
-    { nom:'Martin Dupont', n:4, ca:'18 750 €' },
-    { nom:'Isabelle Renard', n:1, ca:'8 550 €' },
+  const topClientsData:{nom:string,n:number,ca:string,mois:number,annee:number}[] = [
+    { nom:'SCI Les Pins', n:3, ca:'38 400 €', mois:4, annee:2026 },
+    { nom:'SARL Bâti Pro', n:2, ca:'22 100 €', mois:3, annee:2026 },
+    { nom:'Martin Dupont', n:4, ca:'18 750 €', mois:4, annee:2026 },
+    { nom:'Isabelle Renard', n:1, ca:'8 550 €', mois:2, annee:2025 },
   ]
   const devisFiltres=filterByPeriode(devis,periodeDevis)
   const topClientsFiltres=filterByPeriode(topClientsData,periodeTop)
