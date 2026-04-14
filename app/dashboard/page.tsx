@@ -49,11 +49,12 @@ export default function DashboardPage() {
     { client:'SARL Bâti Pro', num:'DEV-2026-039', date:'28/03', montant:'8 600 € HT', statut:'Refusé', sc:RD },
   ]
 
-  const topClients = [
-    { i:'SL', nom:'SCI Les Pins', n:3, ca:'38 400 €', bg:'#dcfce7', c:'#166534' },
-    { i:'SB', nom:'SARL Bâti Pro', n:2, ca:'22 100 €', bg:'#dbeafe', c:'#1d4ed8' },
-    { i:'MD', nom:'Martin Dupont', n:4, ca:'18 750 €', bg:'#fce7f3', c:'#9d174d' },
-    { i:'IR', nom:'Isabelle Renard', n:1, ca:'8 550 €', bg:'#fef3c7', c:'#92400e' },
+  const[periodeTop,setPeriodeTop]=useState<'mois'|'mois_prec'|'annee'|'annee_prec'>('annee')
+  const topClientsData:{nom:string,n:number,ca:string}[] = [
+    { nom:'SCI Les Pins', n:3, ca:'38 400 €' },
+    { nom:'SARL Bâti Pro', n:2, ca:'22 100 €' },
+    { nom:'Martin Dupont', n:4, ca:'18 750 €' },
+    { nom:'Isabelle Renard', n:1, ca:'8 550 €' },
   ]
 
   const actions = [
@@ -135,21 +136,37 @@ export default function DashboardPage() {
 
             <div style={{background:'#fff',borderRadius:12,border:`1px solid ${BD}`,overflow:'hidden'}}>
               <div style={{padding:'14px 16px',borderBottom:`1px solid ${BD}`,display:'flex',justifyContent:'space-between'}}>
-                <span style={{fontSize:14,fontWeight:700,color:'#111'}}>Top clients 2026</span>
-                <span style={{fontSize:12,color:G,cursor:'pointer',fontWeight:600}}>Voir tout →</span>
-              </div>
-              <div style={{padding:'12px 16px',display:'flex',flexDirection:'column',gap:12}}>
-                {topClients.map((c,i) => (
-                  <div key={i} className="client-row" style={{display:"flex",alignItems:"center",gap:12,padding:"8px 12px",borderTop:i>0?`1px solid ${BD}`:"none",transition:"background 0.15s"}}>
-                    <div style={{width:36,height:36,borderRadius:'50%',background:c.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,color:c.c}}>{c.i}</div>
-                    <div style={{flex:1}}>
-                      <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{c.nom}</div>
-                      <div style={{fontSize:12,color:'#555'}}>{c.n} chantier{c.n>1?'s':''}</div>
-                    </div>
-                    <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{c.ca}</div>
+                <span style={{fontSize:14,fontWeight:700,color:'#111'}}>Top clients</span>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <div style={{display:'flex',gap:4}}>
+                    {([['mois','Ce mois'],['mois_prec','Mois préc.'],['annee','Cette année'],['annee_prec','Année préc.']] as const).map(([v,l])=>(
+                      <button key={v} onClick={()=>setPeriodeTop(v)}
+                        style={{padding:'3px 8px',borderRadius:12,border:`1px solid ${periodeTop===v?G:BD}`,background:periodeTop===v?'#f0fdf4':'#fff',color:periodeTop===v?G:'#888',fontSize:11,fontWeight:periodeTop===v?600:400,cursor:'pointer'}}>
+                        {l}
+                      </button>
+                    ))}
                   </div>
-                ))}
+                  <span style={{fontSize:12,color:G,cursor:'pointer',fontWeight:600}}>Voir tout →</span>
+                </div>
               </div>
+              <table style={{width:'100%',borderCollapse:'collapse'}}>
+                <tbody>
+                {topClientsData.map((cl,i)=>(
+                  <tr key={i} style={{borderBottom:i<topClientsData.length-1?`1px solid ${BD}`:'',cursor:'pointer'}}
+                    onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f0fdf4'}
+                    onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
+                    <td style={{padding:'10px 16px'}}>
+                      <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{cl.nom}</div>
+                      <div style={{fontSize:11,color:'#888'}}>{cl.n} chantier{cl.n>1?'s':''}</div>
+                    </td>
+                    <td style={{padding:'10px 16px',textAlign:'right' as const}}>
+                      <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{cl.ca}</div>
+                      <div style={{fontSize:10,color:'#888'}}>CA HT</div>
+                    </td>
+                  </tr>
+                ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
