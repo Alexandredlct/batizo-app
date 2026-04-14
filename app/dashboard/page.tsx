@@ -142,7 +142,7 @@ export default function DashboardPage() {
               <table style={{width:'100%',borderCollapse:'collapse'}}>
                 <tbody>
                   {devisFiltres.map((d,i) => (
-                    <tr key={i} onMouseEnter={e=>{(e.currentTarget as HTMLTableRowElement).style.background="#f0fdf4"}} onMouseLeave={e=>{(e.currentTarget as HTMLTableRowElement).style.background=""}} style={{borderTop:`1px solid ${BD}`}}>
+                    <tr key={i} onMouseEnter={e=>{(e.currentTarget as HTMLTableRowElement).style.background="#f0fdf4"}} onMouseLeave={e=>{(e.currentTarget as HTMLTableRowElement).style.background=""}} style={{borderTop:'none'}}>
                       <td style={{padding:'10px 16px'}}>
                         <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{d.client}</div>
                         <div style={{fontSize:11,color:'#888'}}>{d.num} · {d.date}</div>
