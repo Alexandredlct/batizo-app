@@ -41,9 +41,10 @@ const statutColors:Record<string,{background:string,color:string}>={
 interface Props {
   client: any
   onClose: () => void
+  onEdit?: (client:any) => void
 }
 
-export default function FicheClientPanel({ client, onClose }: Props) {
+export default function FicheClientPanel({ client, onClose, onEdit }: Props) {
   const [note, setNote] = useState('')
   const [notes, setNotes] = useState<string[]>(client.notes?[client.notes]:[])
 
@@ -70,7 +71,7 @@ export default function FicheClientPanel({ client, onClose }: Props) {
           </div>
           <div style={{display:'flex',gap:8,flexShrink:0}}>
             <a href="/devis/nouveau" style={{padding:'7px 14px',background:G,color:'#fff',borderRadius:7,fontSize:13,fontWeight:600,textDecoration:'none',display:'inline-flex',alignItems:'center',gap:4}}>+ Devis</a>
-            <button style={{padding:'7px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,cursor:'pointer',color:'#333',fontWeight:500}}>Modifier</button>
+            <button onClick={()=>onEdit?onEdit(client):window.location.href=`/clients?edit=${client.id}`} style={{padding:'7px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,cursor:'pointer',color:'#333',fontWeight:500}}>Modifier</button>
             <button onClick={onClose} style={{width:32,height:32,borderRadius:'50%',border:`1px solid ${BD}`,background:'#f9fafb',cursor:'pointer',fontSize:16,color:'#888',display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
           </div>
         </div>

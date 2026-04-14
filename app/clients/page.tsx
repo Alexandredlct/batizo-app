@@ -100,6 +100,11 @@ export default function ClientsPage(){
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search)
     if(params.get('new')==='1') openAdd()
+    const editId=params.get('edit')
+    if(editId){
+      const cl=clients.find(c=>c.id===editId)
+      if(cl) openEdit(cl)
+    }
   },[])
   const genId=()=>'c'+Math.random().toString(36).slice(2,8)
   const toggleTri=(t:typeof tri)=>{if(tri===t)setTriDir(d=>d==='asc'?'desc':'asc');else{setTri(t);setTriDir('asc')}}
