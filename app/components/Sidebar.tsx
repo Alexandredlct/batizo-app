@@ -35,10 +35,14 @@ export default function Sidebar({ activePage }: { activePage: string }) {
   const [searchGlobal, setSearchGlobal] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [userMenu, setUserMenu] = useState(false)
-  const [prenom, setPrenom] = useState('')
+  const [prenom, setPrenom] = useState(()=>typeof window!=='undefined'?localStorage.getItem('batizo_prenom')||'':'')
   
 
-  const [entreprise, setEntreprise] = useState('Batizo')
+  const [entreprise, setEntreprise] = useState(()=>{
+    if(typeof window==='undefined') return 'Batizo'
+    try{const p=localStorage.getItem('batizo_params');if(p){const d=JSON.parse(p);return d.nomEntreprise||'Batizo'}}catch(e){}
+    return 'Batizo'
+  })
   const { photo } = usePhoto()
 
   const searchData = [
@@ -88,8 +92,9 @@ export default function Sidebar({ activePage }: { activePage: string }) {
     supabase.auth.getUser().then(({ data }) => {
       if (data?.user) {
         const meta = data.user.user_metadata
-        setPrenom(meta?.prenom || meta?.first_name || data.user.email?.split('@')[0] || 'Mon compte')
-        setEntreprise(meta?.entreprise || 'Batizo')
+        const storedPrenom=localStorage.getItem('batizo_prenom')
+        setPrenom(storedPrenom||meta?.prenom||meta?.first_name||data.user.email?.split('@')[0]||'Mon compte')
+        try{const p=localStorage.getItem('batizo_params');if(p){const d=JSON.parse(p);setEntreprise(d.nomEntreprise||meta?.entreprise||'Batizo')}}catch(e){setEntreprise(meta?.entreprise||'Batizo')}
       }
     })
   }, [])
