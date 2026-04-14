@@ -31,10 +31,13 @@ export default function DashboardPage() {
     })
   }, [])
 
-  const[prenomLocal,setPrenomLocal]=useState('')
+  const[prenomLocal,setPrenomLocal]=useState<string>(()=>{
+    if(typeof window==='undefined') return ''
+    return localStorage.getItem('batizo_prenom')||''
+  })
   useEffect(()=>{
     const stored=localStorage.getItem('batizo_prenom')
-    if(stored) setPrenomLocal(stored)
+    if(stored&&stored!==prenomLocal) setPrenomLocal(stored)
   },[])
   const prenom = prenomLocal || user?.user_metadata?.prenom || user?.email?.split('@')[0] || ''
   const entreprise = user?.user_metadata?.entreprise || 'votre entreprise'
