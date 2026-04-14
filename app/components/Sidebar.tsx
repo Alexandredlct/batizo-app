@@ -124,7 +124,7 @@ export default function Sidebar({ activePage }: { activePage: string }) {
             onMouseLeave={e => { if(n.id!==activePage) (e.currentTarget as HTMLAnchorElement).style.background='none' }}>
             <NavIcon id={n.id}/>
             {!collapsed && <span style={{flex:1}}>{n.label}</span>}
-            {!collapsed && n.badge && <span style={{background:G,color:'#fff',fontSize:10,fontWeight:700,padding:'1px 6px',borderRadius:10}}>{n.badge}</span>}
+            {!collapsed && (n as any).badge && <span style={{background:G,color:'#fff',fontSize:10,fontWeight:700,padding:'1px 6px',borderRadius:10}}>{(n as any).badge}</span>}
           </a>
         ))}
       </nav>
