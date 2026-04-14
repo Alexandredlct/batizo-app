@@ -16,6 +16,7 @@ export default function MesInfosPage(){
   const[showMdp,setShowMdp]=useState(false)
   const[toast,setToast]=useState(false)
   const[hasChanges,setHasChanges]=useState(false)
+  const[prenom,setPrenom]=useState(()=>typeof window!=='undefined'?localStorage.getItem('batizo_prenom')||'Alexandre':'Alexandre')
   const { photo, setPhoto } = usePhoto()
   const handlePhoto=(e:React.ChangeEvent<HTMLInputElement>)=>{
     const file=e.target.files?.[0]
@@ -142,7 +143,11 @@ export default function MesInfosPage(){
                 </div>
               </div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
-                <Field label="Prénom *" defaultVal="Alexandre"/>
+                <div>
+                <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Prénom *</label>
+                <input type="text" value={prenom} onChange={e=>{setPrenom(e.target.value);setHasChanges(true);localStorage.setItem('batizo_prenom',e.target.value)}}
+                  style={{width:'100%',padding:'9px 12px',border:'1px solid #e5e7eb',borderRadius:7,fontSize:13,color:'#111',outline:'none',boxSizing:'border-box' as const}}/>
+              </div>
                 <Field label="Nom *" defaultVal="Delcourt"/>
                 <Field label="Adresse email *" defaultVal="a.delcourt@batizo.fr" type="email"/>
                 <Field label="Téléphone" defaultVal="06 12 34 56 78" type="tel"/>

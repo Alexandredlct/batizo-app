@@ -31,7 +31,12 @@ export default function DashboardPage() {
     })
   }, [])
 
-  const prenom = user?.user_metadata?.prenom || user?.email?.split('@')[0] || 'vous'
+  const[prenomLocal,setPrenomLocal]=useState('')
+  useEffect(()=>{
+    const stored=localStorage.getItem('batizo_prenom')
+    if(stored) setPrenomLocal(stored)
+  },[])
+  const prenom = prenomLocal || user?.user_metadata?.prenom || user?.email?.split('@')[0] || ''
   const entreprise = user?.user_metadata?.entreprise || 'votre entreprise'
   const sw = collapsed ? 64 : 230
 
@@ -99,7 +104,7 @@ export default function DashboardPage() {
 
         <div style={{flex:1,overflowY:'auto',padding:24}}>
           <div style={{marginBottom:24}}>
-            <h2 style={{fontSize:20,fontWeight:700,margin:'0 0 4px',color:'#111'}}>Bonjour {prenom} 👋</h2>
+            <h2 style={{fontSize:20,fontWeight:700,margin:'0 0 4px',color:'#111'}}>{prenom?`Bonjour ${prenom} 👋`:'Bonjour 👋'}</h2>
             <p style={{fontSize:14,color:'#111',margin:0}}>Voici un résumé de votre activité</p>
           </div>
 
