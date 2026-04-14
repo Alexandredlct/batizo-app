@@ -16,7 +16,7 @@ export default function MesInfosPage(){
   const[showMdp,setShowMdp]=useState(false)
   const[toast,setToast]=useState(false)
   const[hasChanges,setHasChanges]=useState(false)
-  const[prenom,setPrenom]=useState(()=>typeof window!=='undefined'?localStorage.getItem('batizo_prenom')||'Alexandre':'Alexandre')
+  const[prenom,setPrenom]=useState(()=>typeof window!=='undefined'?localStorage.getItem('batizo_prenom')||'':'')
   const { photo, setPhoto } = usePhoto()
   const handlePhoto=(e:React.ChangeEvent<HTMLInputElement>)=>{
     const file=e.target.files?.[0]
@@ -134,7 +134,7 @@ export default function MesInfosPage(){
                   </div>
                 </div>
                 <div>
-                  <div style={{fontSize:15,fontWeight:600,color:'#111'}}>Alexandre Delcourt</div>
+                  <div style={{fontSize:15,fontWeight:600,color:'#111'}}>{prenom} Delcourt</div>
                   <div style={{fontSize:13,color:'#444'}}>Administrateur · Plan Pro</div>
                   <label htmlFor="photo-upload" style={{fontSize:12,color:G,cursor:'pointer',marginTop:4,display:'inline-block'}}>
                     Modifier la photo
