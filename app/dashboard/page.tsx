@@ -158,7 +158,7 @@ export default function DashboardPage() {
             </div>
 
             <div style={{background:'#fff',borderRadius:12,border:`1px solid ${BD}`,overflow:'hidden'}}>
-              <div style={{padding:'14px 16px',borderBottom:`1px solid ${BD}`,display:'flex',justifyContent:'space-between'}}>
+              <div style={{padding:'14px 16px',borderBottom:`1px solid ${BD}`,display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap' as const,gap:6}}>
                 <span style={{fontSize:14,fontWeight:700,color:'#111'}}>Top clients</span>
                 <div style={{display:'flex',alignItems:'center',gap:8}}>
                   <div style={{display:'flex',gap:4}}>
