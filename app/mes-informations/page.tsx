@@ -16,7 +16,12 @@ export default function MesInfosPage(){
   const[showMdp,setShowMdp]=useState(false)
   const[toast,setToast]=useState(false)
   const[hasChanges,setHasChanges]=useState(false)
-  const[prenom,setPrenom]=useState(()=>typeof window!=='undefined'?localStorage.getItem('batizo_prenom')||'':'')
+  const[prenom,setPrenom]=useState(()=>{
+    if(typeof window==='undefined') return 'Alexandre'
+    const stored=localStorage.getItem('batizo_prenom')
+    if(!stored){localStorage.setItem('batizo_prenom','Alexandre');return 'Alexandre'}
+    return stored
+  })
   const { photo, setPhoto } = usePhoto()
   const handlePhoto=(e:React.ChangeEvent<HTMLInputElement>)=>{
     const file=e.target.files?.[0]

@@ -34,13 +34,7 @@ export default function DashboardPage() {
   const[prenomLocal,setPrenomLocal]=useState<string>('')
   useEffect(()=>{
     const stored=localStorage.getItem('batizo_prenom')
-    // Nettoyer valeur incorrecte
-    if(stored==='Alexandrea'){
-      localStorage.setItem('batizo_prenom','Alexandre')
-      setPrenomLocal('Alexandre')
-    } else {
-      setPrenomLocal(stored||'')
-    }
+    setPrenomLocal(stored||'')
   },[])
   const prenom = prenomLocal||''
   const entreprise = user?.user_metadata?.entreprise || 'votre entreprise'
