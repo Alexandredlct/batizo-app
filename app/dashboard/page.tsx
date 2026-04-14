@@ -50,6 +50,7 @@ export default function DashboardPage() {
   ]
 
   const[periodeTop,setPeriodeTop]=useState<'mois'|'mois_prec'|'annee'|'annee_prec'>('annee')
+  const[periodeDevis,setPeriodeDevis]=useState<'mois'|'mois_prec'|'annee'|'annee_prec'>('annee')
   const topClientsData:{nom:string,n:number,ca:string}[] = [
     { nom:'SCI Les Pins', n:3, ca:'38 400 €' },
     { nom:'SARL Bâti Pro', n:2, ca:'22 100 €' },
@@ -107,25 +108,30 @@ export default function DashboardPage() {
 
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:20}}>
             <div style={{background:'#fff',borderRadius:12,border:`1px solid ${BD}`,overflow:'hidden'}}>
-              <div style={{padding:'14px 16px',borderBottom:`1px solid ${BD}`,display:'flex',justifyContent:'space-between'}}>
+              <div style={{padding:'14px 16px',borderBottom:`1px solid ${BD}`,display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap' as const,gap:6}}>
                 <span style={{fontSize:14,fontWeight:700,color:'#111'}}>Derniers devis</span>
-                <span style={{fontSize:12,color:G,cursor:'pointer',fontWeight:600}}>Voir tout →</span>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <div style={{display:'flex',gap:4}}>
+                    {([['mois','Ce mois'],['mois_prec','Mois préc.'],['annee','Cette année'],['annee_prec','Année préc.']] as const).map(([v,l])=>(
+                      <button key={v} onClick={()=>setPeriodeDevis(v)}
+                        style={{padding:'3px 8px',borderRadius:12,border:`1px solid ${periodeDevis===v?G:BD}`,background:periodeDevis===v?'#f0fdf4':'#fff',color:periodeDevis===v?G:'#888',fontSize:11,fontWeight:periodeDevis===v?600:400,cursor:'pointer'}}>
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                  <a href="/devis" style={{fontSize:12,color:G,cursor:'pointer',fontWeight:600,textDecoration:'none'}}>Voir tout →</a>
+                </div>
               </div>
               <table style={{width:'100%',borderCollapse:'collapse'}}>
-                <thead><tr style={{background:'#f9fafb'}}>
-                  <th style={{padding:'8px 16px',textAlign:'left',fontSize:12,color:'#555',fontWeight:600}}>Client</th>
-                  <th style={{padding:'8px 16px',textAlign:'right',fontSize:12,color:'#555',fontWeight:600}}>Montant HT</th>
-                  <th style={{padding:'8px 16px',textAlign:'right',fontSize:12,color:'#555',fontWeight:600}}>Statut</th>
-                </tr></thead>
                 <tbody>
                   {devis.map((d,i) => (
-                    <tr key={i} onMouseEnter={e=>{e.currentTarget.style.background="#f0fdf4"}} onMouseLeave={e=>{e.currentTarget.style.background=""}} style={{borderTop:`1px solid ${BD}`}}>
+                    <tr key={i} onMouseEnter={e=>{(e.currentTarget as HTMLTableRowElement).style.background="#f0fdf4"}} onMouseLeave={e=>{(e.currentTarget as HTMLTableRowElement).style.background=""}} style={{borderTop:`1px solid ${BD}`}}>
                       <td style={{padding:'10px 16px'}}>
                         <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{d.client}</div>
-                        <div style={{fontSize:12,color:'#555'}}>{d.num} · {d.date}</div>
+                        <div style={{fontSize:11,color:'#888'}}>{d.num} · {d.date}</div>
                       </td>
-                      <td style={{padding:'10px 16px',textAlign:'right',fontSize:13,fontWeight:600,color:'#111'}}>{d.montant}</td>
-                      <td style={{padding:'10px 16px',textAlign:'right'}}>
+                      <td style={{padding:'10px 16px',textAlign:'right' as const,fontSize:13,fontWeight:600,color:'#111'}}>{d.montant} HT</td>
+                      <td style={{padding:'10px 16px',textAlign:'right' as const}}>
                         <span style={{background:`${d.sc}22`,color:d.sc,padding:'3px 10px',borderRadius:20,fontSize:11,fontWeight:700}}>{d.statut}</span>
                       </td>
                     </tr>
@@ -146,7 +152,7 @@ export default function DashboardPage() {
                       </button>
                     ))}
                   </div>
-                  <span style={{fontSize:12,color:G,cursor:'pointer',fontWeight:600}}>Voir tout →</span>
+                  <a href="/clients" style={{fontSize:12,color:G,cursor:'pointer',fontWeight:600,textDecoration:'none'}}>Voir tout →</a>
                 </div>
               </div>
               <table style={{width:'100%',borderCollapse:'collapse'}}>
@@ -159,10 +165,7 @@ export default function DashboardPage() {
                       <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{cl.nom}</div>
                       <div style={{fontSize:11,color:'#888'}}>{cl.n} chantier{cl.n>1?'s':''}</div>
                     </td>
-                    <td style={{padding:'10px 16px',textAlign:'right' as const}}>
-                      <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{cl.ca}</div>
-                      <div style={{fontSize:10,color:'#888'}}>CA HT</div>
-                    </td>
+                    <td style={{padding:'10px 16px',textAlign:'right' as const,fontSize:13,fontWeight:600,color:'#111'}}>{cl.ca} HT</td>
                   </tr>
                 ))}
                 </tbody>
