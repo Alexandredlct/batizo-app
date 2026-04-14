@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 
 const G='#1D9E75', AM='#BA7517', RD='#E24B4A', BD='#e5e7eb'
 const fmt=(n:number)=>n.toLocaleString('fr-FR')+' €'
+const fmtSize=(b:number)=>b>1024*1024?(b/1024/1024).toFixed(1)+' Mo':(b/1024).toFixed(0)+' Ko'
 
 const isNouveau=(dateStr:string)=>{
   const [d,m,y]=dateStr.split('/').map(Number)
@@ -53,6 +54,7 @@ interface Props {
 export default function FicheClientPanel({ client, mode:initialMode='view', allClients=[], onClose, onSave }: Props) {
   const [mode, setMode] = useState<'view'|'edit'>(initialMode==='new'?'edit':'view')
   const [note, setNote] = useState('')
+  const [pj, setPj] = useState<{name:string,size:number,date:string,url:string,type:string}[]>([])
   const [notes, setNotes] = useState<{text:string,date:string}[]>([])
   const [dirty, setDirty] = useState(false)
   const [showWarn, setShowWarn] = useState(false)
@@ -71,6 +73,15 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
   )
 
   const setF=(k:string,v:any)=>{setForm((p:any)=>({...p,[k]:v}));setDirty(true)}
+
+  const addFiles=(files:FileList|null)=>{
+    if(!files) return
+    Array.from(files).forEach(file=>{
+      if(file.size>25*1024*1024){alert(`${file.name} dépasse 25 Mo`);return}
+      const url=URL.createObjectURL(file)
+      setPj(p=>[...p,{name:file.name,size:file.size,date:new Date().toLocaleString('fr-FR'),url,type:file.type}])
+    })
+  }
 
   // Raccourcis clavier
   useEffect(()=>{
@@ -349,12 +360,45 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
               {/* Pièces jointes */}
               <div>
                 <SectionTitle t="Pièces jointes"/>
-                <div style={{border:`2px dashed ${BD}`,borderRadius:10,padding:'20px',textAlign:'center' as const,color:'#888',fontSize:13,cursor:'pointer',background:'#fafafa'}}
-                  onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor=G}
-                  onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.borderColor=BD}>
-                  Glissez vos fichiers ici ou <span style={{color:G,fontWeight:600}}>cliquez pour ajouter</span>
-                  <div style={{fontSize:11,color:'#aaa',marginTop:4}}>Tous types — max 25 Mo par fichier</div>
-                </div>
+                <input type="file" id="pj-upload" multiple style={{display:'none'}} onChange={e=>addFiles(e.target.files)}/>
+                <label htmlFor="pj-upload">
+                  <div
+                    style={{border:`2px dashed ${BD}`,borderRadius:10,padding:'20px',textAlign:'center' as const,color:'#888',fontSize:13,cursor:'pointer',background:'#fafafa',transition:'all 0.15s'}}
+                    onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor=G}
+                    onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.borderColor=BD}
+                    onDragOver={e=>{e.preventDefault();(e.currentTarget as HTMLDivElement).style.borderColor=G;(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}}
+                    onDragLeave={e=>{(e.currentTarget as HTMLDivElement).style.borderColor=BD;(e.currentTarget as HTMLDivElement).style.background='#fafafa'}}
+                    onDrop={e=>{e.preventDefault();(e.currentTarget as HTMLDivElement).style.borderColor=BD;(e.currentTarget as HTMLDivElement).style.background='#fafafa';addFiles(e.dataTransfer.files)}}>
+                    <div style={{fontSize:22,marginBottom:6}}>📎</div>
+                    Glissez vos fichiers ici ou <span style={{color:G,fontWeight:600}}>cliquez pour ajouter</span>
+                    <div style={{fontSize:11,color:'#aaa',marginTop:4}}>Tous types de fichiers — max 25 Mo par fichier</div>
+                  </div>
+                </label>
+                {pj.length>0&&(
+                  <div style={{display:'flex',flexDirection:'column' as const,gap:6,marginTop:8}}>
+                    {pj.map((f,i)=>(
+                      <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:8}}>
+                        <span style={{fontSize:20,flexShrink:0}}>
+                          {f.type.startsWith('image/')
+                            ? <img src={f.url} alt={f.name} style={{width:32,height:32,objectFit:'cover',borderRadius:4}}/>
+                            : f.type==='application/pdf'?'📄':'📎'}
+                        </span>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:13,fontWeight:500,color:'#111',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>{f.name}</div>
+                          <div style={{fontSize:11,color:'#888'}}>{fmtSize(f.size)} · {f.date}</div>
+                        </div>
+                        <div style={{display:'flex',gap:6,flexShrink:0}}>
+                          <a href={f.url} target="_blank" rel="noreferrer"
+                            style={{padding:'4px 8px',background:'#fff',border:`1px solid ${BD}`,borderRadius:6,fontSize:11,textDecoration:'none',color:'#555',cursor:'pointer'}}>Aperçu</a>
+                          <a href={f.url} download={f.name}
+                            style={{padding:'4px 8px',background:'#fff',border:`1px solid ${BD}`,borderRadius:6,fontSize:11,textDecoration:'none',color:'#555',cursor:'pointer'}}>↓</a>
+                          <button onClick={()=>setPj(p=>p.filter((_,j)=>j!==i))}
+                            style={{padding:'4px 8px',background:'#fff',border:`1px solid #fca5a5`,borderRadius:6,fontSize:11,color:RD,cursor:'pointer'}}>×</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Métadonnées */}
