@@ -72,6 +72,15 @@ export default function DashboardPage() {
     { nom:'Martin Dupont', n:4, ca:'18 750 €', mois:4, annee:2026 },
     { nom:'Isabelle Renard', n:1, ca:'8 550 €', mois:2, annee:2025 },
   ]
+
+  const getStatutColor=(s:string)=>{
+    if(s==='Brouillon') return '#888'
+    if(s==='En attente') return '#BA7517'
+    if(s==='Envoyé') return '#2563eb'
+    if(s==='Signé') return '#1D9E75'
+    if(s==='Refusé') return '#E24B4A'
+    return '#888'
+  }
   const devisFiltres=filterByPeriode(devis,periodeDevis)
   const topClientsFiltres=filterByPeriode(topClientsData,periodeTop)
 
@@ -149,7 +158,7 @@ export default function DashboardPage() {
                       </td>
                       <td style={{padding:'10px 16px',textAlign:'right' as const,fontSize:13,fontWeight:600,color:'#111'}}>{d.montant}</td>
                       <td style={{padding:'10px 16px',textAlign:'right' as const}}>
-                        <span style={{background:`${d.sc}22`,color:d.sc,padding:'3px 10px',borderRadius:20,fontSize:11,fontWeight:700}}>{d.statut}</span>
+                        <span style={{background:`${getStatutColor(d.statut)}22`,color:getStatutColor(d.statut),padding:'3px 10px',borderRadius:20,fontSize:11,fontWeight:700}}>{d.statut}</span>
                       </td>
                     </tr>
                   ))}
