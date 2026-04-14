@@ -16,7 +16,7 @@ const NavIcon = ({ id }: { id: string }) => {
 
 const navItems = [
   { id: 'dashboard', label: 'Tableau de bord', href: '/dashboard' },
-  { id: 'devis', label: 'Devis & Factures', href: '/devis', badge: '8' },
+  { id: 'devis', label: 'Devis & Factures', href: '/devis' },
   { id: 'clients', label: 'Clients', href: '/clients' },
   { id: 'bibliotheque', label: 'Bibliothèque', href: '/bibliotheque' },
 ]
