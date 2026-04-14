@@ -1,5 +1,6 @@
 'use client'
 import NouveauDevisModal from '../components/NouveauDevisModal'
+import FicheClientPanel from '../components/FicheClientPanel'
 import SearchBar from '../components/SearchBar'
 import Sidebar from '../components/Sidebar'
 import React from 'react'
@@ -20,6 +21,7 @@ const NavIcon = ({ id }: { id: string }) => {
 
 export default function DashboardPage() {
   const[showNouveauDevis,setShowNouveauDevis]=useState(false)
+  const[ficheClient,setFicheClient]=useState<any>(null)
   const [user, setUser] = useState<any>(null)
   const [collapsed, setCollapsed] = useState(false)
   const [userMenu, setUserMenu] = useState(false)
@@ -66,6 +68,12 @@ export default function DashboardPage() {
       return true
     })
   }
+  const clientsData:any[] = [
+    {id:'c1',civilite:'',prenom:'SCI',nom:'Les Pins',email:'contact@lespins.fr',tel:'01 23 45 67 89',statut:'actif',enCharge:'Alexandre Delcourt',raisonSociale:'SCI Les Pins',nbDevis:3,caTotal:38400,margeAvg:62,derniereActivite:'05/04/2026'},
+    {id:'c2',civilite:'M.',prenom:'SARL',nom:'Bâti Pro',email:'contact@batipro.fr',tel:'01 34 56 78 90',statut:'actif',enCharge:'Alexandre Delcourt',raisonSociale:'SARL Bâti Pro',nbDevis:2,caTotal:22100,margeAvg:58,derniereActivite:'03/04/2026'},
+    {id:'c3',civilite:'M.',prenom:'Martin',nom:'Dupont',email:'m.dupont@gmail.com',tel:'06 12 34 56 78',statut:'actif',enCharge:'Alexandre Delcourt',nbDevis:4,caTotal:18750,margeAvg:55,derniereActivite:'28/03/2026'},
+    {id:'c4',civilite:'Mme',prenom:'Isabelle',nom:'Renard',email:'i.renard@gmail.com',tel:'06 98 76 54 32',statut:'prospect',enCharge:'Alexandre Delcourt',nbDevis:1,caTotal:8550,margeAvg:48,derniereActivite:'15/02/2025'},
+  ]
   const topClientsData:{nom:string,n:number,ca:string,mois:number,annee:number}[] = [
     { nom:'SCI Les Pins', n:3, ca:'38 400 €', mois:4, annee:2026 },
     { nom:'SARL Bâti Pro', n:2, ca:'22 100 €', mois:3, annee:2026 },
@@ -151,7 +159,7 @@ export default function DashboardPage() {
               <table style={{width:'100%',borderCollapse:'collapse'}}>
                 <tbody>
                   {devisFiltres.map((d,i) => (
-                    <tr key={i} onMouseEnter={e=>{(e.currentTarget as HTMLTableRowElement).style.background="#f0fdf4"}} onMouseLeave={e=>{(e.currentTarget as HTMLTableRowElement).style.background=""}} style={{borderTop:i===0?'none':`1px solid ${BD}`}}>
+                    <tr key={i} onClick={()=>window.location.href=`/devis/${d.id||'nouveau'}`} onMouseEnter={e=>{(e.currentTarget as HTMLTableRowElement).style.background="#f0fdf4"}} onMouseLeave={e=>{(e.currentTarget as HTMLTableRowElement).style.background=""}} style={{borderTop:i===0?'none':`1px solid ${BD}`,cursor:'pointer'}}>
                       <td style={{padding:'10px 16px'}}>
                         <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{d.client}</div>
                         <div style={{fontSize:11,color:'#888'}}>{d.num} · {d.date}</div>
@@ -185,6 +193,7 @@ export default function DashboardPage() {
                 <tbody>
                 {topClientsFiltres.map((cl,i)=>(
                   <tr key={i} style={{borderBottom:i<topClientsData.length-1?`1px solid ${BD}`:'',cursor:'pointer'}}
+                    onClick={()=>setFicheClient(clientsData.find(c=>c.nom===cl.nom||c.prenom+' '+c.nom===cl.nom)||clientsData[i])}
                     onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f0fdf4'}
                     onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
                     <td style={{padding:'10px 16px'}}>
@@ -213,6 +222,7 @@ export default function DashboardPage() {
       </div>
     </div>
     {showNouveauDevis&&<NouveauDevisModal onClose={()=>setShowNouveauDevis(false)}/>}
+    {ficheClient&&<FicheClientPanel client={ficheClient} onClose={()=>setFicheClient(null)}/>}
     </>
   )
 }
