@@ -43,20 +43,33 @@ export default function DashboardPage() {
   ]
 
   const devis = [
-    { client:'Martin Dupont', num:'DEV-2026-042', date:'05/04', montant:'4 200 € HT', statut:'Envoyé', sc:'#2563eb' },
-    { client:'SCI Les Pins', num:'DEV-2026-041', date:'03/04', montant:'12 800 € HT', statut:'Signé', sc:G },
+    { client:'Martin Dupont', num:'DEV-2026-042', date:'05/04', montant:'4 200 € HT', statut:'Envoyé', sc:'#2563eb', mois:4, annee:2026 },
+    { client:'SCI Les Pins', num:'DEV-2026-041', date:'03/04', montant:'12 800 € HT', statut:'Signé', sc:G, mois:4, annee:2026 },
     { client:'Isabelle Renard', num:'DEV-2026-040', date:'01/04', montant:'1 950 € HT', statut:'En attente', sc:AM },
     { client:'SARL Bâti Pro', num:'DEV-2026-039', date:'28/03', montant:'8 600 € HT', statut:'Refusé', sc:RD },
   ]
 
   const[periodeTop,setPeriodeTop]=useState<'mois'|'mois_prec'|'annee'|'annee_prec'>('annee')
   const[periodeDevis,setPeriodeDevis]=useState<'mois'|'mois_prec'|'annee'|'annee_prec'>('annee')
+  const now=new Date()
+  const filterByPeriode=(items:any[],periode:string)=>{
+    return items.filter(d=>{
+      if(!d.mois) return true
+      if(periode==='mois') return d.mois===now.getMonth()+1&&d.annee===now.getFullYear()
+      if(periode==='mois_prec'){const pm=now.getMonth()===0?12:now.getMonth();const py=now.getMonth()===0?now.getFullYear()-1:now.getFullYear();return d.mois===pm&&d.annee===py}
+      if(periode==='annee') return d.annee===now.getFullYear()
+      if(periode==='annee_prec') return d.annee===now.getFullYear()-1
+      return true
+    })
+  }
   const topClientsData:{nom:string,n:number,ca:string}[] = [
     { nom:'SCI Les Pins', n:3, ca:'38 400 €' },
     { nom:'SARL Bâti Pro', n:2, ca:'22 100 €' },
     { nom:'Martin Dupont', n:4, ca:'18 750 €' },
     { nom:'Isabelle Renard', n:1, ca:'8 550 €' },
   ]
+  const devisFiltres=filterByPeriode(devis,periodeDevis)
+  const topClientsFiltres=filterByPeriode(topClientsData,periodeTop)
 
   const actions = [
     {l:'Nouveau devis', e:'📄', href:'/devis', modal:true},
@@ -87,7 +100,7 @@ export default function DashboardPage() {
         <div style={{flex:1,overflowY:'auto',padding:24}}>
           <div style={{marginBottom:24}}>
             <h2 style={{fontSize:20,fontWeight:700,margin:'0 0 4px',color:'#111'}}>Bonjour {prenom} 👋</h2>
-            <p style={{fontSize:14,color:'#111',margin:0}}>Voici un résumé de votre activité — Avril 2026</p>
+            <p style={{fontSize:14,color:'#111',margin:0}}>Voici un résumé de votre activité</p>
           </div>
 
           <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:12,marginBottom:20}}>
@@ -119,18 +132,18 @@ export default function DashboardPage() {
                       </button>
                     ))}
                   </div>
-                  <a href="/devis" style={{fontSize:12,color:G,cursor:'pointer',fontWeight:600,textDecoration:'none'}}>Voir tout →</a>
+                  <a href="/devis" style={{fontSize:12,color:G,cursor:'pointer',fontWeight:600,textDecoration:'none',marginLeft:8}}>Voir tout →</a>
                 </div>
               </div>
               <table style={{width:'100%',borderCollapse:'collapse'}}>
                 <tbody>
-                  {devis.map((d,i) => (
+                  {devisFiltres.map((d,i) => (
                     <tr key={i} onMouseEnter={e=>{(e.currentTarget as HTMLTableRowElement).style.background="#f0fdf4"}} onMouseLeave={e=>{(e.currentTarget as HTMLTableRowElement).style.background=""}} style={{borderTop:`1px solid ${BD}`}}>
                       <td style={{padding:'10px 16px'}}>
                         <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{d.client}</div>
                         <div style={{fontSize:11,color:'#888'}}>{d.num} · {d.date}</div>
                       </td>
-                      <td style={{padding:'10px 16px',textAlign:'right' as const,fontSize:13,fontWeight:600,color:'#111'}}>{d.montant} HT</td>
+                      <td style={{padding:'10px 16px',textAlign:'right' as const,fontSize:13,fontWeight:600,color:'#111'}}>{d.montant}</td>
                       <td style={{padding:'10px 16px',textAlign:'right' as const}}>
                         <span style={{background:`${d.sc}22`,color:d.sc,padding:'3px 10px',borderRadius:20,fontSize:11,fontWeight:700}}>{d.statut}</span>
                       </td>
@@ -152,12 +165,12 @@ export default function DashboardPage() {
                       </button>
                     ))}
                   </div>
-                  <a href="/clients" style={{fontSize:12,color:G,cursor:'pointer',fontWeight:600,textDecoration:'none'}}>Voir tout →</a>
+                  <a href="/clients" style={{fontSize:12,color:G,cursor:'pointer',fontWeight:600,textDecoration:'none',marginLeft:8}}>Voir tout →</a>
                 </div>
               </div>
               <table style={{width:'100%',borderCollapse:'collapse'}}>
                 <tbody>
-                {topClientsData.map((cl,i)=>(
+                {topClientsFiltres.map((cl,i)=>(
                   <tr key={i} style={{borderBottom:i<topClientsData.length-1?`1px solid ${BD}`:'',cursor:'pointer'}}
                     onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f0fdf4'}
                     onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
