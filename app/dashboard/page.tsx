@@ -31,11 +31,10 @@ export default function DashboardPage() {
     })
   }, [])
 
-  const[prenomLocal,setPrenomLocal]=useState<string>('')
-  useEffect(()=>{
-    const stored=localStorage.getItem('batizo_prenom')
-    setPrenomLocal(stored||'')
-  },[])
+  const[prenomLocal,setPrenomLocal]=useState<string>(()=>{
+    if(typeof window==='undefined') return ''
+    return localStorage.getItem('batizo_prenom')||''
+  })
   const prenom = prenomLocal||''
   const entreprise = user?.user_metadata?.entreprise || 'votre entreprise'
   const sw = collapsed ? 64 : 230
