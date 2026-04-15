@@ -54,7 +54,13 @@ interface Props {
 export default function FicheClientPanel({ client, mode:initialMode='view', allClients=[], onClose, onSave }: Props) {
   const [mode, setMode] = useState<'view'|'edit'>(initialMode==='new'?'edit':'view')
   const [note, setNote] = useState('')
-  const [pj, setPj] = useState<{name:string,size:number,date:string,url:string,type:string}[]>([])
+  const [pj, setPj] = useState<{name:string,size:number,date:string,url:string,type:string}[]>(()=>{
+    if(typeof window==='undefined') return []
+    try{
+      const stored=localStorage.getItem(`batizo_pj_${client?.id||'new'}`)
+      return stored?JSON.parse(stored):[]
+    }catch{return []}
+  })
   const [notes, setNotes] = useState<{text:string,date:string}[]>([])
   const [dirty, setDirty] = useState(false)
   const [showWarn, setShowWarn] = useState(false)
@@ -74,12 +80,25 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
 
   const setF=(k:string,v:any)=>{setForm((p:any)=>({...p,[k]:v}));setDirty(true)}
 
+  // Sauvegarder PJ dans localStorage
+  const savePj=(newPj:any[])=>{
+    try{localStorage.setItem(`batizo_pj_${client?.id||'new'}`,JSON.stringify(newPj))}catch(e){console.error('PJ storage error',e)}
+  }
+
   const addFiles=(files:FileList|null)=>{
     if(!files) return
     Array.from(files).forEach(file=>{
       if(file.size>25*1024*1024){alert(`${file.name} dépasse 25 Mo`);return}
-      const url=URL.createObjectURL(file)
-      setPj(p=>[...p,{name:file.name,size:file.size,date:new Date().toLocaleString('fr-FR'),url,type:file.type}])
+      const reader=new FileReader()
+      reader.onload=(ev)=>{
+        const url=ev.target?.result as string
+        setPj(p=>{
+          const newPj=[...p,{name:file.name,size:file.size,date:new Date().toLocaleString('fr-FR'),url,type:file.type}]
+          savePj(newPj)
+          return newPj
+        })
+      }
+      reader.readAsDataURL(file)
     })
   }
 
@@ -392,7 +411,7 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
                             style={{padding:'4px 8px',background:'#fff',border:`1px solid ${BD}`,borderRadius:6,fontSize:11,textDecoration:'none',color:'#555',cursor:'pointer'}}>Aperçu</a>
                           <a href={f.url} download={f.name}
                             style={{padding:'4px 8px',background:'#fff',border:`1px solid ${BD}`,borderRadius:6,fontSize:11,textDecoration:'none',color:'#555',cursor:'pointer'}}>↓</a>
-                          <button onClick={()=>setPj(p=>p.filter((_,j)=>j!==i))}
+                          <button onClick={()=>setPj(p=>{const newPj=p.filter((_,j)=>j!==i);savePj(newPj);return newPj})}
                             style={{padding:'4px 8px',background:'#fff',border:`1px solid #fca5a5`,borderRadius:6,fontSize:11,color:RD,cursor:'pointer'}}>×</button>
                         </div>
                       </div>
