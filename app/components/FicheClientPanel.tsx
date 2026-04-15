@@ -435,9 +435,7 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
                           )}
                         </div>
                         <div style={{fontSize:11,color:'#92400e',fontWeight:500}}>{n.auteur||auteur} — {n.date}</div>
-                        {n.mentions?.length>0&&(
-                          <div style={{fontSize:10,color:'#888',marginTop:3}}>Mentionné : {n.mentions.join(', ')}</div>
-                        )}
+
                       </div>
                     ))}
                   </div>
