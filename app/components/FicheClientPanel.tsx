@@ -54,6 +54,8 @@ interface Props {
 export default function FicheClientPanel({ client, mode:initialMode='view', allClients=[], onClose, onSave }: Props) {
   const [mode, setMode] = useState<'view'|'edit'>(initialMode==='new'?'edit':'view')
   const [note, setNote] = useState('')
+  const [showMentions, setShowMentions] = useState(false)
+  const [mentionQuery, setMentionQuery] = useState('')
   const [pj, setPj] = useState<{name:string,size:number,date:string,url:string,type:string}[]>(()=>{
     if(typeof window==='undefined') return []
     try{
@@ -61,7 +63,13 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
       return stored?JSON.parse(stored):[]
     }catch{return []}
   })
-  const [notes, setNotes] = useState<{text:string,date:string}[]>([])
+  const [notes, setNotes] = useState<{text:string,date:string,auteur:string,mentions:string[]}[]>(()=>{
+    if(typeof window==='undefined') return []
+    try{
+      const stored=localStorage.getItem(`batizo_notes_${client?.id||'new'}`)
+      return stored?JSON.parse(stored):[]
+    }catch{return []}
+  })
   const [dirty, setDirty] = useState(false)
   const [showWarn, setShowWarn] = useState(false)
   const [errors, setErrors] = useState<Record<string,string>>({})
@@ -79,6 +87,39 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
   )
 
   const setF=(k:string,v:any)=>{setForm((p:any)=>({...p,[k]:v}));setDirty(true)}
+  const auteur=typeof window!=='undefined'?localStorage.getItem('batizo_prenom')||'Alexandre Delcourt':'Alexandre Delcourt'
+
+  const saveNotes=(newNotes:any[])=>{
+    try{localStorage.setItem(`batizo_notes_${client?.id||'new'}`,JSON.stringify(newNotes))}catch(e){}
+  }
+
+  const handleNoteChange=(val:string)=>{
+    setNote(val)
+    const lastAt=val.lastIndexOf('@')
+    if(lastAt!==-1&&lastAt===val.length-1||(lastAt!==-1&&!val.slice(lastAt+1).includes(' ')&&val.slice(lastAt).length>0)){
+      setMentionQuery(val.slice(lastAt+1))
+      setShowMentions(true)
+    } else {
+      setShowMentions(false)
+    }
+  }
+
+  const insertMention=(membre:string)=>{
+    const lastAt=note.lastIndexOf('@')
+    const newNote=note.slice(0,lastAt)+'@'+membre+' '
+    setNote(newNote)
+    setShowMentions(false)
+  }
+
+  const addNote=()=>{
+    if(!note.trim()) return
+    const mentions=MEMBRES.filter(m=>note.includes('@'+m))
+    const newNotes=[{text:note,date:new Date().toLocaleString('fr-FR'),auteur,mentions},...notes]
+    setNotes(newNotes)
+    saveNotes(newNotes)
+    setNote('')
+    setShowMentions(false)
+  }
 
   // Sauvegarder PJ dans localStorage
   const savePj=(newPj:any[])=>{
@@ -355,21 +396,48 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
               {/* Notes */}
               <div>
                 <SectionTitle t="Notes internes"/>
-                <div style={{display:'flex',gap:8,marginBottom:8}}>
-                  <input value={note} onChange={e=>setNote(e.target.value)} placeholder="Ajouter une note..."
-                    style={{flex:1,padding:'8px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none'}}
-                    onKeyDown={e=>e.key==='Enter'&&note.trim()&&(setNotes(p=>[{text:note,date:new Date().toLocaleString('fr-FR')},  ...p]),setNote(''))}/>
-                  <button onClick={()=>{if(note.trim()){setNotes(p=>[{text:note,date:new Date().toLocaleString('fr-FR')},...p]);setNote('')}}}
-                    style={{width:36,height:36,borderRadius:7,background:G,color:'#fff',border:'none',cursor:'pointer',fontSize:18,display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
+                <div style={{position:'relative' as const,marginBottom:8}}>
+                  <div style={{display:'flex',gap:8}}>
+                    <input value={note} onChange={e=>handleNoteChange(e.target.value)}
+                      placeholder="Ajouter une note... (tapez @ pour mentionner)"
+                      style={{flex:1,padding:'8px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none'}}
+                      onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();addNote()}}}/>
+                    <button onClick={addNote}
+                      style={{width:36,height:36,borderRadius:7,background:G,color:'#fff',border:'none',cursor:'pointer',fontSize:18,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>+</button>
+                  </div>
+                  {showMentions&&(
+                    <div style={{position:'absolute' as const,bottom:'calc(100% + 4px)',left:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,0.1)',zIndex:10,minWidth:220}}>
+                      {MEMBRES.filter(m=>m.toLowerCase().includes(mentionQuery.toLowerCase())).map(m=>(
+                        <div key={m} onClick={()=>insertMention(m)}
+                          style={{padding:'8px 12px',fontSize:13,cursor:'pointer',color:'#111',display:'flex',alignItems:'center',gap:8}}
+                          onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
+                          onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                          <span style={{width:24,height:24,borderRadius:'50%',background:G+'20',color:G,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700}}>
+                            {m.charAt(0)}
+                          </span>
+                          {m}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 {notes.length===0?(
                   <div style={{textAlign:'center' as const,padding:'1rem',color:'#888',fontSize:12,background:'#f9fafb',borderRadius:8,border:`1px solid ${BD}`}}>Aucune note</div>
                 ):(
-                  <div style={{display:'flex',flexDirection:'column' as const,gap:5}}>
+                  <div style={{display:'flex',flexDirection:'column' as const,gap:6}}>
                     {notes.map((n,i)=>(
-                      <div key={i} style={{padding:'10px 12px',background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:7}}>
-                        <div style={{fontSize:13,color:'#333',lineHeight:1.5,marginBottom:4}}>{n.text}</div>
-                        <div style={{fontSize:11,color:'#aaa'}}>{n.date}</div>
+                      <div key={i} style={{padding:'12px 14px',background:'#fffbeb',border:'1px solid #fde68a',borderRadius:8,position:'relative' as const}}>
+                        <div style={{fontSize:13,color:'#333',lineHeight:1.6,marginBottom:6}}>
+                          {n.text.split(/(@w[ws]*)/g).map((part,j)=>
+                            part.startsWith('@')
+                              ? <strong key={j} style={{color:G}}>{part}</strong>
+                              : part
+                          )}
+                        </div>
+                        <div style={{fontSize:11,color:'#92400e',fontWeight:500}}>{n.auteur||auteur} — {n.date}</div>
+                        {n.mentions?.length>0&&(
+                          <div style={{fontSize:10,color:'#888',marginTop:3}}>Mentionné : {n.mentions.join(', ')}</div>
+                        )}
                       </div>
                     ))}
                   </div>
