@@ -191,7 +191,7 @@ export default function DashboardPage() {
                 <tbody>
                 {topClientsFiltres.map((cl,i)=>(
                   <tr key={i} style={{borderBottom:i<topClientsData.length-1?`1px solid ${BD}`:'',cursor:'pointer'}}
-                    onClick={()=>setFicheClient(clientsData.find(c=>c.nom===cl.nom||c.prenom+' '+c.nom===cl.nom)||clientsData[i])}
+                    onClick={()=>setFicheClient(clientsData.find(c=>c.id===cl.id)||clientsData.find(c=>(c.raisonSociale||c.prenom+' '+c.nom)===cl.nom))}
                     onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f0fdf4'}
                     onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
                     <td style={{padding:'10px 16px'}}>
@@ -220,7 +220,15 @@ export default function DashboardPage() {
       </div>
     </div>
     {showNouveauDevis&&<NouveauDevisModal onClose={()=>setShowNouveauDevis(false)}/>}
-    {ficheClient&&<FicheClientPanel client={ficheClient} onClose={()=>setFicheClient(null)}/>}
+    {ficheClient&&<FicheClientPanel 
+    client={ficheClient} 
+    allClients={clientsData}
+    onClose={()=>setFicheClient(null)}
+    onSave={(saved:any)=>{
+      setClientsData(getClients())
+      setFicheClient(saved)
+    }}
+  />}
     </>
   )
 }
