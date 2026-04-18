@@ -1,6 +1,8 @@
 'use client'
 import SupportWidget from './SupportWidget'
 import NouveauDevisModal from './NouveauDevisModal'
+import NotificationsPanel from './NotificationsPanel'
+import { getUnreadCount } from '../lib/notificationsStore'
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { usePhoto } from '../context/PhotoContext'
@@ -32,6 +34,14 @@ const menuItems = [
 export default function Sidebar({ activePage }: { activePage: string }) {
   const [collapsed, setCollapsed] = useState(false)
   const [showNouveauDevis, setShowNouveauDevis] = useState(false)
+  const [showNotifs, setShowNotifs] = useState(false)
+  const [unread, setUnread] = useState(0)
+  useEffect(()=>{
+    setUnread(getUnreadCount())
+    const sync=()=>setUnread(getUnreadCount())
+    window.addEventListener('batizo_notifs_updated',sync)
+    return ()=>window.removeEventListener('batizo_notifs_updated',sync)
+  },[])
   const [searchGlobal, setSearchGlobal] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [userMenu, setUserMenu] = useState(false)
@@ -179,6 +189,7 @@ export default function Sidebar({ activePage }: { activePage: string }) {
     </div>
     <SupportWidget prenom={prenom} onNouveauDevis={()=>setShowNouveauDevis(true)}/>
     {showNouveauDevis&&<NouveauDevisModal onClose={()=>setShowNouveauDevis(false)}/>}
+    {showNotifs&&<NotificationsPanel onClose={()=>setShowNotifs(false)}/>}
     </>
   )
 }

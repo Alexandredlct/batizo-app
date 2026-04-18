@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { updateClient } from '../lib/clientsStore'
+import { addNotification, getColor } from '../lib/notificationsStore'
 
 const G='#1D9E75', AM='#BA7517', RD='#E24B4A', BD='#e5e7eb'
 const fmt=(n:number)=>n.toLocaleString('fr-FR')+' €'
@@ -145,12 +146,30 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
     setShowMentions(false)
   }
 
+  const triggerMentionNotifs=(text:string)=>{
+    const prenom=typeof window!=='undefined'?localStorage.getItem('batizo_prenom')||'Alexandre':'Alexandre'
+    MEMBRES.filter(m=>text.includes('@'+m)&&m!==prenom).forEach(m=>{
+      addNotification({
+        type:'mention',
+        auteur:prenom,
+        auteurInitiales:prenom.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+        auteurColor:getColor(prenom),
+        action:'vous a mentionné dans une note',
+        contenu:text,
+        refLabel:client?.raisonSociale||client?.prenom+' '+client?.nom,
+        refId:client?.id,
+        refType:'client'
+      })
+    })
+  }
+
   const addNote=()=>{
     if(!note.trim()) return
     const mentions=MEMBRES.filter(m=>note.includes('@'+m))
     const newNotes=[{text:note,date:new Date().toLocaleString('fr-FR'),auteur,mentions},...notes]
     setNotes(newNotes)
     saveNotes(newNotes)
+    triggerMentionNotifs(note)
     setNote('')
     setShowMentions(false)
   }

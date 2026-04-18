@@ -1,4 +1,5 @@
 'use client'
+import NotifBell from '../components/NotifBell'
 import SearchBar from '../components/SearchBar'
 import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
@@ -223,7 +224,7 @@ export default function ClientsPage(){
           <div style={{fontSize:16,fontWeight:700,color:'#111',flexShrink:0}}>Clients</div><SearchBar/>
           <div style={{display:'flex',gap:8}}>
             <button onClick={exportCSV} style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>Exporter CSV</button>
-            <button onClick={openAdd} style={{padding:'8px 16px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>+ Nouveau client</button>
+            <div style={{display:'flex',alignItems:'center',gap:8}}><NotifBell/><button onClick={openAdd} style={{padding:'8px 16px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>+ Nouveau client</button></div>
           </div>
         </div>
 
