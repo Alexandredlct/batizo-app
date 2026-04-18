@@ -52,6 +52,37 @@ interface Props {
   onSave?: (client:any) => void
 }
 
+
+// ===== COMPOSANTS EXTERNES =====
+const BD_EXT='#e5e7eb', G_EXT='#1D9E75', RD_EXT='#E24B4A'
+
+const SectionTitle=({t}:{t:string})=>(
+  <div style={{fontSize:11,fontWeight:700,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10,marginTop:4}}>{t}</div>
+)
+
+const Field=({label,k,placeholder,type='text',req=false,form,errors,setF}:{label:string,k:string,placeholder?:string,type?:string,req?:boolean,form:any,errors:any,setF:(k:string,v:any)=>void})=>(
+  <div style={{marginBottom:12}}>
+    <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>
+      {label}{req&&<span style={{color:RD_EXT}}> *</span>}
+    </label>
+    <input type={type} value={form[k]||''} onChange={e=>setF(k,e.target.value)} placeholder={placeholder}
+      style={{width:'100%',padding:'8px 10px',border:`1px solid ${errors[k]?RD_EXT:BD_EXT}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',boxSizing:'border-box' as const}}
+      onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=errors[k]?RD_EXT:G_EXT}
+      onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=errors[k]?RD_EXT:BD_EXT}/>
+    {errors[k]&&<div style={{fontSize:11,color:RD_EXT,marginTop:3}}>{errors[k]}</div>}
+  </div>
+)
+
+const SelectField=({label,k,options,form,setF}:{label:string,k:string,options:string[],form:any,setF:(k:string,v:any)=>void})=>(
+  <div style={{marginBottom:12}}>
+    <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>{label}</label>
+    <select value={form[k]||''} onChange={e=>setF(k,e.target.value)}
+      style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD_EXT}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',background:'#fff',boxSizing:'border-box' as const}}>
+      {options.map(o=><option key={o}>{o}</option>)}
+    </select>
+  </div>
+)
+
 export default function FicheClientPanel({ client, mode:initialMode='view', allClients=[], onClose, onSave }: Props) {
   const [mode, setMode] = useState<'view'|'edit'>(initialMode==='new'?'edit':'view')
   const [note, setNote] = useState('')
@@ -221,32 +252,7 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
   const titre=isPro?(form.raisonSociale||'Nouveau client'):`${form.civilite} ${form.prenom} ${form.nom}`.trim()||'Nouveau client'
   const sousTitre=isPro?form.contactNom:''
 
-  const Field=({label,k,placeholder,type='text',req=false}:{label:string,k:string,placeholder?:string,type?:string,req?:boolean})=>(
-    <div style={{marginBottom:12}}>
-      <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>
-        {label}{req&&<span style={{color:RD}}> *</span>}
-      </label>
-      <input type={type} value={form[k]||''} onChange={e=>setF(k,e.target.value)} placeholder={placeholder}
-        style={{width:'100%',padding:'8px 10px',border:`1px solid ${errors[k]?RD:BD}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',boxSizing:'border-box' as const}}
-        onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=errors[k]?RD:G}
-        onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=errors[k]?RD:BD}/>
-      {errors[k]&&<div style={{fontSize:11,color:RD,marginTop:3}}>{errors[k]}</div>}
-    </div>
-  )
 
-  const Select=({label,k,options}:{label:string,k:string,options:string[]})=>(
-    <div style={{marginBottom:12}}>
-      <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>{label}</label>
-      <select value={form[k]||''} onChange={e=>setF(k,e.target.value)}
-        style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',background:'#fff',boxSizing:'border-box' as const}}>
-        {options.map(o=><option key={o}>{o}</option>)}
-      </select>
-    </div>
-  )
-
-  const SectionTitle=({t}:{t:string})=>(
-    <div style={{fontSize:11,fontWeight:700,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10,marginTop:4}}>{t}</div>
-  )
 
   return (
     <>
@@ -558,11 +564,11 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
               {isPro&&(
                 <div style={{background:'#f9fafb',borderRadius:10,padding:'14px 16px',border:`1px solid ${BD}`}}>
                   <SectionTitle t="Informations entreprise"/>
-                  <Field label="Raison sociale" k="raisonSociale" req placeholder="SCI Les Pins"/>
-                  <Select label="Forme juridique" k="formeJuridique" options={FORMES}/>
-                  <Select label="Pays d'immatriculation" k="paysImmat" options={['France','Belgique','Suisse','Luxembourg','Autre']}/>
+                  <Field form={form} errors={errors} setF={setF} label="Raison sociale" k="raisonSociale" req placeholder="SCI Les Pins"/>
+                  <SelectField form={form} setF={setF} label="Forme juridique" k="formeJuridique" options={FORMES}/>
+                  <SelectField form={form} setF={setF} label="Pays d'immatriculation" k="paysImmat" options={['France','Belgique','Suisse','Luxembourg','Autre']}/>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                    <Field label="SIREN" k="siren" placeholder="123 456 789"/>
+                    <Field form={form} errors={errors} setF={setF} label="SIREN" k="siren" placeholder="123 456 789"/>
                     <div>
                       <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>SIRET</label>
                       <div style={{display:'flex',gap:6}}>
@@ -573,7 +579,7 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
                       {errors.siret&&<div style={{fontSize:11,color:RD,marginTop:3}}>{errors.siret}</div>}
                     </div>
                   </div>
-                  <Field label="N° TVA intracommunautaire" k="tvaIntra" placeholder="FR12123456789"/>
+                  <Field form={form} errors={errors} setF={setF} label="N° TVA intracommunautaire" k="tvaIntra" placeholder="FR12123456789"/>
                 </div>
               )}
 
@@ -582,8 +588,8 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
                 <div style={{background:'#f9fafb',borderRadius:10,padding:'14px 16px',border:`1px solid ${BD}`}}>
                   <SectionTitle t="Contact principal"/>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                    <Field label="Nom du contact" k="contactNom" placeholder="Jean Dupont"/>
-                    <Field label="Poste" k="contactPoste" placeholder="Directeur"/>
+                    <Field form={form} errors={errors} setF={setF} label="Nom du contact" k="contactNom" placeholder="Jean Dupont"/>
+                    <Field form={form} errors={errors} setF={setF} label="Poste" k="contactPoste" placeholder="Directeur"/>
                   </div>
                 </div>
               )}
@@ -592,30 +598,30 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
               <div style={{background:'#f9fafb',borderRadius:10,padding:'14px 16px',border:`1px solid ${BD}`}}>
                 <SectionTitle t="Informations personnelles"/>
                 <div style={{display:'grid',gridTemplateColumns:'120px 1fr 1fr',gap:10,marginBottom:12}}>
-                  <Select label="Civilité" k="civilite" options={['M.','Mme','Autre']}/>
-                  <Field label="Prénom" k="prenom" placeholder="Jean" req={form.type==='particulier'}/>
-                  <Field label="Nom" k="nom" placeholder="Dupont" req={form.type==='particulier'}/>
+                  <SelectField form={form} setF={setF} label="Civilité" k="civilite" options={['M.','Mme','Autre']}/>
+                  <Field form={form} errors={errors} setF={setF} label="Prénom" k="prenom" placeholder="Jean" req={form.type==='particulier'}/>
+                  <Field form={form} errors={errors} setF={setF} label="Nom" k="nom" placeholder="Dupont" req={form.type==='particulier'}/>
                 </div>
-                <Field label="Email" k="email" type="email" placeholder="jean@dupont.fr"/>
-                <Field label="Téléphone" k="tel" placeholder="06 12 34 56 78"/>
+                <Field form={form} errors={errors} setF={setF} label="Email" k="email" type="email" placeholder="jean@dupont.fr"/>
+                <Field form={form} errors={errors} setF={setF} label="Téléphone" k="tel" placeholder="06 12 34 56 78"/>
               </div>
 
               {/* Adresse */}
               <div style={{background:'#f9fafb',borderRadius:10,padding:'14px 16px',border:`1px solid ${BD}`}}>
                 <SectionTitle t="Adresse"/>
-                <Field label="Adresse" k="adresse" placeholder="45 avenue des Champs"/>
+                <Field form={form} errors={errors} setF={setF} label="Adresse" k="adresse" placeholder="45 avenue des Champs"/>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 2fr',gap:10}}>
-                  <Field label="Code postal" k="codePostal" placeholder="75008"/>
-                  <Field label="Ville" k="ville" placeholder="Paris"/>
+                  <Field form={form} errors={errors} setF={setF} label="Code postal" k="codePostal" placeholder="75008"/>
+                  <Field form={form} errors={errors} setF={setF} label="Ville" k="ville" placeholder="Paris"/>
                 </div>
-                <Select label="Pays" k="pays" options={['France','Belgique','Suisse','Luxembourg','Autre']}/>
+                <SelectField form={form} setF={setF} label="Pays" k="pays" options={['France','Belgique','Suisse','Luxembourg','Autre']}/>
               </div>
 
               {/* Autres */}
               <div style={{background:'#f9fafb',borderRadius:10,padding:'14px 16px',border:`1px solid ${BD}`}}>
                 <SectionTitle t="Autres"/>
-                <Select label="En charge" k="enCharge" options={MEMBRES}/>
-                <Field label="Tags (séparés par virgules)" k="tags" placeholder="VIP, gros chantier, zone parisienne"/>
+                <SelectField form={form} setF={setF} label="En charge" k="enCharge" options={MEMBRES}/>
+                <Field form={form} errors={errors} setF={setF} label="Tags (séparés par virgules)" k="tags" placeholder="VIP, gros chantier, zone parisienne"/>
                 <div style={{marginBottom:12}}>
                   <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Notes</label>
                   <textarea value={form.notes||''} onChange={e=>setF('notes',e.target.value)} rows={3} placeholder="Notes internes..."
