@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
+import { updateClient } from '../lib/clientsStore'
 
 const G='#1D9E75', AM='#BA7517', RD='#E24B4A', BD='#e5e7eb'
 const fmt=(n:number)=>n.toLocaleString('fr-FR')+' €'
@@ -194,7 +195,9 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
     const errs=validate()
     setErrors(errs)
     if(Object.keys(errs).length>0) return
-    if(onSave) onSave({...form, id:client?.id||'c-'+Date.now()})
+    const saved={...form, id:client?.id||'c-'+Date.now()}
+    updateClient(saved)
+    if(onSave) onSave(saved)
     setDirty(false)
     setMode('view')
   }

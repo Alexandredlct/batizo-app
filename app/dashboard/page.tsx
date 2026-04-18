@@ -1,6 +1,7 @@
 'use client'
 import NouveauDevisModal from '../components/NouveauDevisModal'
 import FicheClientPanel from '../components/FicheClientPanel'
+import { getClients } from '../lib/clientsStore'
 import SearchBar from '../components/SearchBar'
 import Sidebar from '../components/Sidebar'
 import React from 'react'
@@ -68,18 +69,15 @@ export default function DashboardPage() {
       return true
     })
   }
-  const clientsData:any[] = [
-    {id:'c1',civilite:'',prenom:'SCI',nom:'Les Pins',email:'contact@lespins.fr',tel:'01 23 45 67 89',statut:'actif',enCharge:'Alexandre Delcourt',raisonSociale:'SCI Les Pins',nbDevis:3,caTotal:38400,margeAvg:62,derniereActivite:'05/04/2026'},
-    {id:'c2',civilite:'M.',prenom:'SARL',nom:'Bâti Pro',email:'contact@batipro.fr',tel:'01 34 56 78 90',statut:'actif',enCharge:'Alexandre Delcourt',raisonSociale:'SARL Bâti Pro',nbDevis:2,caTotal:22100,margeAvg:58,derniereActivite:'03/04/2026'},
-    {id:'c3',civilite:'M.',prenom:'Martin',nom:'Dupont',email:'m.dupont@gmail.com',tel:'06 12 34 56 78',statut:'actif',enCharge:'Alexandre Delcourt',nbDevis:4,caTotal:18750,margeAvg:55,derniereActivite:'28/03/2026'},
-    {id:'c4',civilite:'Mme',prenom:'Isabelle',nom:'Renard',email:'i.renard@gmail.com',tel:'06 98 76 54 32',statut:'prospect',enCharge:'Alexandre Delcourt',nbDevis:1,caTotal:8550,margeAvg:48,derniereActivite:'15/02/2025'},
-  ]
-  const topClientsData:{nom:string,n:number,ca:string,mois:number,annee:number}[] = [
-    { nom:'SCI Les Pins', n:3, ca:'38 400 €', mois:4, annee:2026 },
-    { nom:'SARL Bâti Pro', n:2, ca:'22 100 €', mois:3, annee:2026 },
-    { nom:'Martin Dupont', n:4, ca:'18 750 €', mois:4, annee:2026 },
-    { nom:'Isabelle Renard', n:1, ca:'8 550 €', mois:2, annee:2025 },
-  ]
+  const [clientsData, setClientsData] = useState<any[]>(()=>getClients())
+  const topClientsData=clientsData.map(cl=>({
+    nom:cl.raisonSociale||cl.prenom+' '+cl.nom,
+    n:cl.nbDevis||0,
+    ca:cl.caTotal?cl.caTotal.toLocaleString('fr-FR')+' €':'0 €',
+    mois:cl.mois||new Date().getMonth()+1,
+    annee:cl.annee||new Date().getFullYear(),
+    id:cl.id,
+  })).sort((a,b)=>b.n-a.n)
 
   const getStatutColor=(s:string)=>{
     if(s==='Brouillon') return '#888'
