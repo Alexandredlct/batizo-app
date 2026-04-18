@@ -56,6 +56,8 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
   const [note, setNote] = useState('')
   const [showMentions, setShowMentions] = useState(false)
   const [mentionQuery, setMentionQuery] = useState('')
+  const [editNoteIdx, setEditNoteIdx] = useState<number|null>(null)
+  const [editNoteText, setEditNoteText] = useState('')
   const [pj, setPj] = useState<{name:string,size:number,date:string,url:string,type:string}[]>(()=>{
     if(typeof window==='undefined') return []
     try{
@@ -426,16 +428,42 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
                 ):(
                   <div style={{display:'flex',flexDirection:'column' as const,gap:6}}>
                     {notes.map((n,i)=>(
-                      <div key={i} style={{padding:'12px 14px',background:'#fffbeb',border:'1px solid #fde68a',borderRadius:8,position:'relative' as const}}>
-                        <div style={{fontSize:13,color:'#333',lineHeight:1.6,marginBottom:6}}>
-                          {n.text.split(/(@w[ws]*)/g).map((part,j)=>
-                            part.startsWith('@')
-                              ? <strong key={j} style={{color:G}}>{part}</strong>
-                              : part
-                          )}
-                        </div>
-                        <div style={{fontSize:11,color:'#92400e',fontWeight:500}}>{n.auteur||auteur} — {n.date}</div>
-
+                      <div key={i} style={{padding:'12px 14px',background:'#fffbeb',border:'1px solid #fde68a',borderRadius:8}}>
+                        {editNoteIdx===i ? (
+                          <div style={{display:'flex',flexDirection:'column' as const,gap:6}}>
+                            <input value={editNoteText} onChange={e=>setEditNoteText(e.target.value)} autoFocus
+                              style={{width:'100%',padding:'6px 10px',border:'1px solid '+BD,borderRadius:6,fontSize:13,outline:'none',boxSizing:'border-box' as const}}
+                              onKeyDown={e=>{
+                                if(e.key==='Enter'){const nn=notes.map((x,j)=>j===i?{...x,text:editNoteText}:x);setNotes(nn);saveNotes(nn);setEditNoteIdx(null)}
+                                if(e.key==='Escape') setEditNoteIdx(null)
+                              }}/>
+                            <div style={{display:'flex',gap:6}}>
+                              <button onClick={()=>{const nn=notes.map((x,j)=>j===i?{...x,text:editNoteText}:x);setNotes(nn);saveNotes(nn);setEditNoteIdx(null)}}
+                                style={{padding:'5px 12px',background:G,color:'#fff',border:'none',borderRadius:6,fontSize:12,cursor:'pointer',fontWeight:600}}>OK</button>
+                              <button onClick={()=>setEditNoteIdx(null)}
+                                style={{padding:'5px 10px',background:'#fff',border:'1px solid '+BD,borderRadius:6,fontSize:12,cursor:'pointer',color:'#555'}}>Annuler</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div style={{fontSize:13,lineHeight:1.6,marginBottom:6}}>
+                              {n.text.split(new RegExp('(' + MEMBRES.map(m=>'@'+m).join('|') + ')')).map((part,j)=>
+                                MEMBRES.some(m=>part==='@'+m)
+                                  ? <strong key={j} style={{color:G,fontWeight:600}}>{part}</strong>
+                                  : <span key={j} style={{color:'#333'}}>{part}</span>
+                              )}
+                            </div>
+                            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                              <div style={{fontSize:11,color:'#92400e',fontWeight:500}}>{n.auteur||auteur} — {n.date}</div>
+                              <div style={{display:'flex',gap:5}}>
+                                <button onClick={()=>{setEditNoteIdx(i);setEditNoteText(n.text)}}
+                                  style={{padding:'2px 8px',background:'none',border:'1px solid #fcd34d',borderRadius:5,fontSize:11,cursor:'pointer',color:'#92400e'}}>Modifier</button>
+                                <button onClick={()=>{const nn=notes.filter((_,j)=>j!==i);setNotes(nn);saveNotes(nn)}}
+                                  style={{padding:'2px 8px',background:'none',border:'1px solid #fca5a5',borderRadius:5,fontSize:11,cursor:'pointer',color:'#E24B4A'}}>×</button>
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>
