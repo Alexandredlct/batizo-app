@@ -316,9 +316,9 @@ export default function FicheClientPanel({ client, mode:initialMode='view', allC
               {/* KPIs */}
               <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10}}>
                 {[
-                  {label:'Devis',val:client?.nbDevis||0,color:'#111'},
-                  {label:'CA total HT',val:fmt(client?.caTotal||0),color:G},
-                  {label:'Marge moy.',val:(client?.margeAvg||0)+'%',color:(client?.margeAvg||0)>=60?G:(client?.margeAvg||0)>=40?AM:RD},
+                  {label:'Devis',val:historiqueDevis.filter(d=>d.clientId===client?.id).length,color:'#111'},
+                  {label:'CA total HT',val:fmt(historiqueDevis.filter(d=>d.clientId===client?.id&&d.statut==='Signé').reduce((s,d)=>s+d.montant,0)),color:G},
+                  {label:'Marge moy.',val:(()=>{const signed=historiqueDevis.filter(d=>d.clientId===client?.id&&d.statut==='Signé');const avg=signed.length?Math.round(signed.reduce((s,d)=>s+d.marge,0)/signed.length):0;return avg+'%'})(),color:(()=>{const signed=historiqueDevis.filter(d=>d.clientId===client?.id&&d.statut==='Signé');const avg=signed.length?Math.round(signed.reduce((s,d)=>s+d.marge,0)/signed.length):0;return avg>=60?G:avg>=40?AM:RD})()},
                 ].map(s=>(
                   <div key={s.label} style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:10,padding:'10px 14px',textAlign:'center' as const}}>
                     <div style={{fontSize:10,color:'#888',fontWeight:600,textTransform:'uppercase' as const,marginBottom:3}}>{s.label}</div>
