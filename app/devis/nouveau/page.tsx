@@ -187,8 +187,14 @@ export default function NouveauDevisPage(){
 
   const getSousTotal=(catIdx:number)=>{
     let total=0
+    const isCat=lignes[catIdx]?.type==='categorie'
     for(let i=catIdx+1;i<lignes.length;i++){
-      if(lignes[i].type==='categorie'||lignes[i].type==='sous-categorie') break
+      const t=lignes[i].type
+      // Arrêter à la prochaine catégorie du même niveau ou supérieur
+      if(t==='categorie') break
+      // Pour une sous-catégorie, arrêter à la prochaine sous-catégorie (pas à la catégorie)
+      if(!isCat&&t==='sous-categorie') break
+      // Additionner uniquement les lignes avec un montant
       total+=calcLigneHT(lignes[i])
     }
     return total
