@@ -904,7 +904,7 @@ export default function NouveauDevisPage(){
               {editMode&&(
                 <div style={{padding:'10px 24px',background:'#fafafa'}}>
                   <div style={{display:'flex',gap:8,flexWrap:'wrap' as const,alignItems:'center'}}>
-                    <span style={{fontSize:11,color:'#aaa',fontWeight:700,letterSpacing:'0.06em',marginRight:2}}>STRUCTURE</span>
+                    <span style={{fontSize:11,color:'#555',fontWeight:700,letterSpacing:'0.06em',marginRight:2}}>STRUCTURE</span>
                     {[
                       {label:'+ Catégorie',type:'categorie' as const,bg:'#fce7f3',color:'#9d174d',border:'#fbcfe8'},
                       {label:'+ Sous-catégorie',type:'sous-categorie' as const,bg:'#fdf2f8',color:'#be185d',border:'#f9a8d4'},
@@ -917,7 +917,7 @@ export default function NouveauDevisPage(){
                       </button>
                     ))}
                     <div style={{width:1,height:18,background:BD,margin:'0 4px'}}/>
-                    <span style={{fontSize:11,color:'#aaa',fontWeight:700,letterSpacing:'0.06em',marginRight:2}}>LIGNE</span>
+                    <span style={{fontSize:11,color:'#555',fontWeight:700,letterSpacing:'0.06em',marginRight:2}}>LIGNE</span>
                     {[
                       {label:'+ Matériau',type:'materiau' as const,bg:'#f3f4f6',color:'#374151',border:'#d1d5db'},
                       {label:"+ Main d'œuvre",type:'mo' as const,bg:'#eff6ff',color:'#2563eb',border:'#bfdbfe'},
