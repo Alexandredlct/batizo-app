@@ -343,25 +343,75 @@ export default function NouveauDevisPage(){
       return(
         <>
         {idx>0&&<tr><td colSpan={7} style={{height:6,background:'#fff',padding:0}}></td></tr>}
-        <tr key={l.id}>
-          <td style={{padding:'6px 6px',paddingLeft:10,width:60,background:isSub?col+'18':col+'30'}}>
+        <tr key={l.id} style={{background:selectedLigne===l.id&&editMode?'#fff3e0':isSub?col+'18':col+'30',cursor:editMode?'pointer':'default'}}
+          onClick={()=>editMode&&setSelectedLigne(selectedLigne===l.id?null:l.id)}>
+          <td style={{padding:'6px 6px',paddingLeft:10,width:60,background:'transparent'}}>
             <div style={{display:'flex',alignItems:'center',gap:4}}>
               {editMode&&<button onClick={()=>updateLigne(l.id,'collapsed',!l.collapsed)} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#888',padding:0}}>{l.collapsed?'▶':'▼'}</button>}
               <span style={{fontSize:12,fontWeight:400,color:'#555',fontFamily:'system-ui'}}>{getNumero(lignes,idx)}</span>
             </div>
           </td>
-          <td colSpan={3} style={{padding:'6px 8px',background:isSub?col+'18':col+'30'}}>
+          <td colSpan={3} style={{padding:'6px 8px',background:'transparent'}}>
             <input value={l.titre||''} onChange={e=>updateLigne(l.id,'titre',e.target.value)}
               readOnly={!editMode}
               style={{width:'100%',border:'none',background:'transparent',fontSize:isSub?13:14,fontWeight:700,color:'#111',outline:'none',fontFamily:'system-ui'}}
               placeholder={isSub?'Sous-catégorie':'Catégorie'}/>
           </td>
-          <td style={{padding:'6px 8px',background:isSub?col+'18':col+'30'}}></td>
-          <td style={{padding:'6px 8px',textAlign:'right' as const,background:isSub?col+'18':col+'30'}}>
+          <td style={{padding:'6px 8px',background:'transparent'}}></td>
+          <td style={{padding:'6px 8px',textAlign:'right' as const,background:'transparent'}}>
             <span style={{fontSize:13,fontWeight:700,color:'#111'}}>{fmt(st)} €</span>
 
           </td>
-          <td style={{background:isSub?col+'18':col+'30',width:36,padding:0}}></td>
+          <td style={{background:'transparent',width:40,padding:'4px 4px',position:'relative' as const}} onClick={e=>e.stopPropagation()}>
+            {selectedLigne===l.id&&editMode&&(
+              <div style={{display:'flex',alignItems:'center',gap:2}}>
+                <div style={{display:'flex',flexDirection:'column' as const,gap:0}}>
+                  <button onClick={e=>{e.stopPropagation();moveLigne(l.id,'up')}} style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:11,padding:'1px 3px',lineHeight:1}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#333'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>↑</button>
+                  <button onClick={e=>{e.stopPropagation();moveLigne(l.id,'down')}} style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:11,padding:'1px 3px',lineHeight:1}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#333'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>↓</button>
+                </div>
+                <div style={{position:'relative' as const}}>
+                  <button onClick={e=>{e.stopPropagation();setShowContextMenu(showContextMenu===l.id?null:l.id)}}
+                    style={{background:'#f3f4f6',border:'1px solid #e5e7eb',cursor:'pointer',fontSize:16,color:'#555',padding:'4px 8px',borderRadius:6,lineHeight:1,fontWeight:700}}>≡</button>
+                  {showContextMenu===l.id&&(
+                    <div style={{position:'fixed' as const,right:40,background:'#fff',border:'1px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.18)',zIndex:1000,minWidth:220}}>
+                      <div onClick={()=>{duplicateLigne(l.id);setShowContextMenu(null)}}
+                        style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333'}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>📋 Dupliquer la ligne</div>
+                      <div style={{position:'relative' as const,borderTop:'1px solid #f3f4f6'}}>
+                        <div onClick={()=>setShowInsertMenu(showInsertMenu===l.id?null:l.id)}
+                          style={{padding:'9px 14px',fontSize:13,cursor:'pointer',display:'flex',justifyContent:'space-between',color:'#333'}}
+                          onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                          onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                          ➕ Insérer une ligne au-dessus <span style={{fontSize:10}}>›</span>
+                        </div>
+                        {showInsertMenu===l.id&&(
+                          <div style={{position:'absolute' as const,right:'100%',top:0,background:'#fff',border:'1px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',minWidth:190,zIndex:1001}}>
+                            {[{label:'Nouvelle catégorie',type:'categorie' as const,icon:'📁'},{label:'Nouveau matériau',type:'materiau' as const,icon:'🧱'},{label:"Nouvelle main d'œuvre",type:'mo' as const,icon:'👷'},{label:'Nouvel ouvrage',type:'ouvrage' as const,icon:'🔨'},{label:'Nouvelle note',type:'note' as const,icon:'📝'}].map(item=>(
+                              <div key={item.type} onClick={()=>{const idx=lignes.findIndex(x=>x.id===l.id);const newL:Ligne={id:genId(),type:item.type,...(item.type==='categorie'?{titre:''}:{designation:'',description:'',unite:'u',qte:1,pu:0,tva:'20%'})};setLignes(p=>[...p.slice(0,idx),newL,...p.slice(idx)]);setShowContextMenu(null);setShowInsertMenu(null)}}
+                                style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333',display:'flex',gap:8}}
+                                onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                                onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                                <span>{item.icon}</span>{item.label}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div onClick={()=>{const idx=lignes.findIndex(x=>x.id===l.id);setLignes(p=>[...p.slice(0,idx),{id:genId(),type:'saut-page' as const},...p.slice(idx)]);setShowContextMenu(null)}}
+                        style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333',borderTop:'1px solid #f3f4f6'}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>📄 Insérer un saut de page</div>
+                      <div onClick={()=>{setShowDeleteConfirm(l.id);setShowContextMenu(null)}}
+                        style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:RD,borderTop:'1px solid #f3f4f6'}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#fef2f2'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>🗑 Retirer cette ligne</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </td>
         </tr>
         </>
       )
