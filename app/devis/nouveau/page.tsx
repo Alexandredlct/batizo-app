@@ -642,8 +642,8 @@ export default function NouveauDevisPage(){
               )}
 
               {/* TABLEAU */}
-              <div style={{overflowX:'auto',padding:'0 24px'}}>
-                <table style={{width:'100%',borderCollapse:'collapse',minWidth:700}}>
+              <div style={{overflowX:'auto'}}>
+                <table style={{width:'calc(100% - 48px)',borderCollapse:'collapse',minWidth:700,margin:'0 24px'}}>
                   <thead>
                     <tr style={{background:'#fff',borderBottom:'none'}}>
                       <th style={{padding:'10px 10px',fontSize:12,color:'#111',fontWeight:700,textAlign:'left' as const,width:60,borderRight:'1px solid #d0d0d0'}}>N°</th>
