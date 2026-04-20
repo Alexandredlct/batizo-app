@@ -467,12 +467,12 @@ export default function NouveauDevisPage(){
                   <button onClick={e=>{e.stopPropagation();moveLigne(l.id,'down')}} style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:11,padding:'1px 3px',lineHeight:1}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#333'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>↓</button>
                 </div>
                 <div style={{position:'relative' as const}}>
-                  <button onClick={()=>setShowContextMenu(showContextMenu===l.id?null:l.id)}
-                    style={{background:'none',border:'none',cursor:'pointer',fontSize:15,color:'#888',padding:'2px 4px',borderRadius:4,lineHeight:1}}
+                  <button onClick={e=>{e.stopPropagation();setShowContextMenu(showContextMenu===l.id?null:l.id)}}
+                    style={{background:'#f3f4f6',border:'1px solid #e5e7eb',cursor:'pointer',fontSize:16,color:'#555',padding:'4px 8px',borderRadius:6,lineHeight:1,fontWeight:700}}
                     onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#f3f4f6'}
                     onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background='none'}>≡</button>
                   {showContextMenu===l.id&&(
-                    <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:'1px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',zIndex:300,minWidth:220,overflow:'hidden'}}>
+                    <div style={{position:'fixed' as const,right:40,background:'#fff',border:'1px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.18)',zIndex:1000,minWidth:220,overflow:'visible'}}>
                         {/* 1. Dupliquer */}
                       <div onClick={()=>{duplicateLigne(l.id);setShowContextMenu(null)}}
                         style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333'}}
