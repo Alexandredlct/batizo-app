@@ -268,9 +268,7 @@ export default function NouveauDevisPage(){
               placeholder="Note ou commentaire..."
               defaultFont={params.police||'system-ui'}
               style={{padding:'4px 8px',fontSize:13,color:'#555',fontStyle:'italic',flex:1}}/>
-            {editMode&&<button onClick={()=>deleteLigne(l.id)} style={{background:'none',border:'none',cursor:'pointer',color:'#ddd',fontSize:16,marginTop:4}}
-              onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=RD}
-              onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ddd'}>×</button>}
+
           </div>
         </td>
       </tr>
@@ -299,11 +297,7 @@ export default function NouveauDevisPage(){
           <td style={{padding:'6px 8px',background:isSub?col+'18':col+'30'}}></td>
           <td style={{padding:'6px 8px',textAlign:'right' as const,background:isSub?col+'18':col+'30'}}>
             <span style={{fontSize:13,fontWeight:700,color:'#111'}}>{fmt(st)} €</span>
-            {editMode&&<div className="row-actions" style={{display:'flex',justifyContent:'flex-end',gap:4,marginTop:2,opacity:0,transition:'opacity 0.15s'}}>
-              <button onClick={()=>moveLigne(l.id,'up')} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:11}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>↑</button>
-              <button onClick={()=>moveLigne(l.id,'down')} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:11}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>↓</button>
-              <button onClick={()=>deleteLigne(l.id)} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:16}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=RD} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>×</button>
-            </div>}
+
           </td>
           <td style={{background:isSub?col+'18':col+'30',width:36,padding:0}}></td>
         </tr>
@@ -493,7 +487,7 @@ export default function NouveauDevisPage(){
   return(
     <div style={{display:'flex',height:'100vh',fontFamily:params.police||'system-ui,sans-serif',background:'#f0f2f5',overflow:'hidden'}}>
       <Sidebar activePage="devis"/>
-      <style>{'tr:hover .row-actions { opacity: 1 !important; }'}</style>
+      
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
         <div style={{height:60,background:'#fff',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 20px',flexShrink:0,gap:12}}>
           <div style={{display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
