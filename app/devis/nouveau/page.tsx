@@ -344,7 +344,17 @@ export default function NouveauDevisPage(){
       const col=params.couleurPrincipale||G
       return(
         <>
-        {idx>0&&<tr><td colSpan={7} style={{height:isSub?24:32,background:'#fff',padding:0}}></td></tr>}
+        {idx>0&&(
+          <tr style={{background:'#fff'}}>
+            <td style={{height:isSub?12:32,width:60,borderRight:'1px solid #d0d0d0',padding:0}}></td>
+            <td style={{borderRight:'1px solid #d0d0d0',padding:0}}></td>
+            <td style={{width:90,borderRight:'1px solid #d0d0d0',padding:0}}></td>
+            <td style={{width:85,borderRight:'1px solid #d0d0d0',padding:0}}></td>
+            <td style={{width:65,borderRight:'1px solid #d0d0d0',padding:0}}></td>
+            <td style={{width:95,padding:0}}></td>
+            <td style={{width:40,padding:0}}></td>
+          </tr>
+        )}
         <tr key={l.id} style={{background:selectedLigne===l.id&&editMode?'#fff3e0':isSub?col+'18':col+'30',cursor:editMode?'pointer':'default'}}
           onClick={()=>editMode&&setSelectedLigne(selectedLigne===l.id?null:l.id)}>
           <td style={{padding:'6px 6px',paddingLeft:10,width:60,background:'transparent'}}>
@@ -432,7 +442,17 @@ export default function NouveauDevisPage(){
 
     return(
       <>
-        {idx>0&&<tr><td colSpan={7} style={{height:16,background:'#fff',padding:0}}></td></tr>}
+        {idx>0&&(
+          <tr style={{background:'#fff'}}>
+            <td style={{height:16,width:60,borderRight:'1px solid #d0d0d0',padding:0}}></td>
+            <td style={{borderRight:'1px solid #d0d0d0',padding:0}}></td>
+            <td style={{width:90,borderRight:'1px solid #d0d0d0',padding:0}}></td>
+            <td style={{width:85,borderRight:'1px solid #d0d0d0',padding:0}}></td>
+            <td style={{width:65,borderRight:'1px solid #d0d0d0',padding:0}}></td>
+            <td style={{width:95,padding:0}}></td>
+            <td style={{width:40,padding:0}}></td>
+          </tr>
+        )}
         <tr key={l.id}
           style={{background:selectedLigne===l.id&&editMode?'#fff3e0':'#fff',transition:'background 0.1s'}}
           onMouseEnter={()=>editMode&&setHoverLigne(l.id)}
