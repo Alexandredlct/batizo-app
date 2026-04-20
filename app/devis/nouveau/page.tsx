@@ -344,7 +344,7 @@ export default function NouveauDevisPage(){
       const col=params.couleurPrincipale||G
       return(
         <>
-        {idx>0&&<tr><td colSpan={7} style={{height:6,background:'#fff',padding:0}}></td></tr>}
+        {idx>0&&<tr><td colSpan={7} style={{height:isSub?16:24,background:'#fff',padding:0}}></td></tr>}
         <tr key={l.id} style={{background:selectedLigne===l.id&&editMode?'#fff3e0':isSub?col+'18':col+'30',cursor:editMode?'pointer':'default'}}
           onClick={()=>editMode&&setSelectedLigne(selectedLigne===l.id?null:l.id)}>
           <td style={{padding:'6px 6px',paddingLeft:10,width:60,background:'transparent'}}>
@@ -432,12 +432,13 @@ export default function NouveauDevisPage(){
 
     return(
       <>
+        {idx>0&&lignes[idx-1]&&!['categorie','sous-categorie'].includes(lignes[idx-1].type)&&<tr><td colSpan={7} style={{height:6,background:'#fff',padding:0}}></td></tr>}
         <tr key={l.id}
           style={{background:selectedLigne===l.id&&editMode?'#fff3e0':'#fff',transition:'background 0.1s'}}
           onMouseEnter={()=>editMode&&setHoverLigne(l.id)}
           onMouseLeave={()=>setHoverLigne(null)}>
-          <td style={{padding:'4px 6px',width:60,textAlign:'left' as const,paddingLeft:8,borderRight:'1px solid #d0d0d0'}}><span style={{fontSize:11,color:'#333',fontWeight:400,fontFamily:'system-ui'}}>{getNumero(lignes,idx)}</span></td>
-          <td style={{padding:'6px 8px',width:'45%',borderRight:'1px solid #d0d0d0'}}>
+          <td style={{padding:'4px 6px',width:60,textAlign:'left' as const,paddingLeft:8,borderRight:'1px solid #d0d0d0',verticalAlign:'top' as const}}><span style={{fontSize:11,color:'#333',fontWeight:400,fontFamily:'system-ui'}}>{getNumero(lignes,idx)}</span></td>
+          <td style={{padding:'6px 8px',width:'45%',borderRight:'1px solid #d0d0d0',verticalAlign:'top' as const}}>
             <div style={{display:'flex',alignItems:'center',gap:6}}>
               
               <div style={{flex:1}}>
@@ -466,7 +467,7 @@ export default function NouveauDevisPage(){
             </div>
           </td>
           {/* QTÉ + UNITÉ */}
-          <td style={{padding:'4px 6px',width:90,borderRight:'1px solid #d0d0d0',background:editMode&&hoverLigne===l.id?'#fffbeb':selectedLigne===l.id&&editMode?'#fff3e0':'transparent',cursor:editMode?'pointer':'default'}}
+          <td style={{padding:'4px 6px',width:90,borderRight:'1px solid #d0d0d0',background:editMode&&hoverLigne===l.id?'#fffbeb':selectedLigne===l.id&&editMode?'#fff3e0':'transparent',cursor:editMode?'pointer':'default',verticalAlign:'top' as const}}
             onClick={e=>{e.stopPropagation();editMode&&setEditingCell({id:l.id,field:'qte'})}}>
             {editMode&&isEditing(l.id,'qte')?(
               <div style={{display:'flex',alignItems:'center',gap:3}}>
@@ -518,7 +519,7 @@ export default function NouveauDevisPage(){
               </div>
             )}
           </td>
-          <td style={{padding:'4px 8px',width:95,textAlign:'right' as const}}>
+          <td style={{padding:'4px 8px',width:95,textAlign:'right' as const,verticalAlign:'top' as const}}>
             <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{fmt(ht)} €</div>
             
           </td>
