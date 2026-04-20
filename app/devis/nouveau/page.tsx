@@ -103,6 +103,7 @@ export default function NouveauDevisPage(){
   const[ouvrageExpanded,setOuvrageExpanded]=useState<Record<string,boolean>>({})
   const[editingCell,setEditingCell]=useState<{id:string,field:string}|null>(null)
   const[selectedLigne,setSelectedLigne]=useState<string|null>(null)
+  const[hoverLigne,setHoverLigne]=useState<string|null>(null)
   const[showContextMenu,setShowContextMenu]=useState<string|null>(null)
   const[showEditOuvrage,setShowEditOuvrage]=useState<Ligne|null>(null)
   const[showInsertMenu,setShowInsertMenu]=useState<string|null>(null)
@@ -308,17 +309,16 @@ export default function NouveauDevisPage(){
     return(
       <>
         <tr key={l.id}
-          style={{background:selectedLigne===l.id&&editMode?'#fff3e0':'#fff',cursor:editMode?'pointer':'default',transition:'background 0.1s'}}
-          onClick={()=>editMode&&setSelectedLigne(selectedLigne===l.id?null:l.id)}
-          onMouseEnter={e=>{if(selectedLigne!==l.id)(e.currentTarget as HTMLTableRowElement).style.background=editMode?'#fffdf5':'#f9fafb'}}
-          onMouseLeave={e=>{if(selectedLigne!==l.id)(e.currentTarget as HTMLTableRowElement).style.background=selectedLigne===l.id&&editMode?'#fffbeb':'#fff'}}>
+          style={{background:selectedLigne===l.id&&editMode?'#fff3e0':'#fff',transition:'background 0.1s'}}
+          onMouseEnter={()=>editMode&&setHoverLigne(l.id)}
+          onMouseLeave={()=>setHoverLigne(null)}>
           <td style={{padding:'4px 6px',width:60,textAlign:'left' as const,paddingLeft:8,borderRight:'1px solid #d0d0d0'}}><span style={{fontSize:11,color:'#333',fontWeight:400,fontFamily:'system-ui'}}>{getNumero(lignes,idx)}</span></td>
           <td style={{padding:'6px 8px',width:'45%',borderRight:'1px solid #d0d0d0'}}>
             <div style={{display:'flex',alignItems:'center',gap:6}}>
               
               <div style={{flex:1}}>
                 <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:2}}>
-                  {editMode&&<span style={{fontSize:8,fontWeight:700,padding:'1px 4px',borderRadius:4,background:l.type==='mo'?'#eff6ff':isOuvrage?'#f0fdf4':'#f3f4f6',color:l.type==='mo'?'#2563eb':isOuvrage?G:'#888',flexShrink:0,opacity:0.7}}>{l.type==='mo'?'MO':isOuvrage?'OUV':'MAT'}</span>}
+
                   <RichTextEditor value={l.designation||''} onChange={v=>updateLigne(l.id,'designation',v)} readOnly={!editMode}
                     placeholder="Désignation..." singleLine
                     defaultFont={params.police||'system-ui'}
@@ -342,7 +342,7 @@ export default function NouveauDevisPage(){
             </div>
           </td>
           {/* QTÉ + UNITÉ */}
-          <td style={{padding:'4px 6px',width:90,borderRight:'1px solid #d0d0d0',background:editMode?'#fffbeb':'transparent',cursor:editMode?'pointer':'default'}}
+          <td style={{padding:'4px 6px',width:90,borderRight:'1px solid #d0d0d0',background:editMode&&hoverLigne===l.id?'#fffbeb':selectedLigne===l.id&&editMode?'#fff3e0':'transparent',cursor:editMode?'pointer':'default'}}
             onClick={e=>{e.stopPropagation();editMode&&setEditingCell({id:l.id,field:'qte'})}}>
             {editMode&&isEditing(l.id,'qte')?(
               <div style={{display:'flex',alignItems:'center',gap:3}}>
