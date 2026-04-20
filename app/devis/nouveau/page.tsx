@@ -63,6 +63,7 @@ export default function NouveauDevisPage(){
         if(parsed.validiteDevis) setValidite(parsed.validiteDevis+' jours')
         if(parsed.condPaiement) setCondPaiement(parsed.condPaiement)
         if(parsed.noteDevis) setNotes(parsed.noteDevis)
+        if(parsed.introDevis) setIntroTexte(parsed.introDevis)
       }
       const logo=localStorage.getItem('batizo_logo')
       if(logo) setLogoPreview(logo)
@@ -85,6 +86,7 @@ export default function NouveauDevisPage(){
   const[primeCEELabel,setPrimeCEELabel]=useState('')
   const[condPaiement,setCondPaiement]=useState('Paiement par chèque ou virement bancaire')
   const[notes,setNotes]=useState('')
+  const[introTexte,setIntroTexte]=useState('')
   const[statut,setStatut]=useState<'brouillon'|'en_attente'|'finalise'|'signe'|'refuse'>('brouillon')
   const[showBiblio,setShowBiblio]=useState<'materiau'|'mo'|'ouvrage'|null>(null)
   const[biblioSearch,setBiblioSearch]=useState('')
@@ -473,7 +475,7 @@ export default function NouveauDevisPage(){
 
         <div style={{flex:1,overflowY:'auto',padding:'20px 24px'}}>
           <div style={{maxWidth:1100,margin:'0 auto'}}>
-            <div style={{background:'#fff',borderRadius:12,border:`1px solid ${BD}`,boxShadow:'0 2px 8px rgba(0,0,0,0.06)',overflow:'hidden'}}>
+            <div style={{background:'#fff',borderRadius:0,border:'none',boxShadow:'0 2px 12px rgba(0,0,0,0.08)',overflow:'hidden'}}>
 
               {/* EN-TÊTE */}
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',borderBottom:`1px solid ${BD}`}}>
@@ -621,22 +623,33 @@ export default function NouveauDevisPage(){
               </div>
 
               {/* TITRE */}
-              <div style={{padding:'12px 24px',borderBottom:`1px solid ${BD}`,textAlign:'center' as const}}>
+              <div style={{padding:'12px 24px',textAlign:'center' as const}}>
                 <input value={titre} onChange={e=>setTitre(e.target.value)} disabled={!editMode} placeholder="Titre du devis (optionnel)"
                   style={{width:'100%',border:'none',background:'transparent',fontSize:15,fontStyle:'italic',color:'#555',textAlign:'center' as const,outline:'none',fontFamily:'Georgia,serif'}}/>
               </div>
+
+              {/* INTRO */}
+              {(introTexte||editMode)&&(
+                <div style={{padding:'8px 24px'}}>
+                  <textarea value={introTexte} onChange={e=>setIntroTexte(e.target.value)}
+                    readOnly={!editMode}
+                    placeholder={editMode?"Texte d'introduction (optionnel)...":''}
+                    rows={2}
+                    style={{width:'100%',border:'none',background:'transparent',fontSize:13,color:'#555',fontStyle:'italic',resize:'none' as const,outline:'none',fontFamily:'system-ui',lineHeight:1.6,boxSizing:'border-box' as const}}/>
+                </div>
+              )}
 
               {/* TABLEAU */}
               <div style={{overflowX:'auto'}}>
                 <table style={{width:'100%',borderCollapse:'collapse',minWidth:700}}>
                   <thead>
                     <tr style={{background:'#fff',borderBottom:'none'}}>
-                      <th style={{padding:'10px 10px',fontSize:11,color:'#888',fontWeight:600,textAlign:'left' as const,width:60,borderRight:'1px solid #e5e7eb'}}>N°</th>
-                      <th style={{padding:'10px 8px',fontSize:11,color:'#888',fontWeight:600,textAlign:'left' as const,borderRight:'1px solid #e5e7eb'}}>Désignation</th>
-                      <th style={{padding:'10px 4px',fontSize:11,color:'#888',fontWeight:600,textAlign:'right' as const,width:70,borderRight:'1px solid #e5e7eb'}}>Qté</th>
-                      <th style={{padding:'10px 4px',fontSize:11,color:'#888',fontWeight:600,textAlign:'right' as const,width:90,borderRight:'1px solid #e5e7eb'}}>PU HT</th>
-                      <th style={{padding:'10px 4px',fontSize:11,color:'#888',fontWeight:600,textAlign:'center' as const,width:70,borderRight:'1px solid #e5e7eb'}}>TVA</th>
-                      <th style={{padding:'10px 8px',fontSize:11,color:'#888',fontWeight:600,textAlign:'right' as const,width:110}}>Total HT</th>
+                      <th style={{padding:'10px 10px',fontSize:12,color:'#111',fontWeight:700,textAlign:'left' as const,width:60,borderRight:'1px solid #e5e7eb'}}>N°</th>
+                      <th style={{padding:'10px 8px',fontSize:12,color:'#111',fontWeight:700,textAlign:'left' as const,borderRight:'1px solid #e5e7eb'}}>Désignation</th>
+                      <th style={{padding:'10px 4px',fontSize:12,color:'#111',fontWeight:700,textAlign:'right' as const,width:70,borderRight:'1px solid #e5e7eb'}}>Qté</th>
+                      <th style={{padding:'10px 4px',fontSize:12,color:'#111',fontWeight:700,textAlign:'right' as const,width:90,borderRight:'1px solid #e5e7eb'}}>PU HT</th>
+                      <th style={{padding:'10px 4px',fontSize:12,color:'#111',fontWeight:700,textAlign:'center' as const,width:70,borderRight:'1px solid #e5e7eb'}}>TVA</th>
+                      <th style={{padding:'10px 8px',fontSize:12,color:'#111',fontWeight:700,textAlign:'right' as const,width:110}}>Total HT</th>
                       <th style={{width:50}}></th>
                     </tr>
                   </thead>
