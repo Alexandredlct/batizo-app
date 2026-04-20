@@ -277,21 +277,21 @@ export default function NouveauDevisPage(){
       return(
         <>
         {idx>0&&<tr><td colSpan={7} style={{height:6,background:'#fff',padding:0}}></td></tr>}
-        <tr key={l.id} style={{background:isSub?col+'18':col+'30'}}>
-          <td style={{padding:'8px 6px',paddingLeft:10,width:60}}>
+        <tr key={l.id}>
+          <td style={{padding:'8px 6px',paddingLeft:10,width:60,background:isSub?col+'18':col+'30'}}>
             <div style={{display:'flex',alignItems:'center',gap:4}}>
               {editMode&&<button onClick={()=>updateLigne(l.id,'collapsed',!l.collapsed)} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#888',padding:0}}>{l.collapsed?'▶':'▼'}</button>}
               <span style={{fontSize:12,fontWeight:400,color:'#555',fontFamily:'system-ui'}}>{getNumero(lignes,idx)}</span>
             </div>
           </td>
-          <td colSpan={3} style={{padding:'8px 8px'}}>
+          <td colSpan={3} style={{padding:'8px 8px',background:isSub?col+'18':col+'30'}}>
             <input value={l.titre||''} onChange={e=>updateLigne(l.id,'titre',e.target.value)}
               readOnly={!editMode}
               style={{width:'100%',border:'none',background:'transparent',fontSize:isSub?13:14,fontWeight:700,color:'#111',outline:'none',fontFamily:'system-ui'}}
               placeholder={isSub?'Sous-catégorie':'Catégorie'}/>
           </td>
-          <td style={{padding:'8px 12px'}}></td>
-            <td style={{padding:'8px 12px',textAlign:'right' as const}}>
+          <td style={{padding:'8px 12px',background:isSub?col+'18':col+'30'}}></td>
+          <td style={{padding:'8px 12px',textAlign:'right' as const,background:isSub?col+'18':col+'30'}}>
             <span style={{fontSize:13,fontWeight:700,color:'#111'}}>{fmt(st)} €</span>
             {editMode&&<div className="row-actions" style={{display:'flex',justifyContent:'flex-end',gap:4,marginTop:2,opacity:0,transition:'opacity 0.15s'}}>
               <button onClick={()=>moveLigne(l.id,'up')} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:11}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>↑</button>
@@ -642,8 +642,8 @@ export default function NouveauDevisPage(){
               )}
 
               {/* TABLEAU */}
-              <div style={{overflowX:'auto'}}>
-                <table style={{width:'calc(100% - 48px)',borderCollapse:'collapse',minWidth:700,margin:'0 24px'}}>
+              <div style={{overflowX:'auto',padding:'0 24px'}}>
+                <table style={{width:'100%',borderCollapse:'collapse',minWidth:700}}>
                   <thead>
                     <tr style={{background:'#fff',borderBottom:'none'}}>
                       <th style={{padding:'10px 10px',fontSize:12,color:'#111',fontWeight:700,textAlign:'left' as const,width:60,borderRight:'1px solid #d0d0d0'}}>N°</th>
