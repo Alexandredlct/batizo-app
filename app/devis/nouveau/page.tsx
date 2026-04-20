@@ -189,12 +189,73 @@ export default function NouveauDevisPage(){
 
   const updateLigne=(id:string,field:string,val:any)=>{if(!editMode)return;setLignes(p=>p.map(l=>l.id===id?{...l,[field]:val}:l))}
   const deleteLigne=(id:string)=>{if(!editMode)return;setLignes(p=>p.filter(l=>l.id!==id))}
+  const getBloc=(arr:Ligne[],idx:number):number[]=>{
+    // Retourne les indices du bloc (ligne + ses enfants pour cat/sous-cat)
+    const l=arr[idx]
+    const indices=[idx]
+    if(l.type==='categorie'||l.type==='sous-categorie'){
+      const isCat=l.type==='categorie'
+      for(let i=idx+1;i<arr.length;i++){
+        if(arr[i].type==='categorie') break
+        if(isCat&&arr[i].type==='sous-categorie'){indices.push(i);continue}
+        if(!isCat&&arr[i].type==='sous-categorie') break
+        indices.push(i)
+      }
+    }
+    return indices
+  }
+
   const moveLigne=(id:string,dir:'up'|'down')=>{
     setLignes(p=>{
       const idx=p.findIndex(l=>l.id===id)
-      if(dir==='up'&&idx===0||dir==='down'&&idx===p.length-1) return p
-      const arr=[...p];const swap=dir==='up'?idx-1:idx+1
-      ;[arr[idx],arr[swap]]=[arr[swap],arr[idx]];return arr
+      if(idx===-1) return p
+      const arr=[...p]
+      const bloc=getBloc(arr,idx)
+      const blocSize=bloc.length
+      
+      if(dir==='up'){
+        if(idx===0) return p
+        // Trouver le début du bloc précédent
+        const prevIdx=idx-1
+        const prevBlocStart=getBloc(arr,prevIdx)[0]
+        // Déplacer le bloc avant le bloc précédent
+        const extracted=arr.splice(idx,blocSize)
+        arr.splice(prevBlocStart,0,...extracted)
+      } else {
+        if(idx+blocSize>=arr.length) return p
+        // Trouver la fin du bloc suivant
+        const nextIdx=idx+blocSize
+        const nextBloc=getBloc(arr,nextIdx)
+        const nextBlocEnd=nextIdx+nextBloc.length
+        // Déplacer le bloc après le bloc suivant
+        const extracted=arr.splice(idx,blocSize)
+        arr.splice(nextBlocEnd-blocSize,0,...extracted)
+      }
+      return arr
+    })
+  }
+
+  const duplicateLigne=(id:string)=>{
+    setLignes(p=>{
+      const idx=p.findIndex(l=>l.id===id)
+      if(idx===-1) return p
+      const l=p[idx]
+      // Dupliquer uniquement la ligne, sans ses enfants
+      const copy:Ligne={...l,id:genId()}
+      const arr=[...p]
+      arr.splice(idx+1,0,copy)
+      return arr
+    })
+  }
+
+  const deleteBlocLigne=(id:string)=>{
+    setLignes(p=>{
+      const idx=p.findIndex(l=>l.id===id)
+      if(idx===-1) return p
+      const arr=[...p]
+      const bloc=getBloc(arr,idx)
+      arr.splice(idx,bloc.length)
+      return arr
     })
   }
 
@@ -412,42 +473,62 @@ export default function NouveauDevisPage(){
                     onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background='none'}>≡</button>
                   {showContextMenu===l.id&&(
                     <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:'1px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',zIndex:300,minWidth:220,overflow:'hidden'}}>
-                      <div style={{position:'relative' as const}}>
+                        {/* 1. Dupliquer */}
+                      <div onClick={()=>{duplicateLigne(l.id);setShowContextMenu(null)}}
+                        style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333'}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                        📋 Dupliquer la ligne
+                      </div>
+                      {/* 2. Insérer au-dessus */}
+                      <div style={{position:'relative' as const,borderTop:'1px solid #f3f4f6'}}>
                         <div onClick={()=>setShowInsertMenu(showInsertMenu===l.id?null:l.id)}
                           style={{padding:'9px 14px',fontSize:13,cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center',color:'#333'}}
                           onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
                           onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-                          Insérer une ligne au-dessus <span>›</span>
+                          ➕ Insérer une ligne au-dessus <span style={{fontSize:10}}>›</span>
                         </div>
                         {showInsertMenu===l.id&&(
-                          <div style={{position:'absolute' as const,right:'100%',top:0,background:'#fff',border:'1px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',minWidth:180,overflow:'hidden'}}>
-                            {[{label:'Catégorie',type:'categorie' as const},{label:'Matériau',type:'materiau' as const},{label:"Main d'œuvre",type:'mo' as const},{label:'Ouvrage',type:'ouvrage' as const},{label:'Note',type:'note' as const}].map(item=>(
+                          <div style={{position:'absolute' as const,right:'100%',top:0,background:'#fff',border:'1px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',minWidth:190,overflow:'hidden'}}>
+                            {[
+                              {label:'Nouvelle catégorie',type:'categorie' as const,icon:'📁'},
+                              {label:'Nouveau matériau',type:'materiau' as const,icon:'🧱'},
+                              {label:"Nouvelle main d'œuvre",type:'mo' as const,icon:'👷'},
+                              {label:'Nouvel ouvrage',type:'ouvrage' as const,icon:'🔨'},
+                              {label:'Nouvelle note',type:'note' as const,icon:'📝'},
+                            ].map(item=>(
                               <div key={item.type} onClick={()=>{
                                 const idx=lignes.findIndex(x=>x.id===l.id)
                                 const newL:Ligne={id:genId(),type:item.type,...(item.type==='categorie'?{titre:''}:{designation:'',description:'',unite:'u',qte:1,pu:0,tva:'20%'})}
                                 setLignes(p=>[...p.slice(0,idx),newL,...p.slice(idx)])
                                 setShowContextMenu(null);setShowInsertMenu(null)
                               }}
-                                style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333'}}
+                                style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333',display:'flex',gap:8,alignItems:'center'}}
                                 onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
                                 onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-                                {item.label}
+                                <span>{item.icon}</span>{item.label}
                               </div>
                             ))}
                           </div>
                         )}
                       </div>
-                      <div onClick={()=>{const idx=lignes.findIndex(x=>x.id===l.id);setLignes(p=>[...p.slice(0,idx),{id:genId(),type:'saut-page' as const},...p.slice(idx)]);setShowContextMenu(null)}}
+                      {/* 3. Saut de page */}
+                      <div onClick={()=>{
+                        const idx=lignes.findIndex(x=>x.id===l.id)
+                        setLignes(p=>[...p.slice(0,idx),{id:genId(),type:'saut-page' as const},...p.slice(idx)])
+                        setShowContextMenu(null)
+                      }}
                         style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333',borderTop:'1px solid #f3f4f6'}}
                         onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
                         onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-                        Insérer un saut de page
+                        📄 Insérer un saut de page au-dessus
                       </div>
+                      {/* 4. Supprimer */}
                       <div onClick={()=>{setShowDeleteConfirm(l.id);setShowContextMenu(null)}}
                         style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:RD,borderTop:'1px solid #f3f4f6'}}
                         onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#fef2f2'}
                         onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-                        Retirer cette ligne
+                        🗑 Retirer cette ligne
                       </div>
                     </div>
                   )}
@@ -1050,7 +1131,7 @@ export default function NouveauDevisPage(){
             <div style={{fontSize:13,color:'#555',marginBottom:20}}>Cette action est irréversible dans le devis.</div>
             <div style={{display:'flex',gap:10}}>
               <button onClick={()=>setShowDeleteConfirm(null)} style={{flex:1,padding:'10px',border:'1px solid #e5e7eb',borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer'}}>Annuler</button>
-              <button onClick={()=>{deleteLigne(showDeleteConfirm!);setShowDeleteConfirm(null);setSelectedLigne(null)}}
+              <button onClick={()=>{deleteBlocLigne(showDeleteConfirm!);setShowDeleteConfirm(null);setSelectedLigne(null)}}
                 style={{flex:1,padding:'10px',background:RD,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>Supprimer</button>
             </div>
           </div>
