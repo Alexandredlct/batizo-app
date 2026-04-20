@@ -299,6 +299,7 @@ export default function NouveauDevisPage(){
               <button onClick={()=>deleteLigne(l.id)} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:16}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=RD} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>×</button>
             </div>}
           </td>
+          <td style={{background:isSub?col+'18':col+'30',width:36,padding:0}}></td>
         </tr>
         </>
       )
