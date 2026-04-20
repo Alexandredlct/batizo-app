@@ -255,13 +255,13 @@ export default function NouveauDevisPage(){
       <tr key={l.id} style={{background:'#fff'}}>
         <td colSpan={8} style={{padding:'6px 8px'}}>
           <div style={{display:'flex',alignItems:'flex-start',gap:8}}>
-            <span style={{fontSize:11,color:AM,fontWeight:700,flexShrink:0,marginTop:7}}>📝</span>
             <textarea value={l.texte||''} onChange={e=>updateLigne(l.id,'texte',e.target.value)}
+              readOnly={!editMode}
               placeholder="Note ou commentaire..."
               style={{flex:1,padding:'6px 8px',border:'none',background:'transparent',fontSize:13,color:'#555',fontStyle:'italic',resize:'none' as const,outline:'none',minHeight:38,fontFamily:'system-ui'}}/>
-            <button onClick={()=>deleteLigne(l.id)} style={{background:'none',border:'none',cursor:'pointer',color:'#ddd',fontSize:16,marginTop:4}}
+            {editMode&&<button onClick={()=>deleteLigne(l.id)} style={{background:'none',border:'none',cursor:'pointer',color:'#ddd',fontSize:16,marginTop:4}}
               onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=RD}
-              onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ddd'}>×</button>
+              onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ddd'}>×</button>}
           </div>
         </td>
       </tr>
@@ -275,14 +275,17 @@ export default function NouveauDevisPage(){
         <>
         {idx>0&&<tr><td colSpan={7} style={{height:6,background:'#fff',padding:0}}></td></tr>}
         <tr key={l.id} style={{background:isSub?col+'18':col+'30'}}>
-          <td colSpan={4} style={{padding:'8px 12px'}}>
-            <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <td style={{padding:'8px 6px',paddingLeft:10,width:60,borderRight:'1px solid #f3f4f6'}}>
+            <div style={{display:'flex',alignItems:'center',gap:4}}>
               {editMode&&<button onClick={()=>updateLigne(l.id,'collapsed',!l.collapsed)} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#888',padding:0}}>{l.collapsed?'▶':'▼'}</button>}
-              <span style={{fontSize:isSub?12:13,fontWeight:400,color:'#555',fontFamily:'system-ui',flexShrink:0,minWidth:isSub?32:20}}>{getNumero(lignes,idx)}</span>
-              <input value={l.titre||''} onChange={e=>updateLigne(l.id,'titre',e.target.value)}
-                style={{flex:1,border:'none',background:'transparent',fontSize:isSub?13:14,fontWeight:700,color:'#111',outline:'none',fontFamily:'system-ui'}}
-                placeholder={isSub?'Sous-catégorie':'Catégorie'}/>
+              <span style={{fontSize:12,fontWeight:400,color:'#555',fontFamily:'system-ui'}}>{getNumero(lignes,idx)}</span>
             </div>
+          </td>
+          <td colSpan={3} style={{padding:'8px 8px',borderRight:'1px solid #f3f4f6'}}>
+            <input value={l.titre||''} onChange={e=>updateLigne(l.id,'titre',e.target.value)}
+              readOnly={!editMode}
+              style={{width:'100%',border:'none',background:'transparent',fontSize:isSub?13:14,fontWeight:700,color:'#111',outline:'none',fontFamily:'system-ui'}}
+              placeholder={isSub?'Sous-catégorie':'Catégorie'}/>
           </td>
           <td style={{padding:'8px 12px'}}></td>
             <td style={{padding:'8px 12px',textAlign:'right' as const}}>
