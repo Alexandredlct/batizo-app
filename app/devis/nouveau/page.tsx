@@ -90,6 +90,7 @@ export default function NouveauDevisPage(){
   const[introTexte,setIntroTexte]=useState('')
   const[statut,setStatut]=useState<'brouillon'|'en_attente'|'finalise'|'signe'|'refuse'>('brouillon')
   const[showBiblio,setShowBiblio]=useState<'materiau'|'mo'|'ouvrage'|null>(null)
+  const[insertAtIdx,setInsertAtIdx]=useState<number|null>(null)
   const[biblioSearch,setBiblioSearch]=useState('')
   const[biblioOuvrages,setBiblioOuvrages]=useState<any[]>([])
   const[biblioMats,setBiblioMats]=useState<any[]>([])
@@ -149,16 +150,17 @@ export default function NouveauDevisPage(){
   const acompteMt=acomptePct?(totalTTC*acompte/100):acompte
   const netAPayer=totalTTC-remiseMt-primeCEE
 
-  const addLigne=(type:LigneType,data?:any)=>{
+  const addLigne=(type:LigneType,data?:any,atIdx?:number)=>{
     const base:Ligne={id:genId(),type}
+    const insertAt=(lines:Ligne[])=>atIdx!=null?[...lines.slice(0,atIdx),...[base],...lines.slice(atIdx)]:lines
     if(type==='materiau'){
       setEditMode(true)
       const mat:Ligne={...base,designation:data?.nom||'',description:data?.description||'',unite:data?.unite||'u',qte:1,pu:data?.prixFacture||data?.pu||0,tva:data?.tva||'20%'}
-      setLignes(p=>[...p,mat])
+      setLignes(p=>atIdx!=null?[...p.slice(0,atIdx),mat,...p.slice(atIdx)]:[...p,mat])
     } else if(type==='mo'){
       setEditMode(true)
       const mo:Ligne={...base,designation:data?.nom||'',description:data?.description||'',unite:data?.unite||'h',qte:1,pu:data?.prixFacture||data?.pu||0,tva:data?.tva||'20%'}
-      setLignes(p=>[...p,mo])
+      setLignes(p=>atIdx!=null?[...p.slice(0,atIdx),mo,...p.slice(atIdx)]:[...p,mo])
     } else if(type==='ouvrage'&&data?.lignes?.length>0){
       // Aplatir : ouvrage + ses composants comme lignes individuelles
       const ouvrLigne:Ligne={...base,type:'ouvrage',designation:data.nom,description:data.description||'',unite:data.unite||'u',qte:1,pu:data.prixFacture||0,tva:data.tva||'20%',lignesInternes:[],prixManuel:true,prixForce:data.prixFacture||0}
@@ -172,10 +174,10 @@ export default function NouveauDevisPage(){
         pu:li.pu||0,
         tva:li.tva||'20%',
       }))
-      setLignes(p=>[...p,ouvrLigne,...composants])
+      setLignes(p=>atIdx!=null?[...p.slice(0,atIdx),ouvrLigne,...composants,...p.slice(atIdx)]:[...p,ouvrLigne,...composants])
     } else if(type==='ouvrage'){
       // Ouvrage vide (création directe sur le devis)
-      setLignes(p=>[...p,{...base,designation:'Nouvel ouvrage',description:'',unite:'',qte:1,pu:0,tva:'20%',lignesInternes:[],prixManuel:false}])
+      setLignes(p=>atIdx!=null?[...p.slice(0,atIdx),{...base,designation:'Nouvel ouvrage',description:'',unite:'',qte:1,pu:0,tva:'20%',lignesInternes:[],prixManuel:false},...p.slice(atIdx)]:[...p,{...base,designation:'Nouvel ouvrage',description:'',unite:'',qte:1,pu:0,tva:'20%',lignesInternes:[],prixManuel:false}])
     } else if(type==='categorie'||type==='sous-categorie'){
       setLignes(p=>[...p,{...base,titre:'Nouvelle catégorie'}])
     } else if(type==='note'){
@@ -387,8 +389,19 @@ export default function NouveauDevisPage(){
                         </div>
                         {showInsertMenu===l.id&&(
                           <div style={{position:'absolute' as const,right:'100%',top:0,background:'#fff',border:'1px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',minWidth:190,zIndex:1001}}>
-                            {[{label:'Nouvelle catégorie',type:'categorie' as const,icon:'📁'},{label:'Nouveau matériau',type:'materiau' as const,icon:'🧱'},{label:"Nouvelle main d'œuvre",type:'mo' as const,icon:'👷'},{label:'Nouvel ouvrage',type:'ouvrage' as const,icon:'🔨'},{label:'Nouvelle note',type:'note' as const,icon:'📝'}].map(item=>(
-                              <div key={item.type} onClick={()=>{const idx=lignes.findIndex(x=>x.id===l.id);const newL:Ligne={id:genId(),type:item.type,...(item.type==='categorie'?{titre:''}:{designation:'',description:'',unite:'u',qte:1,pu:0,tva:'20%'})};setLignes(p=>[...p.slice(0,idx),newL,...p.slice(idx)]);setShowContextMenu(null);setShowInsertMenu(null)}}
+                            {[{label:'Nouvelle catégorie',type:'categorie' as const,icon:'📁'},{label:'Matériau...',type:'materiau' as const,icon:'🧱'},{label:"Main d'œuvre...",type:'mo' as const,icon:'👷'},{label:'Ouvrage...',type:'ouvrage' as const,icon:'🔨'},{label:'Nouvelle note',type:'note' as const,icon:'📝'}].map(item=>(
+                              <div key={item.type} onClick={()=>{
+                                const insertIdx=lignes.findIndex(x=>x.id===l.id)
+                                setShowContextMenu(null);setShowInsertMenu(null)
+                                if(item.type==='materiau'||item.type==='mo'||item.type==='ouvrage'){
+                                  // Stocker l'index d'insertion et ouvrir la biblio
+                                  setInsertAtIdx(insertIdx)
+                                  setShowBiblio(item.type)
+                                } else {
+                                  const newL:Ligne={id:genId(),type:item.type,...(item.type==='categorie'?{titre:''}:{designation:'',description:'',unite:'u',qte:1,pu:0,tva:'20%'})}
+                                  setLignes(p=>[...p.slice(0,insertIdx),newL,...p.slice(insertIdx)])
+                                }
+                              }}
                                 style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333',display:'flex',gap:8}}
                                 onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
                                 onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
@@ -542,16 +555,21 @@ export default function NouveauDevisPage(){
                           <div style={{position:'absolute' as const,right:'100%',top:0,background:'#fff',border:'1px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',minWidth:190,overflow:'hidden'}}>
                             {[
                               {label:'Nouvelle catégorie',type:'categorie' as const,icon:'📁'},
-                              {label:'Nouveau matériau',type:'materiau' as const,icon:'🧱'},
-                              {label:"Nouvelle main d'œuvre",type:'mo' as const,icon:'👷'},
-                              {label:'Nouvel ouvrage',type:'ouvrage' as const,icon:'🔨'},
+                              {label:'Matériau...',type:'materiau' as const,icon:'🧱'},
+                              {label:"Main d'œuvre...",type:'mo' as const,icon:'👷'},
+                              {label:'Ouvrage...',type:'ouvrage' as const,icon:'🔨'},
                               {label:'Nouvelle note',type:'note' as const,icon:'📝'},
                             ].map(item=>(
                               <div key={item.type} onClick={()=>{
-                                const idx=lignes.findIndex(x=>x.id===l.id)
-                                const newL:Ligne={id:genId(),type:item.type,...(item.type==='categorie'?{titre:''}:{designation:'',description:'',unite:'u',qte:1,pu:0,tva:'20%'})}
-                                setLignes(p=>[...p.slice(0,idx),newL,...p.slice(idx)])
+                                const insertIdx=lignes.findIndex(x=>x.id===l.id)
                                 setShowContextMenu(null);setShowInsertMenu(null)
+                                if(item.type==='materiau'||item.type==='mo'||item.type==='ouvrage'){
+                                  setInsertAtIdx(insertIdx)
+                                  setShowBiblio(item.type)
+                                } else {
+                                  const newL:Ligne={id:genId(),type:item.type,...(item.type==='categorie'?{titre:''}:{designation:'',description:'',unite:'u',qte:1,pu:0,tva:'20%'})}
+                                  setLignes(p=>[...p.slice(0,insertIdx),newL,...p.slice(insertIdx)])
+                                }
                               }}
                                 style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333',display:'flex',gap:8,alignItems:'center'}}
                                 onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
@@ -1062,7 +1080,7 @@ export default function NouveauDevisPage(){
 
       {/* Modal bibliothèque */}
       {showBiblio&&(
-        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>{setShowBiblio(null);setBiblioSearch('')}}>
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>{setShowBiblio(null);setBiblioSearch('');setInsertAtIdx(null)}}>
           <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:560,width:'92%',maxHeight:'75vh',display:'flex',flexDirection:'column',gap:12}}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
               <div style={{fontSize:15,fontWeight:700,color:'#111'}}>
@@ -1081,7 +1099,7 @@ export default function NouveauDevisPage(){
             </div>
 
             {/* Créer vide */}
-            <button onClick={()=>addLigne(showBiblio==='ouvrage'?'ouvrage':showBiblio)}
+            <button onClick={()=>addLigne(showBiblio==='ouvrage'?'ouvrage':showBiblio,undefined,insertAtIdx??undefined)}
               style={{padding:'9px 14px',background:'#f0fdf4',border:`1px solid ${G}40`,borderRadius:8,fontSize:13,fontWeight:600,color:G,cursor:'pointer',textAlign:'left' as const,flexShrink:0}}>
               + {showBiblio==='materiau'?'Nouveau matériau (vide)':showBiblio==='mo'?"Nouvelle main d'œuvre (vide)":'Nouvel ouvrage vide (sur ce devis uniquement)'}
             </button>
@@ -1091,7 +1109,7 @@ export default function NouveauDevisPage(){
               {(showBiblio==='materiau'?biblioMats:showBiblio==='mo'?biblioMO:biblioOuvrages)
                 .filter((item:any)=>!biblioSearch||item.nom.toLowerCase().includes(biblioSearch.toLowerCase()))
                 .map((item:any,i)=>(
-                <div key={i} onClick={()=>addLigne(showBiblio==='ouvrage'?'ouvrage':showBiblio,item)}
+                <div key={i} onClick={()=>addLigne(showBiblio==='ouvrage'?'ouvrage':showBiblio,item,insertAtIdx??undefined)}
                   style={{padding:'12px 14px',border:`1px solid ${BD}`,borderRadius:8,cursor:'pointer',transition:'all 0.1s'}}
                   onMouseEnter={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor=G;d.style.background='#f0fdf4'}}
                   onMouseLeave={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor=BD;d.style.background=''}}>
