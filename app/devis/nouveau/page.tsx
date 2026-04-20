@@ -232,20 +232,20 @@ export default function NouveauDevisPage(){
           <td colSpan={4} style={{padding:'8px 12px'}}>
             <div style={{display:'flex',alignItems:'center',gap:8}}>
               <button onClick={()=>updateLigne(l.id,'collapsed',!l.collapsed)} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#888',padding:0}}>{l.collapsed?'▶':'▼'}</button>
-              <span style={{fontSize:isSub?12:13,fontWeight:800,color:params.couleurPrincipale||G,fontFamily:'monospace',flexShrink:0,minWidth:isSub?32:20}}>{getNumero(lignes,idx)}</span>
+              <span style={{fontSize:isSub?12:13,fontWeight:800,color:'#111',fontFamily:'monospace',flexShrink:0,minWidth:isSub?32:20}}>{getNumero(lignes,idx)}</span>
               <input value={l.titre||''} onChange={e=>updateLigne(l.id,'titre',e.target.value)}
-                style={{flex:1,border:'none',background:'transparent',fontSize:isSub?13:14,fontWeight:700,color:params.couleurPrincipale||G,outline:'none',fontFamily:'system-ui'}}
+                style={{flex:1,border:'none',background:'transparent',fontSize:isSub?13:14,fontWeight:700,color:'#111',outline:'none',fontFamily:'system-ui'}}
                 placeholder={isSub?'Sous-catégorie':'Catégorie'}/>
             </div>
           </td>
           <td style={{padding:'8px 12px'}}></td>
             <td style={{padding:'8px 12px',textAlign:'right' as const}}>
-            <span style={{fontSize:13,fontWeight:700,color:params.couleurPrincipale||G}}>{fmt(st)} €</span>
-            <div style={{display:'flex',justifyContent:'flex-end',gap:4,marginTop:2}}>
+            <span style={{fontSize:13,fontWeight:700,color:'#111'}}>{fmt(st)} €</span>
+            {editMode&&<div className="row-actions" style={{display:'flex',justifyContent:'flex-end',gap:4,marginTop:2,opacity:0,transition:'opacity 0.15s'}}>
               <button onClick={()=>moveLigne(l.id,'up')} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:11}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>↑</button>
               <button onClick={()=>moveLigne(l.id,'down')} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:11}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>↓</button>
               <button onClick={()=>deleteLigne(l.id)} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:16}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=RD} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>×</button>
-            </div>
+            </div>}
           </td>
         </tr>
       )
@@ -262,7 +262,7 @@ export default function NouveauDevisPage(){
               {isOuvrage&&<button onClick={()=>setOuvrageExpanded(p=>({...p,[l.id]:!expanded}))} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#888',padding:0,flexShrink:0}}>{expanded?'▼':'▶'}</button>}
               <div style={{flex:1}}>
                 <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:2}}>
-                  <span style={{fontSize:9,fontWeight:700,padding:'1px 5px',borderRadius:6,background:l.type==='mo'?'#eff6ff':isOuvrage?'#f0fdf4':'#f3f4f6',color:l.type==='mo'?'#2563eb':isOuvrage?G:'#888',flexShrink:0}}>{l.type==='mo'?'MO':isOuvrage?'OUV':'MAT'}</span>
+                  {editMode&&<span style={{fontSize:8,fontWeight:700,padding:'1px 4px',borderRadius:4,background:l.type==='mo'?'#eff6ff':isOuvrage?'#f0fdf4':'#f3f4f6',color:l.type==='mo'?'#2563eb':isOuvrage?G:'#888',flexShrink:0,opacity:0.7}}>{l.type==='mo'?'MO':isOuvrage?'OUV':'MAT'}</span>}
                   <input value={l.designation||''} onChange={e=>updateLigne(l.id,'designation',e.target.value)} placeholder="Désignation..."
                     style={{flex:1,border:'none',background:'transparent',fontSize:13,fontWeight:600,color:'#111',outline:'none',fontFamily:'system-ui'}}/>
                 </div>
@@ -342,14 +342,14 @@ export default function NouveauDevisPage(){
           </td>
           <td style={{padding:'8px 8px',width:100,textAlign:'right' as const}}>
             <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{fmt(ht)} €</div>
-            <div style={{fontSize:10,color:'#888'}}>TTC: {fmt(ht*(1+parseFloat((l.tva||'0%').replace('%',''))/100))} €</div>
+            {editMode&&<div style={{fontSize:9,color:'#bbb'}}>TTC: {fmt(ht*(1+parseFloat((l.tva||'0%').replace('%',''))/100))} €</div>}
           </td>
-          <td style={{padding:'8px 4px',width:60}}>
-            <div style={{display:'flex',flexDirection:'column' as const,gap:2,alignItems:'center'}}>
+          <td style={{padding:'8px 4px',width:40}}>
+            {editMode&&<div className="row-actions" style={{display:'flex',flexDirection:'column' as const,gap:2,alignItems:'center',opacity:0,transition:'opacity 0.15s'}}>
               <button onClick={()=>moveLigne(l.id,'up')} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:12,padding:1}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>↑</button>
               <button onClick={()=>moveLigne(l.id,'down')} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:12,padding:1}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>↓</button>
               <button onClick={()=>deleteLigne(l.id)} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:16,padding:1}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=RD} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>×</button>
-            </div>
+            </div>}
           </td>
         </tr>
         {isOuvrage&&expanded&&(l.lignesInternes||[]).map((li,j)=>(
@@ -383,6 +383,7 @@ export default function NouveauDevisPage(){
   return(
     <div style={{display:'flex',height:'100vh',fontFamily:params.police||'system-ui,sans-serif',background:'#f0f2f5',overflow:'hidden'}}>
       <Sidebar activePage="devis"/>
+      <style>{'tr:hover .row-actions { opacity: 1 !important; }'}</style>
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
         <div style={{height:60,background:'#fff',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 20px',flexShrink:0,gap:12}}>
           <div style={{display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
