@@ -353,34 +353,34 @@ export default function NouveauDevisPage(){
             )}
           </td>
           {/* PU HT */}
-          <td style={{padding:'5px 4px',width:85,borderRight:'1px solid #d0d0d0',background:editMode?'#fffbeb':'transparent'}}
-            onClick={()=>editMode&&setEditingCell({id:l.id,field:'pu'})}>
-            {editMode&&isEditing(l.id,'pu')?(
-              <div style={{display:'flex',alignItems:'center',gap:2,justifyContent:'flex-end'}}>
-                <input type="number" autoFocus value={l.pu||0} min={0}
+          <td style={{padding:'5px 4px',width:90,borderRight:'1px solid #d0d0d0'}}>
+            {editMode?(
+              <div style={{display:'flex',alignItems:'center',gap:3}}>
+                <input type="number" value={l.pu||0} min={0}
                   onChange={e=>updateLigne(l.id,'pu',parseFloat(e.target.value)||0)}
-                  onBlur={()=>setEditingCell(null)}
-                  style={{width:'52px',border:'none',background:'transparent',fontSize:13,padding:'2px 0',outline:'none',textAlign:'right' as const,color:'#111',fontWeight:500}}/>
-                <span style={{fontSize:11,color:'#888'}}>€</span>
+                  style={{width:'60px',border:`1px solid ${BD}`,borderRadius:5,fontSize:12,padding:'4px 5px',outline:'none',textAlign:'right' as const,color:'#111'}}
+                  onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+                  onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+                <span style={{fontSize:11,color:'#888',flexShrink:0}}>€</span>
               </div>
             ):(
-              <div style={{fontSize:13,color:'#111',fontWeight:500,textAlign:'right' as const,padding:'2px 4px'}}>
+              <div style={{fontSize:13,color:'#111',fontWeight:500,textAlign:'right' as const,padding:'4px 5px',cursor:'default'}}>
                 {fmt(l.pu||0)} €
               </div>
             )}
           </td>
           {/* TVA */}
-          <td style={{padding:'5px 4px',width:65,borderRight:'1px solid #d0d0d0',background:editMode?'#fffbeb':'transparent'}}
-            onClick={()=>editMode&&setEditingCell({id:l.id,field:'tva'})}>
-            {editMode&&isEditing(l.id,'tva')?(
-              <select autoFocus value={l.tva||'20%'} onChange={e=>{updateLigne(l.id,'tva',e.target.value);setEditingCell(null)}}
-                onBlur={()=>setEditingCell(null)}
-                style={{width:'100%',border:'none',background:'transparent',fontSize:13,outline:'none',color:'#111',cursor:'pointer',textAlign:'center' as const}}>
+          <td style={{padding:'5px 4px',width:70,borderRight:'1px solid #d0d0d0'}}>
+            {editMode?(
+              <select value={l.tva||'20%'} onChange={e=>updateLigne(l.id,'tva',e.target.value)}
+                style={{width:'60px',border:`1px solid ${BD}`,borderRadius:5,fontSize:12,padding:'4px',outline:'none',background:'#fff',color:'#111',cursor:'pointer'}}
+                onFocus={e=>(e.currentTarget as HTMLSelectElement).style.borderColor=G}
+                onBlur={e=>(e.currentTarget as HTMLSelectElement).style.borderColor=BD}>
                 {TVA_OPTIONS.map(t=><option key={t}>{t}</option>)}
               </select>
             ):(
-              <div style={{fontSize:13,color:'#111',fontWeight:500,textAlign:'center' as const,padding:'2px 4px'}}>
-                {l.tva||'20%'}{editMode&&<span style={{fontSize:9,color:'#ccc',marginLeft:2}}>▼</span>}
+              <div style={{fontSize:13,color:'#111',fontWeight:500,textAlign:'center' as const,padding:'4px 5px',cursor:'default'}}>
+                {l.tva||'20%'}
               </div>
             )}
           </td>
