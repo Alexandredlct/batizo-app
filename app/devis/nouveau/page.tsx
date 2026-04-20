@@ -336,6 +336,14 @@ export default function NouveauDevisPage(){
                     defaultFont={params.police||'system-ui'}
                     style={{fontSize:12,color:'#555'}}/>
                 </div>
+                {selectedLigne===l.id&&editMode&&(
+                  <div style={{marginTop:4}} onClick={e=>e.stopPropagation()}>
+                    <button onClick={()=>setShowEditOuvrage(l)}
+                      style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#2563eb',padding:0,textDecoration:'underline'}}>
+                      ✏ éditer le contenu de l'ouvrage...
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </td>
@@ -396,7 +404,63 @@ export default function NouveauDevisPage(){
             <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{fmt(ht)} €</div>
             
           </td>
-          <td style={{padding:'4px 4px',width:32}}></td>
+          <td style={{padding:'4px 4px',width:40,position:'relative' as const}} onClick={e=>e.stopPropagation()}>
+            {selectedLigne===l.id&&editMode&&(
+              <div style={{display:'flex',alignItems:'center',gap:2}}>
+                <div style={{display:'flex',flexDirection:'column' as const,gap:0}}>
+                  <button onClick={e=>{e.stopPropagation();moveLigne(l.id,'up')}} style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:11,padding:'1px 3px',lineHeight:1}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#333'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>↑</button>
+                  <button onClick={e=>{e.stopPropagation();moveLigne(l.id,'down')}} style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:11,padding:'1px 3px',lineHeight:1}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#333'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>↓</button>
+                </div>
+                <div style={{position:'relative' as const}}>
+                  <button onClick={()=>setShowContextMenu(showContextMenu===l.id?null:l.id)}
+                    style={{background:'none',border:'none',cursor:'pointer',fontSize:15,color:'#888',padding:'2px 4px',borderRadius:4,lineHeight:1}}
+                    onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#f3f4f6'}
+                    onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background='none'}>≡</button>
+                  {showContextMenu===l.id&&(
+                    <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:'1px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',zIndex:300,minWidth:220,overflow:'hidden'}}>
+                      <div style={{position:'relative' as const}}>
+                        <div onClick={()=>setShowInsertMenu(showInsertMenu===l.id?null:l.id)}
+                          style={{padding:'9px 14px',fontSize:13,cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center',color:'#333'}}
+                          onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                          onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                          Insérer une ligne au-dessus <span>›</span>
+                        </div>
+                        {showInsertMenu===l.id&&(
+                          <div style={{position:'absolute' as const,right:'100%',top:0,background:'#fff',border:'1px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',minWidth:180,overflow:'hidden'}}>
+                            {[{label:'Catégorie',type:'categorie' as const},{label:'Matériau',type:'materiau' as const},{label:"Main d'œuvre",type:'mo' as const},{label:'Ouvrage',type:'ouvrage' as const},{label:'Note',type:'note' as const}].map(item=>(
+                              <div key={item.type} onClick={()=>{
+                                const idx=lignes.findIndex(x=>x.id===l.id)
+                                const newL:Ligne={id:genId(),type:item.type,...(item.type==='categorie'?{titre:''}:{designation:'',description:'',unite:'u',qte:1,pu:0,tva:'20%'})}
+                                setLignes(p=>[...p.slice(0,idx),newL,...p.slice(idx)])
+                                setShowContextMenu(null);setShowInsertMenu(null)
+                              }}
+                                style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333'}}
+                                onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                                onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                                {item.label}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div onClick={()=>{const idx=lignes.findIndex(x=>x.id===l.id);setLignes(p=>[...p.slice(0,idx),{id:genId(),type:'saut-page' as const},...p.slice(idx)]);setShowContextMenu(null)}}
+                        style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333',borderTop:'1px solid #f3f4f6'}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                        Insérer un saut de page
+                      </div>
+                      <div onClick={()=>{setShowDeleteConfirm(l.id);setShowContextMenu(null)}}
+                        style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:RD,borderTop:'1px solid #f3f4f6'}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#fef2f2'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                        Retirer cette ligne
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </td>
         </tr>
         {isOuvrage&&editMode&&(l.lignesInternes||[]).map((li,j)=>(
           <tr key={li.id} style={{background:'#fafafa',borderBottom:`1px solid ${BD}`}}>
