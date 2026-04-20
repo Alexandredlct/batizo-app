@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { getBiblioOuvrages, getBiblioMats, getBiblioMO } from '../../lib/bibliothequeStore'
 import Sidebar from '../../components/Sidebar'
 import SearchBar from '../../components/SearchBar'
 
@@ -44,6 +45,13 @@ export default function NouveauDevisPage(){
   const[params,setParams]=useState<any>({})
   const[logoPreview,setLogoPreview]=useState<string|null>(null)
   useEffect(()=>{
+    const loadBiblio=()=>{
+      setBiblioOuvrages(getBiblioOuvrages())
+      setBiblioMats(getBiblioMats())
+      setBiblioMO(getBiblioMO())
+    }
+    loadBiblio()
+    window.addEventListener('batizo_biblio_updated',loadBiblio)
     try{
       const p=localStorage.getItem('batizo_params')
       if(p){
@@ -56,6 +64,7 @@ export default function NouveauDevisPage(){
       const logo=localStorage.getItem('batizo_logo')
       if(logo) setLogoPreview(logo)
     }catch(e){}
+    return()=>window.removeEventListener('batizo_biblio_updated',loadBiblio)
   },[])
   const[lignes,setLignes]=useState<Ligne[]>([])
   const[client,setClient]=useState<Client|null>(null)
@@ -75,6 +84,10 @@ export default function NouveauDevisPage(){
   const[notes,setNotes]=useState('')
   const[statut,setStatut]=useState<'brouillon'|'en_attente'|'finalise'|'signe'|'refuse'>('brouillon')
   const[showBiblio,setShowBiblio]=useState<'materiau'|'mo'|'ouvrage'|null>(null)
+  const[biblioSearch,setBiblioSearch]=useState('')
+  const[biblioOuvrages,setBiblioOuvrages]=useState<any[]>([])
+  const[biblioMats,setBiblioMats]=useState<any[]>([])
+  const[biblioMO,setBiblioMO]=useState<any[]>([])
   const[showFactureMenu,setShowFactureMenu]=useState(false)
   const[showFactureModal,setShowFactureModal]=useState<'acompte'|'intermediaire'|'solde'|null>(null)
   const[factureAmount,setFactureAmount]=useState('')
@@ -125,10 +138,31 @@ export default function NouveauDevisPage(){
 
   const addLigne=(type:LigneType,data?:any)=>{
     const base:Ligne={id:genId(),type}
-    if(type==='materiau'||type==='mo'){
-      setEditMode(true);setLignes(p=>[...p,{...base,designation:data?.nom||'',description:'',unite:data?.unite||'u',qte:1,pu:data?.pu||0,tva:data?.tva||'20%'}])
+    if(type==='materiau'){
+      setEditMode(true)
+      const mat:Ligne={...base,designation:data?.nom||'',description:data?.description||'',unite:data?.unite||'u',qte:1,pu:data?.prixFacture||data?.pu||0,tva:data?.tva||'20%'}
+      setLignes(p=>[...p,mat])
+    } else if(type==='mo'){
+      setEditMode(true)
+      const mo:Ligne={...base,designation:data?.nom||'',description:data?.description||'',unite:data?.unite||'h',qte:1,pu:data?.prixFacture||data?.pu||0,tva:data?.tva||'20%'}
+      setLignes(p=>[...p,mo])
+    } else if(type==='ouvrage'&&data?.lignes?.length>0){
+      // Aplatir : ouvrage + ses composants comme lignes individuelles
+      const ouvrLigne:Ligne={...base,type:'ouvrage',designation:data.nom,description:data.description||'',unite:data.unite||'u',qte:1,pu:data.prixFacture||0,tva:data.tva||'20%',lignesInternes:[],prixManuel:true,prixForce:data.prixFacture||0}
+      const composants:Ligne[]=data.lignes.map((li:any)=>({
+        id:genId(),
+        type:li.type==='mo'?'mo' as LigneType:'materiau' as LigneType,
+        designation:li.nom,
+        description:li.description||'',
+        unite:li.unite||'u',
+        qte:li.qte||1,
+        pu:li.pu||0,
+        tva:li.tva||'20%',
+      }))
+      setLignes(p=>[...p,ouvrLigne,...composants])
     } else if(type==='ouvrage'){
-      setLignes(p=>[...p,{...base,designation:data?.nom||'Nouvel ouvrage',description:'',unite:data?.unite||'u',qte:1,pu:data?.pu||0,tva:data?.tva||'20%',lignesInternes:data?.lignesInternes||[],prixManuel:false}])
+      // Ouvrage vide (création directe sur le devis)
+      setLignes(p=>[...p,{...base,designation:'Nouvel ouvrage',description:'',unite:'u',qte:1,pu:0,tva:'20%',lignesInternes:[],prixManuel:false}])
     } else if(type==='categorie'||type==='sous-categorie'){
       setLignes(p=>[...p,{...base,titre:'Nouvelle catégorie'}])
     } else if(type==='note'){
@@ -137,6 +171,7 @@ export default function NouveauDevisPage(){
       setLignes(p=>[...p,{...base}])
     }
     setShowBiblio(null)
+    setBiblioSearch('')
   }
 
   const updateLigne=(id:string,field:string,val:any)=>{if(!editMode)return;setLignes(p=>p.map(l=>l.id===id?{...l,[field]:val}:l))}
@@ -792,34 +827,71 @@ export default function NouveauDevisPage(){
 
       {/* Modal bibliothèque */}
       {showBiblio&&(
-        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowBiblio(null)}>
-          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:520,width:'90%',maxHeight:'70vh',display:'flex',flexDirection:'column',gap:14}}>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>{showBiblio==='materiau'?'Choisir un matériau':showBiblio==='mo'?"Choisir une main d'oeuvre":'Choisir un ouvrage'}</div>
-              <button onClick={()=>setShowBiblio(null)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>{setShowBiblio(null);setBiblioSearch('')}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:560,width:'92%',maxHeight:'75vh',display:'flex',flexDirection:'column',gap:12}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
+              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>
+                {showBiblio==='materiau'?'Choisir un matériau':showBiblio==='mo'?"Choisir une main d'œuvre":'Choisir un ouvrage'}
+              </div>
+              <button onClick={()=>{setShowBiblio(null);setBiblioSearch('')}} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
             </div>
+
+            {/* Recherche */}
+            <div style={{position:'relative',flexShrink:0}}>
+              <svg style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)'}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input value={biblioSearch} onChange={e=>setBiblioSearch(e.target.value)} placeholder="Rechercher..."
+                style={{width:'100%',padding:'8px 12px 8px 32px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}
+                onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+                onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+            </div>
+
+            {/* Créer vide */}
             <button onClick={()=>addLigne(showBiblio==='ouvrage'?'ouvrage':showBiblio)}
-              style={{padding:'10px 14px',background:'#f0fdf4',border:`1px solid ${G}40`,borderRadius:8,fontSize:13,fontWeight:600,color:G,cursor:'pointer',textAlign:'left' as const}}>
-              + Créer {showBiblio==='materiau'?'un nouveau matériau':showBiblio==='mo'?"une nouvelle main d'oeuvre":'un nouvel ouvrage'} (vide)
+              style={{padding:'9px 14px',background:'#f0fdf4',border:`1px solid ${G}40`,borderRadius:8,fontSize:13,fontWeight:600,color:G,cursor:'pointer',textAlign:'left' as const,flexShrink:0}}>
+              + {showBiblio==='materiau'?'Nouveau matériau (vide)':showBiblio==='mo'?"Nouvelle main d'œuvre (vide)":'Nouvel ouvrage vide (sur ce devis uniquement)'}
             </button>
+
+            {/* Liste */}
             <div style={{overflowY:'auto',flex:1,display:'flex',flexDirection:'column',gap:6}}>
-              {(showBiblio==='materiau'?biblioMats:showBiblio==='mo'?biblioMO:biblioOuvrages).map((item:any,i)=>(
+              {(showBiblio==='materiau'?biblioMats:showBiblio==='mo'?biblioMO:biblioOuvrages)
+                .filter((item:any)=>!biblioSearch||item.nom.toLowerCase().includes(biblioSearch.toLowerCase()))
+                .map((item:any,i)=>(
                 <div key={i} onClick={()=>addLigne(showBiblio==='ouvrage'?'ouvrage':showBiblio,item)}
-                  style={{padding:'10px 14px',border:`1px solid ${BD}`,borderRadius:8,cursor:'pointer'}}
+                  style={{padding:'12px 14px',border:`1px solid ${BD}`,borderRadius:8,cursor:'pointer',transition:'all 0.1s'}}
                   onMouseEnter={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor=G;d.style.background='#f0fdf4'}}
                   onMouseLeave={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor=BD;d.style.background=''}}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                    <div>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
+                    <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{item.nom}</div>
-                      <div style={{fontSize:11,color:'#888'}}>{item.unite} · TVA {item.tva}</div>
+                      {item.description&&<div style={{fontSize:11,color:'#888',marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>{item.description}</div>}
+                      <div style={{fontSize:11,color:'#aaa',marginTop:3}}>
+                        {item.unite} · TVA {item.tva}
+                        {showBiblio==='ouvrage'&&item.lignes?.length>0&&(
+                          <span style={{marginLeft:8,color:'#888'}}>· {item.lignes.length} composant{item.lignes.length>1?'s':''}</span>
+                        )}
+                      </div>
                     </div>
-                    <div style={{textAlign:'right' as const}}>
-                      <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{item.pu} €</div>
-                      <div style={{fontSize:11,color:'#888'}}>/ {item.unite}</div>
+                    <div style={{textAlign:'right' as const,flexShrink:0}}>
+                      <div style={{fontSize:14,fontWeight:700,color:'#111'}}>{item.prixFacture||item.pu||0} €</div>
+                      <div style={{fontSize:10,color:'#aaa'}}>/ {item.unite}</div>
                     </div>
                   </div>
+                  {showBiblio==='ouvrage'&&item.lignes?.length>0&&(
+                    <div style={{marginTop:8,paddingTop:8,borderTop:'1px solid #f3f4f6',display:'flex',flexDirection:'column' as const,gap:3}}>
+                      {item.lignes.map((li:any,j:number)=>(
+                        <div key={j} style={{display:'flex',justifyContent:'space-between',fontSize:11,color:'#888'}}>
+                          <span>{li.type==='mo'?'MO':'MAT'} — {li.nom}</span>
+                          <span>{li.qte} {li.unite} × {li.pu} €</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
+              {(showBiblio==='materiau'?biblioMats:showBiblio==='mo'?biblioMO:biblioOuvrages)
+                .filter((item:any)=>!biblioSearch||item.nom.toLowerCase().includes(biblioSearch.toLowerCase())).length===0&&(
+                <div style={{textAlign:'center' as const,padding:'20px',color:'#888',fontSize:13}}>Aucun résultat pour « {biblioSearch} »</div>
+              )}
             </div>
           </div>
         </div>
