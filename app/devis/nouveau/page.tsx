@@ -5,7 +5,10 @@ import Sidebar from '../../components/Sidebar'
 import SearchBar from '../../components/SearchBar'
 
 const G='#1D9E75',AM='#BA7517',RD='#E24B4A',BD='#e5e7eb'
-const fmt=(n:number)=>n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})
+const fmt=(n:number)=>{
+  const hasDecimals=n%1!==0
+  return n.toLocaleString('fr-FR',{minimumFractionDigits:hasDecimals?2:0,maximumFractionDigits:hasDecimals?2:0})
+}
 const TVA_OPTIONS=['0%','5.5%','10%','20%']
 const UNITES=['u','ens','m²','ml','m³','h','Fft','Forf','Mois','kg','L']
 
