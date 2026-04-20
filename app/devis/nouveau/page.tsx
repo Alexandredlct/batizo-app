@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from '../../components/Sidebar'
 import SearchBar from '../../components/SearchBar'
 
@@ -41,6 +41,22 @@ const biblioOuvrages=[
 const genId=()=>Math.random().toString(36).slice(2,8)
 
 export default function NouveauDevisPage(){
+  const[params,setParams]=useState<any>({})
+  const[logoPreview,setLogoPreview]=useState<string|null>(null)
+  useEffect(()=>{
+    try{
+      const p=localStorage.getItem('batizo_params')
+      if(p){
+        const parsed=JSON.parse(p)
+        setParams(parsed)
+        if(parsed.validiteDevis) setValidite(parsed.validiteDevis+' jours')
+        if(parsed.condPaiement) setCondPaiement(parsed.condPaiement)
+        if(parsed.noteDevis) setNotes(parsed.noteDevis)
+      }
+      const logo=localStorage.getItem('batizo_logo')
+      if(logo) setLogoPreview(logo)
+    }catch(e){}
+  },[])
   const[lignes,setLignes]=useState<Ligne[]>([])
   const[client,setClient]=useState<Client|null>(null)
   const[clientSearch,setClientSearch]=useState('')
@@ -48,7 +64,7 @@ export default function NouveauDevisPage(){
   const[titre,setTitre]=useState('')
   const[adresseProjet,setAdresseProjet]=useState('')
   const[dateDevis,setDateDevis]=useState(new Date().toISOString().split('T')[0])
-  const[validite,setValidite]=useState('2 mois')
+  const[validite,setValidite]=useState('')
   const[remise,setRemise]=useState(0)
   const[remisePct,setRemisePct]=useState(false)
   const[acompte,setAcompte]=useState(0)
@@ -423,22 +439,24 @@ export default function NouveauDevisPage(){
                   onClick={()=>setShowHeaderInfo(true)}
                   onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
                   onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-                  <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12}}>
-                    <div style={{width:48,height:48,borderRadius:10,background:`${G}20`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,fontWeight:800,color:G}}>B</div>
-                    <div>
-                      <div style={{fontSize:16,fontWeight:800,color:'#111'}}>Batizo SAS</div>
-                      <div style={{fontSize:11,color:'#888'}}>Entreprise du bâtiment</div>
-                    </div>
+                  {/* Logo depuis Paramètres */}
+                  {logoPreview&&(
+                    <img src={logoPreview} alt="logo" style={{height:48,maxWidth:160,objectFit:'contain',display:'block',marginBottom:12}}/>
+                  )}
+                  <div style={{fontSize:15,fontWeight:800,color:'#111',marginBottom:6}}>
+                    {params.nomEntreprise||'Mon entreprise'}
+                    {params.showFormeJuridique&&params.formeJuridique?' — '+params.formeJuridique:''}
                   </div>
-                  <div style={{fontSize:12,color:'#555',lineHeight:1.8}}>
-                    <div>130 rue de Normandie, 92400 Courbevoie</div>
-                    <div>📞 01 23 45 67 89 · ✉ contact@batizo.fr</div>
-                    <div style={{marginTop:4,fontSize:11,color:'#888'}}>Décennale: XYZ-12345</div>
+                  <div style={{fontSize:12,color:'#555',lineHeight:1.9}}>
+                    {params.showAdresse&&params.adresseLigne1&&<div>{params.adresseLigne1}{params.codePostal?' '+params.codePostal:''}{params.ville?' '+params.ville:''}</div>}
+                    {params.showTel&&params.tel&&<div>{params.tel}</div>}
+                    {params.showEmail&&params.email&&<div>{params.email}</div>}
+                    {params.showSiteWeb&&params.siteWeb&&<div>{params.siteWeb}</div>}
                   </div>
                   <div style={{position:'absolute',top:8,right:8,fontSize:10,color:'#bbb',background:'#f3f4f6',padding:'2px 7px',borderRadius:4}}>Modifier dans Paramètres</div>
                 </div>
                 <div style={{padding:'24px'}}>
-                  <div style={{fontSize:11,fontWeight:700,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.05em',marginBottom:10}}>Destinataire</div>
+
                   {client?(
                     <div>
                       <div style={{fontSize:14,fontWeight:700,color:'#111',marginBottom:4}}>{client.nom}</div>
@@ -637,16 +655,19 @@ export default function NouveauDevisPage(){
                 </div>
                 <div style={{padding:'20px 24px'}}>
                   <div style={{display:'flex',flexDirection:'column' as const,gap:8}}>
-                    {[{label:'Total HT',val:fmt(totalHT)+' €',bold:false},{label:'TVA',val:fmt(totalTVA)+' €',bold:false}].map(row=>(
-                      <div key={row.label} style={{display:'flex',justifyContent:'space-between',fontSize:13}}>
-                        <span style={{color:'#555'}}>{row.label}</span>
-                        <span style={{fontWeight:row.bold?700:400,color:'#111'}}>{row.val}</span>
+                    {[
+                      {label:'Sous-total HT',val:fmt(totalHT)+' €',bold:true},
+                      remise>0?{label:remisePct?'Remise '+remise+'%':'Remise',val:'− '+fmt(remiseMt)+' €',bold:false,red:true}:null,
+                      {label:'Total HT',val:fmt(totalHT-remiseMt)+' €',bold:true},
+                      {label:'TVA',val:fmt(totalTVA)+' €',bold:false},
+                      {label:'Total TTC',val:fmt(totalTTC-remiseMt)+' €',bold:true},
+                      primeCEE>0?{label:primeCEELabel||'Prime à déduire',val:'− '+fmt(primeCEE)+' €',bold:false,red:true}:null,
+                    ].filter(Boolean).map((row:any)=>(
+                      <div key={row.label} style={{display:'flex',justifyContent:'space-between',fontSize:13,paddingBottom:4,paddingTop:4,borderBottom:`1px solid #f3f4f6`}}>
+                        <span style={{color:row.bold?'#111':'#555',fontWeight:row.bold?700:400}}>{row.label}</span>
+                        <span style={{fontWeight:row.bold?700:400,color:row.red?RD:'#111'}}>{row.val}</span>
                       </div>
                     ))}
-                    <div style={{borderTop:`1px solid ${BD}`,paddingTop:8,display:'flex',justifyContent:'space-between',fontSize:14}}>
-                      <span style={{fontWeight:600,color:'#111'}}>Total TTC</span>
-                      <span style={{fontWeight:700,color:'#111'}}>{fmt(totalTTC)} €</span>
-                    </div>
                     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,fontSize:13}}>
                       <span style={{color:'#555',flexShrink:0}}>Remise</span>
                       <div style={{display:'flex',gap:4,alignItems:'center'}}>
@@ -682,12 +703,49 @@ export default function NouveauDevisPage(){
                       </div>
                     </div>
                     <div style={{background:'#f0fdf4',borderRadius:8,padding:'12px',display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:4}}>
-                      <span style={{fontSize:15,fontWeight:700,color:'#111'}}>Net à payer</span>
+                      <span style={{fontSize:15,fontWeight:700,color:'#111'}}>{primeCEE>0||remise>0?'Reste à payer':'Net à payer'}</span>
                       <span style={{fontSize:18,fontWeight:800,color:G}}>{fmt(netAPayer)} €</span>
                     </div>
                   </div>
                 </div>
               </div>
+
+              {/* SIGNATURES */}
+              <div style={{padding:'20px 24px',borderTop:`1px solid ${BD}`,display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
+                {/* Client */}
+                <div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',gap:6}}>
+                  <div style={{fontSize:13,fontWeight:700,color:'#111',textAlign:'center' as const}}>{params.texteClient||'Le client'}</div>
+                  {params.mentionClient&&<div style={{fontSize:11,color:'#555',fontStyle:'italic',textAlign:'center' as const,lineHeight:1.5}}>{params.mentionClient}</div>}
+                  <div style={{width:'100%',height:params.tailleSignature==='petit'?40:params.tailleSignature==='grand'?80:60,border:`1px solid ${BD}`,borderRadius:8,marginTop:4}}/>
+                </div>
+                {/* Entreprise */}
+                <div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',gap:6}}>
+                  <div style={{fontSize:13,fontWeight:700,color:'#111',textAlign:'center' as const}}>{params.nomSignataireEntreprise||"L'entreprise"}</div>
+                  <div style={{width:'100%',height:params.tailleSignature==='petit'?40:params.tailleSignature==='grand'?80:60,border:`1px solid ${BD}`,borderRadius:8,marginTop:4}}/>
+                </div>
+              </div>
+
+              {/* PIED DE PAGE LÉGAL */}
+              {(()=>{
+                const p=params as any
+                const parts:string[]=[p.nomEntreprise||''].filter(Boolean)
+                const formeCapital=[
+                  p.showFormeJuridiquePied&&p.formeJuridique?p.formeJuridique:'',
+                  p.showCapital&&p.capitalSocial?'au capital de '+p.capitalSocial:''
+                ].filter(Boolean).join(' ')
+                if(formeCapital) parts.push(formeCapital)
+                if(p.showRCS&&p.rcs) parts.push('Immatriculée au RCS de '+(p.ville||'')+' sous le numéro '+p.rcs)
+                if(p.showSiretPied&&p.siret) parts.push('SIRET : '+p.siret)
+                if(p.showTvaIntraP&&p.tvaIntra) parts.push('TVA Intracommunautaire : '+p.tvaIntra)
+                if(p.showDecennalePied&&p.decennale) parts.push('Assurance Décennale : N° '+p.decennale)
+                if(p.showIBANPied&&p.iban) parts.push('IBAN : '+p.iban)
+                return parts.length>1?(
+                  <div style={{padding:'10px 24px',borderTop:`1px solid ${BD}`,fontSize:9,color:'#888',textAlign:'center' as const,lineHeight:1.8}}>
+                    {parts.join(' — ')}
+                  </div>
+                ):null
+              })()}
+
             </div>
           </div>
         </div>
