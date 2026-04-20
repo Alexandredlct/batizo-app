@@ -102,6 +102,12 @@ export default function NouveauDevisPage(){
   const[showHeaderInfo,setShowHeaderInfo]=useState(false)
   const[ouvrageExpanded,setOuvrageExpanded]=useState<Record<string,boolean>>({})
   const[editingCell,setEditingCell]=useState<{id:string,field:string}|null>(null)
+  const[selectedLigne,setSelectedLigne]=useState<string|null>(null)
+  const[showContextMenu,setShowContextMenu]=useState<string|null>(null)
+  const[showEditOuvrage,setShowEditOuvrage]=useState<Ligne|null>(null)
+  const[showInsertMenu,setShowInsertMenu]=useState<string|null>(null)
+  const[showDeleteConfirm,setShowDeleteConfirm]=useState<string|null>(null)
+  const[editOuvrageForm,setEditOuvrageForm]=useState<any>({})
   const isEditing=(id:string,field:string)=>editingCell?.id===id&&editingCell?.field===field
   const[editMode,setEditMode]=useState(false)
   const[snapshot,setSnapshot]=useState<any>(null)
@@ -307,9 +313,11 @@ export default function NouveauDevisPage(){
 
     return(
       <>
-        <tr key={l.id} style={{background:'#fff'}}
-          onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
-          onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background='#fff'}>
+        <tr key={l.id}
+          style={{background:selectedLigne===l.id&&editMode?'#fffbeb':'#fff',cursor:editMode?'pointer':'default',transition:'background 0.1s'}}
+          onClick={()=>editMode&&setSelectedLigne(selectedLigne===l.id?null:l.id)}
+          onMouseEnter={e=>{if(selectedLigne!==l.id)(e.currentTarget as HTMLTableRowElement).style.background=editMode?'#fffdf5':'#f9fafb'}}
+          onMouseLeave={e=>{if(selectedLigne!==l.id)(e.currentTarget as HTMLTableRowElement).style.background=selectedLigne===l.id&&editMode?'#fffbeb':'#fff'}}>
           <td style={{padding:'5px 6px',width:60,textAlign:'left' as const,paddingLeft:10,borderRight:'1px solid #d0d0d0'}}><span style={{fontSize:11,color:'#333',fontWeight:400,fontFamily:'system-ui'}}>{getNumero(lignes,idx)}</span></td>
           <td style={{padding:'6px 8px',width:'45%',borderRight:'1px solid #d0d0d0'}}>
             <div style={{display:'flex',alignItems:'center',gap:6}}>
@@ -979,7 +987,91 @@ export default function NouveauDevisPage(){
         </div>
       )}
 
-      {(showClientDD||showFactureMenu)&&<div onClick={()=>{setShowClientDD(false);setShowFactureMenu(false)}} style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',zIndex:50}}/>}
+      {(showClientDD||showFactureMenu||showContextMenu)&&<div onClick={()=>{setShowClientDD(false);setShowFactureMenu(false);setShowContextMenu(null);setShowInsertMenu(null)}} style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',zIndex:50}}/>}
+
+      {/* Modal confirmation suppression */}
+      {showDeleteConfirm&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowDeleteConfirm(null)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:14,padding:24,maxWidth:360,width:'90%',textAlign:'center' as const}}>
+            <div style={{fontSize:20,marginBottom:8}}>🗑</div>
+            <div style={{fontSize:15,fontWeight:700,color:'#111',marginBottom:8}}>Retirer cette ligne ?</div>
+            <div style={{fontSize:13,color:'#555',marginBottom:20}}>Cette action est irréversible dans le devis.</div>
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={()=>setShowDeleteConfirm(null)} style={{flex:1,padding:'10px',border:'1px solid #e5e7eb',borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer'}}>Annuler</button>
+              <button onClick={()=>{deleteLigne(showDeleteConfirm!);setShowDeleteConfirm(null);setSelectedLigne(null)}}
+                style={{flex:1,padding:'10px',background:RD,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>Supprimer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal édition ouvrage */}
+      {showEditOuvrage&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowEditOuvrage(null)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:560,width:'92%',maxHeight:'85vh',display:'flex',flexDirection:'column' as const,gap:14,overflowY:'auto'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
+              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Éditer l'ouvrage</div>
+              <button onClick={()=>setShowEditOuvrage(null)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
+            </div>
+
+            {/* Nom */}
+            <div>
+              <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Nom</label>
+              <input value={showEditOuvrage.designation||''} onChange={e=>setShowEditOuvrage({...showEditOuvrage,designation:e.target.value})}
+                style={{width:'100%',padding:'9px 12px',border:'1px solid #e5e7eb',borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Description</label>
+              <textarea value={showEditOuvrage.description||''} onChange={e=>setShowEditOuvrage({...showEditOuvrage,description:e.target.value})}
+                rows={3} style={{width:'100%',padding:'9px 12px',border:'1px solid #e5e7eb',borderRadius:8,fontSize:13,outline:'none',resize:'none' as const,fontFamily:'system-ui',boxSizing:'border-box' as const}}/>
+            </div>
+
+            {/* Unité + Prix */}
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12}}>
+              <div>
+                <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Unité</label>
+                <select value={showEditOuvrage.unite||'u'} onChange={e=>setShowEditOuvrage({...showEditOuvrage,unite:e.target.value})}
+                  style={{width:'100%',padding:'8px 10px',border:'1px solid #e5e7eb',borderRadius:7,fontSize:13,outline:'none',background:'#fff'}}>
+                  {UNITES.map(u=><option key={u}>{u}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>PU HT (€)</label>
+                <input type="number" value={showEditOuvrage.pu||0} onChange={e=>setShowEditOuvrage({...showEditOuvrage,pu:parseFloat(e.target.value)||0})}
+                  style={{width:'100%',padding:'8px 10px',border:'1px solid #e5e7eb',borderRadius:7,fontSize:13,outline:'none',textAlign:'right' as const,boxSizing:'border-box' as const}}/>
+              </div>
+              <div>
+                <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>TVA</label>
+                <select value={showEditOuvrage.tva||'20%'} onChange={e=>setShowEditOuvrage({...showEditOuvrage,tva:e.target.value})}
+                  style={{width:'100%',padding:'8px 10px',border:'1px solid #e5e7eb',borderRadius:7,fontSize:13,outline:'none',background:'#fff'}}>
+                  {TVA_OPTIONS.map(t=><option key={t}>{t}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Boutons */}
+            <div style={{display:'flex',gap:10,flexShrink:0,paddingTop:4}}>
+              <button onClick={()=>setShowEditOuvrage(null)}
+                style={{flex:1,padding:'10px',border:'1px solid #e5e7eb',borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555',fontWeight:500}}>
+                Annuler
+              </button>
+              <button onClick={()=>{
+                updateLigne(showEditOuvrage.id,'designation',showEditOuvrage.designation)
+                updateLigne(showEditOuvrage.id,'description',showEditOuvrage.description)
+                updateLigne(showEditOuvrage.id,'unite',showEditOuvrage.unite)
+                updateLigne(showEditOuvrage.id,'pu',showEditOuvrage.pu)
+                updateLigne(showEditOuvrage.id,'tva',showEditOuvrage.tva)
+                setShowEditOuvrage(null)
+              }}
+                style={{flex:1,padding:'10px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                ✔ Valider
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showSaved&&(
         <div style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',color:'#fff',borderRadius:10,padding:'12px 24px',zIndex:9999,display:'flex',alignItems:'center',gap:10,boxShadow:'0 4px 20px rgba(0,0,0,0.3)'}}>
