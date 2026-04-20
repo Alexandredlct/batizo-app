@@ -231,7 +231,7 @@ export default function NouveauDevisPage(){
         <tr key={l.id} style={{background:isSub?col+'18':col+'30'}}>
           <td colSpan={4} style={{padding:'8px 12px'}}>
             <div style={{display:'flex',alignItems:'center',gap:8}}>
-              <button onClick={()=>updateLigne(l.id,'collapsed',!l.collapsed)} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#888',padding:0}}>{l.collapsed?'▶':'▼'}</button>
+              {editMode&&<button onClick={()=>updateLigne(l.id,'collapsed',!l.collapsed)} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#888',padding:0}}>{l.collapsed?'▶':'▼'}</button>}
               <span style={{fontSize:isSub?12:13,fontWeight:800,color:'#111',fontFamily:'monospace',flexShrink:0,minWidth:isSub?32:20}}>{getNumero(lignes,idx)}</span>
               <input value={l.titre||''} onChange={e=>updateLigne(l.id,'titre',e.target.value)}
                 style={{flex:1,border:'none',background:'transparent',fontSize:isSub?13:14,fontWeight:700,color:'#111',outline:'none',fontFamily:'system-ui'}}
@@ -259,7 +259,7 @@ export default function NouveauDevisPage(){
           <td style={{padding:'8px 6px',width:60,textAlign:'left' as const,paddingLeft:10}}><span style={{fontSize:11,color:'#888',fontWeight:600,fontFamily:'monospace'}}>{getNumero(lignes,idx)}</span></td>
           <td style={{padding:'8px 8px',minWidth:240}}>
             <div style={{display:'flex',alignItems:'center',gap:6}}>
-              {isOuvrage&&<button onClick={()=>setOuvrageExpanded(p=>({...p,[l.id]:!expanded}))} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#888',padding:0,flexShrink:0}}>{expanded?'▼':'▶'}</button>}
+              
               <div style={{flex:1}}>
                 <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:2}}>
                   {editMode&&<span style={{fontSize:8,fontWeight:700,padding:'1px 4px',borderRadius:4,background:l.type==='mo'?'#eff6ff':isOuvrage?'#f0fdf4':'#f3f4f6',color:l.type==='mo'?'#2563eb':isOuvrage?G:'#888',flexShrink:0,opacity:0.7}}>{l.type==='mo'?'MO':isOuvrage?'OUV':'MAT'}</span>}
@@ -352,7 +352,7 @@ export default function NouveauDevisPage(){
             </div>}
           </td>
         </tr>
-        {isOuvrage&&expanded&&(l.lignesInternes||[]).map((li,j)=>(
+        {isOuvrage&&editMode&&(l.lignesInternes||[]).map((li,j)=>(
           <tr key={li.id} style={{background:'#fafafa',borderBottom:`1px solid ${BD}`}}>
             <td style={{padding:'5px 6px',textAlign:'center' as const}}><span style={{fontSize:10,color:'#ccc'}}>{idx+1}.{j+1}</span></td>
             <td style={{padding:'5px 8px',paddingLeft:40}}>
