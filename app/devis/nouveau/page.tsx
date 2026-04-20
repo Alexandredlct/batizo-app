@@ -226,20 +226,21 @@ export default function NouveauDevisPage(){
     if(l.type==='categorie'||l.type==='sous-categorie'){
       const st=getSousTotal(idx)
       const isSub=l.type==='sous-categorie'
+      const col=params.couleurPrincipale||G
       return(
-        <tr key={l.id} style={{background:isSub?'#f0fdf4':'#dcfce7'}}>
+        <tr key={l.id} style={{background:isSub?col+'18':col+'30'}}>
           <td colSpan={4} style={{padding:'8px 12px'}}>
             <div style={{display:'flex',alignItems:'center',gap:8}}>
               <button onClick={()=>updateLigne(l.id,'collapsed',!l.collapsed)} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#888',padding:0}}>{l.collapsed?'▶':'▼'}</button>
-              <span style={{fontSize:isSub?12:13,fontWeight:800,color:isSub?G:'#15803d',fontFamily:'monospace',flexShrink:0,minWidth:isSub?32:20}}>{getNumero(lignes,idx)}</span>
+              <span style={{fontSize:isSub?12:13,fontWeight:800,color:params.couleurPrincipale||G,fontFamily:'monospace',flexShrink:0,minWidth:isSub?32:20}}>{getNumero(lignes,idx)}</span>
               <input value={l.titre||''} onChange={e=>updateLigne(l.id,'titre',e.target.value)}
-                style={{flex:1,border:'none',background:'transparent',fontSize:isSub?13:14,fontWeight:700,color:isSub?G:'#15803d',outline:'none',fontFamily:'system-ui'}}
+                style={{flex:1,border:'none',background:'transparent',fontSize:isSub?13:14,fontWeight:700,color:params.couleurPrincipale||G,outline:'none',fontFamily:'system-ui'}}
                 placeholder={isSub?'Sous-catégorie':'Catégorie'}/>
             </div>
           </td>
           <td style={{padding:'8px 12px'}}></td>
             <td style={{padding:'8px 12px',textAlign:'right' as const}}>
-            <span style={{fontSize:13,fontWeight:700,color:isSub?G:'#15803d'}}>{fmt(st)} €</span>
+            <span style={{fontSize:13,fontWeight:700,color:params.couleurPrincipale||G}}>{fmt(st)} €</span>
             <div style={{display:'flex',justifyContent:'flex-end',gap:4,marginTop:2}}>
               <button onClick={()=>moveLigne(l.id,'up')} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:11}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>↑</button>
               <button onClick={()=>moveLigne(l.id,'down')} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:11}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>↓</button>
@@ -380,7 +381,7 @@ export default function NouveauDevisPage(){
   }
 
   return(
-    <div style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f0f2f5',overflow:'hidden'}}>
+    <div style={{display:'flex',height:'100vh',fontFamily:params.police||'system-ui,sans-serif',background:'#f0f2f5',overflow:'hidden'}}>
       <Sidebar activePage="devis"/>
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
         <div style={{height:60,background:'#fff',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 20px',flexShrink:0,gap:12}}>
@@ -466,9 +467,16 @@ export default function NouveauDevisPage(){
                         <div>{client.tel}</div>
                         {client.siret&&<div style={{color:'#888',fontSize:11}}>SIRET: {client.siret}</div>}
                       </div>
-                      <button onClick={()=>{if(!editMode)return;setClientSearch(client?.nom||'');setShowClientDD(true);setClient(null)}} style={{fontSize:11,color:G,background:'none',border:'none',cursor:'pointer',marginTop:6,padding:0}}>✏ Modifier</button>
+                      {editMode&&<button onClick={()=>{setClientSearch(client?.nom||'');setShowClientDD(true);setClient(null)}}
+                        style={{position:'absolute',top:8,right:8,background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:14,lineHeight:1,padding:2}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>✏</button>}
                     </div>
                   ):(
+                    <div>
+                    <div style={{background:'#f3f4f6',borderRadius:8,padding:'12px 14px',marginBottom:10,fontSize:12,color:'#aaa',fontStyle:'italic',minHeight:60,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                      Aucun client sélectionné
+                    </div>
                     <div style={{position:'relative'}}>
                       <svg style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)'}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                       <input value={clientSearch} onChange={e=>{setClientSearch(e.target.value);setShowClientDD(true)}}
@@ -498,6 +506,7 @@ export default function NouveauDevisPage(){
                         </div>
                       )}
                     </div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -505,7 +514,7 @@ export default function NouveauDevisPage(){
               {/* MÉTADONNÉES */}
               <div style={{padding:'14px 24px',borderBottom:`1px solid ${BD}`,background:'#fafafa',display:'flex',gap:20,flexWrap:'wrap' as const,alignItems:'flex-end'}}>
                 <div>
-                  <label style={{fontSize:11,color:'#888',display:'block',marginBottom:3}}>Devis n°</label>
+                  <label style={{fontSize:11,color:'#444',fontWeight:500,display:'block',marginBottom:3}}>Devis n°</label>
                   {numeroDevis?(
                     <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{numeroDevis}</div>
                   ):(
@@ -517,12 +526,12 @@ export default function NouveauDevisPage(){
                     </div>
                   )}
                 </div>
-                <div><label style={{fontSize:11,color:'#888',display:'block',marginBottom:3}}>Date</label>
+                <div><label style={{fontSize:11,color:'#444',fontWeight:500,display:'block',marginBottom:3}}>Date</label>
                   <input type="date" value={dateDevis} onChange={e=>setDateDevis(e.target.value)} disabled={!editMode} style={{padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,outline:'none',color:'#111'}}/></div>
-                <div><label style={{fontSize:11,color:'#888',display:'block',marginBottom:3}}>Validité</label>
+                <div><label style={{fontSize:11,color:'#444',fontWeight:500,display:'block',marginBottom:3}}>Validité</label>
                   <input value={validite} onChange={e=>setValidite(e.target.value)} disabled={!editMode} style={{width:80,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,outline:'none',color:'#111'}}/></div>
                 <div style={{flex:1,position:'relative'}}>
-                  <label style={{fontSize:11,color:'#888',display:'block',marginBottom:3}}>Adresse du projet</label>
+                  <label style={{fontSize:11,color:'#444',fontWeight:500,display:'block',marginBottom:3}}>Adresse du projet</label>
                   {adresseMode===null&&(
                     <div onClick={()=>setShowAdresseMenu(!showAdresseMenu)}
                       style={{padding:'5px 10px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#aaa',cursor:'pointer',background:'#fff',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
@@ -656,12 +665,12 @@ export default function NouveauDevisPage(){
                 <div style={{padding:'20px 24px'}}>
                   <div style={{display:'flex',flexDirection:'column' as const,gap:8}}>
                     {[
-                      {label:'Sous-total HT',val:fmt(totalHT)+' €',bold:true},
-                      remise>0?{label:remisePct?'Remise '+remise+'%':'Remise',val:'− '+fmt(remiseMt)+' €',bold:false,red:true}:null,
+                      remise>0?{label:'Sous-total HT',val:fmt(totalHT)+' €',bold:true}:null,
+                      remise>0?{label:params.libelleRemise||'Remise exceptionnelle',val:'− '+fmt(remiseMt)+' €',bold:false,red:true}:null,
                       {label:'Total HT',val:fmt(totalHT-remiseMt)+' €',bold:true},
                       {label:'TVA',val:fmt(totalTVA)+' €',bold:false},
                       {label:'Total TTC',val:fmt(totalTTC-remiseMt)+' €',bold:true},
-                      primeCEE>0?{label:primeCEELabel||'Prime à déduire',val:'− '+fmt(primeCEE)+' €',bold:false,red:true}:null,
+                      primeCEE>0?{label:params.libellePrime||primeCEELabel||'Prime Maprimerénov',val:'− '+fmt(primeCEE)+' €',bold:false,red:true}:null,
                     ].filter(Boolean).map((row:any)=>(
                       <div key={row.label} style={{display:'flex',justifyContent:'space-between',fontSize:13,paddingBottom:4,paddingTop:4,borderBottom:`1px solid #f3f4f6`}}>
                         <span style={{color:row.bold?'#111':'#555',fontWeight:row.bold?700:400}}>{row.label}</span>
@@ -703,7 +712,7 @@ export default function NouveauDevisPage(){
                       </div>
                     </div>
                     <div style={{background:'#f0fdf4',borderRadius:8,padding:'12px',display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:4}}>
-                      <span style={{fontSize:15,fontWeight:700,color:'#111'}}>{primeCEE>0||remise>0?'Reste à payer':'Net à payer'}</span>
+                      <span style={{fontSize:15,fontWeight:700,color:'#111'}}>'Reste à payer'</span>
                       <span style={{fontSize:18,fontWeight:800,color:G}}>{fmt(netAPayer)} €</span>
                     </div>
                   </div>
