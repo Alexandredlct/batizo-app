@@ -314,11 +314,11 @@ export default function NouveauDevisPage(){
     return(
       <>
         <tr key={l.id}
-          style={{background:selectedLigne===l.id&&editMode?'#fffbeb':'#fff',cursor:editMode?'pointer':'default',transition:'background 0.1s'}}
+          style={{background:selectedLigne===l.id&&editMode?'#fff3e0':'#fff',cursor:editMode?'pointer':'default',transition:'background 0.1s'}}
           onClick={()=>editMode&&setSelectedLigne(selectedLigne===l.id?null:l.id)}
           onMouseEnter={e=>{if(selectedLigne!==l.id)(e.currentTarget as HTMLTableRowElement).style.background=editMode?'#fffdf5':'#f9fafb'}}
           onMouseLeave={e=>{if(selectedLigne!==l.id)(e.currentTarget as HTMLTableRowElement).style.background=selectedLigne===l.id&&editMode?'#fffbeb':'#fff'}}>
-          <td style={{padding:'5px 6px',width:60,textAlign:'left' as const,paddingLeft:10,borderRight:'1px solid #d0d0d0'}}><span style={{fontSize:11,color:'#333',fontWeight:400,fontFamily:'system-ui'}}>{getNumero(lignes,idx)}</span></td>
+          <td style={{padding:'4px 6px',width:60,textAlign:'left' as const,paddingLeft:8,borderRight:'1px solid #d0d0d0'}}><span style={{fontSize:11,color:'#333',fontWeight:400,fontFamily:'system-ui'}}>{getNumero(lignes,idx)}</span></td>
           <td style={{padding:'6px 8px',width:'45%',borderRight:'1px solid #d0d0d0'}}>
             <div style={{display:'flex',alignItems:'center',gap:6}}>
               
@@ -340,69 +340,63 @@ export default function NouveauDevisPage(){
             </div>
           </td>
           {/* QTÉ + UNITÉ */}
-          <td style={{padding:'6px 8px',width:120,borderRight:'1px solid #d0d0d0'}}>
-            {editMode?(
-              <div style={{display:'flex',alignItems:'center',gap:4}}>
-                <input type="number" value={l.qte||0} min={0} step={0.5}
+          <td style={{padding:'4px 6px',width:90,borderRight:'1px solid #d0d0d0',background:editMode?'#fffbeb':'transparent',cursor:editMode?'pointer':'default'}}
+            onClick={e=>{e.stopPropagation();editMode&&setEditingCell({id:l.id,field:'qte'})}}>
+            {editMode&&isEditing(l.id,'qte')?(
+              <div style={{display:'flex',alignItems:'center',gap:3}}>
+                <input type="number" autoFocus value={l.qte||0} min={0} step={0.5}
                   onChange={e=>updateLigne(l.id,'qte',parseFloat(e.target.value)||0)}
-                  style={{width:50,border:`1px solid ${BD}`,borderRadius:5,fontSize:12,padding:'4px 6px',outline:'none',textAlign:'right' as const,color:'#111'}}
-                  onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
-                  onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+                  onBlur={()=>setEditingCell(null)}
+                  style={{width:42,border:'none',background:'transparent',fontSize:13,padding:'2px 0',outline:'none',textAlign:'right' as const,color:'#111',fontWeight:500}}/>
                 <select value={l.unite||''} onChange={e=>updateLigne(l.id,'unite',e.target.value)}
-                  style={{border:`1px solid ${BD}`,borderRadius:5,fontSize:12,padding:'4px 4px',outline:'none',background:'#fff',color:'#111',cursor:'pointer'}}>
+                  style={{border:'none',background:'transparent',fontSize:11,outline:'none',color:'#666',cursor:'pointer',padding:0}}>
                   <option value="">-</option>
                   {UNITES.map(u=><option key={u} value={u}>{u}</option>)}
                 </select>
               </div>
             ):(
-              <div style={{fontSize:13,color:'#333',textAlign:'right' as const,padding:'4px 6px'}}>
-                <span style={{fontSize:13,color:'#111',fontWeight:500}}>{l.qte||0}</span> <span style={{fontSize:12,color:'#666'}}>{l.unite||''}</span>
+              <div style={{fontSize:13,color:'#111',textAlign:'right' as const,padding:'2px 4px',fontWeight:500}}>
+                {l.qte||0} <span style={{fontSize:11,color:'#666'}}>{l.unite||''}</span>
               </div>
             )}
           </td>
           {/* PU HT */}
-          <td style={{padding:'5px 4px',width:90,borderRight:'1px solid #d0d0d0'}}>
-            {editMode?(
-              <div style={{display:'flex',alignItems:'center',gap:3}}>
-                <input type="number" value={l.pu||0} min={0}
+          <td style={{padding:'4px 6px',width:85,borderRight:'1px solid #d0d0d0',background:editMode?'#fffbeb':'transparent',cursor:editMode?'pointer':'default'}}
+            onClick={e=>{e.stopPropagation();editMode&&setEditingCell({id:l.id,field:'pu'})}}>
+            {editMode&&isEditing(l.id,'pu')?(
+              <div style={{display:'flex',alignItems:'center',gap:2,justifyContent:'flex-end'}}>
+                <input type="number" autoFocus value={l.pu||0} min={0}
                   onChange={e=>updateLigne(l.id,'pu',parseFloat(e.target.value)||0)}
-                  style={{width:'60px',border:`1px solid ${BD}`,borderRadius:5,fontSize:12,padding:'4px 5px',outline:'none',textAlign:'right' as const,color:'#111'}}
-                  onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
-                  onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
-                <span style={{fontSize:11,color:'#888',flexShrink:0}}>€</span>
+                  onBlur={()=>setEditingCell(null)}
+                  style={{width:50,border:'none',background:'transparent',fontSize:13,padding:'2px 0',outline:'none',textAlign:'right' as const,color:'#111',fontWeight:500}}/>
+                <span style={{fontSize:11,color:'#888'}}>€</span>
               </div>
             ):(
-              <div style={{fontSize:13,color:'#111',fontWeight:500,textAlign:'right' as const,padding:'4px 5px',cursor:'default'}}>
+              <div style={{fontSize:13,color:'#111',fontWeight:500,textAlign:'right' as const,padding:'2px 4px'}}>
                 {fmt(l.pu||0)} €
               </div>
             )}
           </td>
           {/* TVA */}
-          <td style={{padding:'5px 4px',width:70,borderRight:'1px solid #d0d0d0'}}>
-            {editMode?(
-              <select value={l.tva||'20%'} onChange={e=>updateLigne(l.id,'tva',e.target.value)}
-                style={{width:'60px',border:`1px solid ${BD}`,borderRadius:5,fontSize:12,padding:'4px',outline:'none',background:'#fff',color:'#111',cursor:'pointer'}}
-                onFocus={e=>(e.currentTarget as HTMLSelectElement).style.borderColor=G}
-                onBlur={e=>(e.currentTarget as HTMLSelectElement).style.borderColor=BD}>
+          <td style={{padding:'4px 6px',width:65,borderRight:'1px solid #d0d0d0',background:editMode?'#fffbeb':'transparent',cursor:editMode?'pointer':'default'}}
+            onClick={e=>{e.stopPropagation();editMode&&setEditingCell({id:l.id,field:'tva'})}}>
+            {editMode&&isEditing(l.id,'tva')?(
+              <select autoFocus value={l.tva||'20%'} onChange={e=>{updateLigne(l.id,'tva',e.target.value);setEditingCell(null)}}
+                onBlur={()=>setEditingCell(null)}
+                style={{border:'none',background:'transparent',fontSize:13,outline:'none',color:'#111',cursor:'pointer',textAlign:'center' as const,width:'100%'}}>
                 {TVA_OPTIONS.map(t=><option key={t}>{t}</option>)}
               </select>
             ):(
-              <div style={{fontSize:13,color:'#111',fontWeight:500,textAlign:'center' as const,padding:'4px 5px',cursor:'default'}}>
+              <div style={{fontSize:13,color:'#111',fontWeight:500,textAlign:'center' as const,padding:'2px 4px'}}>
                 {l.tva||'20%'}
               </div>
             )}
           </td>
-          <td style={{padding:'6px 8px',width:100,textAlign:'right' as const}}>
+          <td style={{padding:'4px 8px',width:95,textAlign:'right' as const}}>
             <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{fmt(ht)} €</div>
-            {editMode&&<div style={{fontSize:9,color:'#bbb'}}>TTC: {fmt(ht*(1+parseFloat((l.tva||'0%').replace('%',''))/100))} €</div>}
+            
           </td>
-          <td style={{padding:'8px 4px',width:40}}>
-            {editMode&&<div className="row-actions" style={{display:'flex',flexDirection:'column' as const,gap:2,alignItems:'center',opacity:0,transition:'opacity 0.15s'}}>
-              <button onClick={()=>moveLigne(l.id,'up')} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:12,padding:1}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>↑</button>
-              <button onClick={()=>moveLigne(l.id,'down')} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:12,padding:1}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>↓</button>
-              <button onClick={()=>deleteLigne(l.id)} style={{background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:16,padding:1}} onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=RD} onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>×</button>
-            </div>}
-          </td>
+          <td style={{padding:'4px 4px',width:32}}></td>
         </tr>
         {isOuvrage&&editMode&&(l.lignesInternes||[]).map((li,j)=>(
           <tr key={li.id} style={{background:'#fafafa',borderBottom:`1px solid ${BD}`}}>
