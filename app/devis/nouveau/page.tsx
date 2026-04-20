@@ -904,20 +904,27 @@ export default function NouveauDevisPage(){
               {editMode&&(
                 <div style={{padding:'10px 24px',background:'#fafafa'}}>
                   <div style={{display:'flex',gap:8,flexWrap:'wrap' as const,alignItems:'center'}}>
-                    <span style={{fontSize:10,color:'#aaa',fontWeight:700,letterSpacing:'0.06em'}}>STRUCTURE</span>
-                    {[{label:'Catégorie',type:'categorie' as const},{label:'Sous-catégorie',type:'sous-categorie' as const},{label:'Note',type:'note' as const},{label:'Saut de page',type:'saut-page' as const}].map(btn=>(
+                    <span style={{fontSize:11,color:'#aaa',fontWeight:700,letterSpacing:'0.06em',marginRight:2}}>STRUCTURE</span>
+                    {[
+                      {label:'+ Catégorie',type:'categorie' as const,bg:'#fce7f3',color:'#9d174d',border:'#fbcfe8'},
+                      {label:'+ Sous-catégorie',type:'sous-categorie' as const,bg:'#fdf2f8',color:'#be185d',border:'#f9a8d4'},
+                      {label:'+ Note',type:'note' as const,bg:'#fffbeb',color:'#92400e',border:'#fde68a'},
+                      {label:'+ Saut de page',type:'saut-page' as const,bg:'#f9fafb',color:'#6b7280',border:'#e5e7eb'},
+                    ].map(btn=>(
                       <button key={btn.type} onClick={()=>addLigne(btn.type)}
-                        style={{padding:'5px 12px',cursor:'pointer',background:'#fff',color:'#555',border:`1px solid ${BD}`,borderRadius:20,fontSize:12}}
-                        onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.borderColor='#888'}
-                        onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.borderColor=BD}>
+                        style={{padding:'5px 12px',cursor:'pointer',background:btn.bg,color:btn.color,border:`1px solid ${btn.border}`,borderRadius:20,fontSize:12,fontWeight:600}}>
                         {btn.label}
                       </button>
                     ))}
                     <div style={{width:1,height:18,background:BD,margin:'0 4px'}}/>
-                    <span style={{fontSize:10,color:'#aaa',fontWeight:700,letterSpacing:'0.06em'}}>LIGNE</span>
-                    {[{label:'+ Matériau',type:'materiau' as const,bg:'#f3f4f6',color:'#555'},{label:"+ Main d'œuvre",type:'mo' as const,bg:'#eff6ff',color:'#2563eb'},{label:'+ Ouvrage',type:'ouvrage' as const,bg:'#f0fdf4',color:G}].map(btn=>(
+                    <span style={{fontSize:11,color:'#aaa',fontWeight:700,letterSpacing:'0.06em',marginRight:2}}>LIGNE</span>
+                    {[
+                      {label:'+ Matériau',type:'materiau' as const,bg:'#f3f4f6',color:'#374151',border:'#d1d5db'},
+                      {label:"+ Main d'œuvre",type:'mo' as const,bg:'#eff6ff',color:'#2563eb',border:'#bfdbfe'},
+                      {label:'+ Ouvrage',type:'ouvrage' as const,bg:'#f0fdf4',color:G,border:'#bbf7d0'},
+                    ].map(btn=>(
                       <button key={btn.type} onClick={()=>setShowBiblio(btn.type)}
-                        style={{padding:'5px 14px',cursor:'pointer',background:btn.bg,color:btn.color,border:`1px solid ${btn.color}30`,borderRadius:20,fontSize:12,fontWeight:600}}>
+                        style={{padding:'5px 12px',cursor:'pointer',background:btn.bg,color:btn.color,border:`1px solid ${btn.border}`,borderRadius:20,fontSize:12,fontWeight:600}}>
                         {btn.label}
                       </button>
                     ))}
