@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import RichTextEditor from '../../components/RichTextEditor'
 import { getBiblioOuvrages, getBiblioMats, getBiblioMO } from '../../lib/bibliothequeStore'
 import Sidebar from '../../components/Sidebar'
 import SearchBar from '../../components/SearchBar'
@@ -257,10 +258,10 @@ export default function NouveauDevisPage(){
       <tr key={l.id} style={{background:'#fff'}}>
         <td colSpan={8} style={{padding:'6px 8px'}}>
           <div style={{display:'flex',alignItems:'flex-start',gap:8}}>
-            <textarea value={l.texte||''} onChange={e=>updateLigne(l.id,'texte',e.target.value)}
-              readOnly={!editMode}
+            <RichTextEditor value={l.texte||''} onChange={v=>updateLigne(l.id,'texte',v)} readOnly={!editMode}
               placeholder="Note ou commentaire..."
-              style={{flex:1,padding:'6px 8px',border:'none',background:'transparent',fontSize:13,color:'#555',fontStyle:'italic',resize:'none' as const,outline:'none',minHeight:38,fontFamily:'system-ui'}}/>
+              defaultFont={params.police||'system-ui'}
+              style={{padding:'4px 8px',fontSize:13,color:'#555',fontStyle:'italic',flex:1}}/>
             {editMode&&<button onClick={()=>deleteLigne(l.id)} style={{background:'none',border:'none',cursor:'pointer',color:'#ddd',fontSize:16,marginTop:4}}
               onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=RD}
               onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ddd'}>×</button>}
@@ -315,12 +316,16 @@ export default function NouveauDevisPage(){
               <div style={{flex:1}}>
                 <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:2}}>
                   {editMode&&<span style={{fontSize:8,fontWeight:700,padding:'1px 4px',borderRadius:4,background:l.type==='mo'?'#eff6ff':isOuvrage?'#f0fdf4':'#f3f4f6',color:l.type==='mo'?'#2563eb':isOuvrage?G:'#888',flexShrink:0,opacity:0.7}}>{l.type==='mo'?'MO':isOuvrage?'OUV':'MAT'}</span>}
-                  <input value={l.designation||''} onChange={e=>updateLigne(l.id,'designation',e.target.value)} placeholder="Désignation..."
-                    style={{flex:1,border:'none',background:'transparent',fontSize:13,fontWeight:600,color:'#111',outline:'none',fontFamily:'system-ui'}}/>
+                  <RichTextEditor value={l.designation||''} onChange={v=>updateLigne(l.id,'designation',v)} readOnly={!editMode}
+                    placeholder="Désignation..." singleLine
+                    defaultFont={params.police||'system-ui'}
+                    style={{fontSize:13,fontWeight:600,color:'#111'}}/>
                 </div>
                 <div style={{marginTop:2}}>
-                  <input value={l.description||''} onChange={e=>updateLigne(l.id,'description',e.target.value)} placeholder="Description optionnelle..."
-                    style={{width:'100%',border:'none',background:'transparent',fontSize:11,color:'#888',outline:'none',fontFamily:'system-ui'}}/>
+                  <RichTextEditor value={l.description||''} onChange={v=>updateLigne(l.id,'description',v)} readOnly={!editMode}
+                    placeholder="Description optionnelle..." singleLine
+                    defaultFont={params.police||'system-ui'}
+                    style={{fontSize:11,color:'#888'}}/>
                 </div>
               </div>
             </div>
@@ -624,18 +629,19 @@ export default function NouveauDevisPage(){
 
               {/* TITRE */}
               <div style={{padding:'12px 24px',textAlign:'center' as const}}>
-                <input value={titre} onChange={e=>setTitre(e.target.value)} disabled={!editMode} placeholder="Titre du devis (optionnel)"
-                  style={{width:'100%',border:'none',background:'transparent',fontSize:15,fontStyle:'italic',color:'#555',textAlign:'center' as const,outline:'none',fontFamily:'Georgia,serif'}}/>
+                <RichTextEditor value={titre} onChange={setTitre} readOnly={!editMode}
+                  placeholder="Titre du devis (optionnel)"
+                  defaultFont={params.police||'Georgia,serif'}
+                  style={{textAlign:'center' as const,fontSize:15,fontStyle:'italic',color:'#555',minHeight:28}}/>
               </div>
 
               {/* INTRO */}
               {(introTexte||editMode)&&(
                 <div style={{padding:'8px 24px'}}>
-                  <textarea value={introTexte} onChange={e=>setIntroTexte(e.target.value)}
-                    readOnly={!editMode}
+                  <RichTextEditor value={introTexte} onChange={setIntroTexte} readOnly={!editMode}
                     placeholder={editMode?"Texte d'introduction (optionnel)...":''}
-                    rows={2}
-                    style={{width:'100%',border:'none',background:'transparent',fontSize:13,color:'#555',fontStyle:'italic',resize:'none' as const,outline:'none',fontFamily:'system-ui',lineHeight:1.6,boxSizing:'border-box' as const}}/>
+                    defaultFont={params.police||'system-ui'}
+                    style={{fontSize:13,color:'#555',fontStyle:'italic'}}/>
                 </div>
               )}
 
