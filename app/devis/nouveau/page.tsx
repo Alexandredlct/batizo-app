@@ -642,7 +642,30 @@ export default function NouveauDevisPage(){
                         <div style={{fontSize:14,fontWeight:600,color:'#888',marginBottom:4}}>Le devis est vide</div>
                         <div style={{fontSize:13,color:'#aaa'}}>Utilisez les boutons ci-dessous pour ajouter des lignes</div>
                       </td></tr>
-                    ):lignes.map((l,i)=>renderLigne(l,i))}
+                    ):(() => {
+                      // Calculer les lignes visibles selon collapsed
+                      const visibles: number[] = []
+                      let collapsedCatIdx: number | null = null
+                      let collapsedSubIdx: number | null = null
+
+                      lignes.forEach((l, i) => {
+                        if (l.type === 'categorie') {
+                          collapsedCatIdx = l.collapsed ? i : null
+                          collapsedSubIdx = null
+                          visibles.push(i) // catégorie toujours visible
+                        } else if (l.type === 'sous-categorie') {
+                          if (collapsedCatIdx !== null) return // masqué par catégorie
+                          collapsedSubIdx = l.collapsed ? i : null
+                          visibles.push(i) // sous-catégorie toujours visible si catégorie ouverte
+                        } else {
+                          if (collapsedCatIdx !== null) return // masqué par catégorie
+                          if (collapsedSubIdx !== null) return // masqué par sous-catégorie
+                          visibles.push(i)
+                        }
+                      })
+
+                      return visibles.map(i => renderLigne(lignes[i], i))
+                    })()}
                   </tbody>
                 </table>
               </div>
