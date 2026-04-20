@@ -630,7 +630,7 @@ export default function NouveauDevisPage(){
               <div style={{overflowX:'auto'}}>
                 <table style={{width:'100%',borderCollapse:'collapse',minWidth:700}}>
                   <thead>
-                    <tr style={{background:'#f9fafb',borderBottom:`2px solid ${BD}`}}>
+                    <tr style={{background:'#fff',borderBottom:'none'}}>
                       <th style={{padding:'10px 10px',fontSize:11,color:'#888',fontWeight:600,textAlign:'left' as const,width:60,borderRight:'1px solid #e5e7eb'}}>N°</th>
                       <th style={{padding:'10px 8px',fontSize:11,color:'#888',fontWeight:600,textAlign:'left' as const,borderRight:'1px solid #e5e7eb'}}>Désignation</th>
                       <th style={{padding:'10px 4px',fontSize:11,color:'#888',fontWeight:600,textAlign:'right' as const,width:70,borderRight:'1px solid #e5e7eb'}}>Qté</th>
