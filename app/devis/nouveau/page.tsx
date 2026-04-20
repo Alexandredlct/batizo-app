@@ -352,22 +352,19 @@ export default function NouveauDevisPage(){
             )}
           </td>
           {/* PU HT */}
-          <td style={{padding:'6px 8px',width:100}} onClick={()=>!isOuvrage||l.prixManuel?setEditingCell({id:l.id,field:'pu'}):null}>
-            {isEditing(l.id,'pu')?(
-              <input type="number" autoFocus value={isOuvrage?l.prixForce||0:l.pu||0} min={0}
-                onChange={e=>updateLigne(l.id,isOuvrage?'prixForce':'pu',parseFloat(e.target.value)||0)}
-                onBlur={()=>setEditingCell(null)}
-                style={{width:'100%',border:`1px solid ${G}`,borderRadius:5,fontSize:13,padding:'4px 6px',outline:'none',textAlign:'right' as const,color:'#111',fontWeight:500}}/>
+          <td style={{padding:'6px 4px',width:90,borderRight:'1px solid #d0d0d0'}}>
+            {editMode?(
+              <div style={{display:'flex',alignItems:'center',gap:3}}>
+                <input type="number" value={l.pu||0} min={0}
+                  onChange={e=>updateLigne(l.id,'pu',parseFloat(e.target.value)||0)}
+                  style={{width:'60px',border:`1px solid ${BD}`,borderRadius:5,fontSize:12,padding:'4px 5px',outline:'none',textAlign:'right' as const,color:'#111'}}
+                  onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+                  onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+                <span style={{fontSize:11,color:'#888',flexShrink:0}}>€</span>
+              </div>
             ):(
-              <div style={{fontSize:13,color:'#333',cursor:isOuvrage&&!l.prixManuel?'default':'pointer',padding:'4px 6px',borderRadius:5,textAlign:'right' as const,display:'flex',alignItems:'center',justifyContent:'flex-end',gap:6}}
-                onMouseEnter={e=>{if(!isOuvrage||l.prixManuel)(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}}
-                onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-                {isOuvrage&&!l.prixManuel?(
-                  <span style={{fontSize:11,color:'#aaa',fontStyle:'italic'}}>auto</span>
-                ):(
-                  <span style={{fontWeight:500}}>{fmt(isOuvrage?l.prixForce||0:l.pu||0)} €</span>
-                )}
-
+              <div style={{fontSize:13,color:'#333',textAlign:'right' as const,padding:'4px 5px',cursor:'default'}}>
+                {fmt(l.pu||0)} €
               </div>
             )}
           </td>
@@ -645,7 +642,7 @@ export default function NouveauDevisPage(){
               )}
 
               {/* TABLEAU */}
-              <div style={{overflowX:'auto'}}>
+              <div style={{overflowX:'auto',padding:'0 24px'}}>
                 <table style={{width:'100%',borderCollapse:'collapse',minWidth:700}}>
                   <thead>
                     <tr style={{background:'#fff',borderBottom:'none'}}>
@@ -694,7 +691,7 @@ export default function NouveauDevisPage(){
               </div>
 
               {/* BOUTONS AJOUT */}
-              <div style={{padding:'12px 16px',borderTop:`1px solid ${BD}`,borderBottom:`1px solid ${BD}`,background:'#fafafa'}}>
+              <div style={{padding:'12px 24px',borderTop:`1px solid ${BD}`,borderBottom:`1px solid ${BD}`,background:'#fafafa'}}>
                 <div style={{display:'flex',gap:8,flexWrap:'wrap' as const,alignItems:'center'}}>
                   <span style={{fontSize:10,color:'#aaa',fontWeight:700,letterSpacing:'0.06em'}}>LIGNE</span>
                   {[{label:'+ Matériau',type:'materiau' as const,bg:'#f3f4f6',color:'#555'},{label:"+ Main d'oeuvre",type:'mo' as const,bg:'#eff6ff',color:'#2563eb'},{label:'+ Ouvrage',type:'ouvrage' as const,bg:'#f0fdf4',color:G}].map(btn=>(
