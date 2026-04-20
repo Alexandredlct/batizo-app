@@ -165,7 +165,7 @@ export default function NouveauDevisPage(){
       setLignes(p=>[...p,ouvrLigne,...composants])
     } else if(type==='ouvrage'){
       // Ouvrage vide (création directe sur le devis)
-      setLignes(p=>[...p,{...base,designation:'Nouvel ouvrage',description:'',unite:'u',qte:1,pu:0,tva:'20%',lignesInternes:[],prixManuel:false}])
+      setLignes(p=>[...p,{...base,designation:'Nouvel ouvrage',description:'',unite:'',qte:1,pu:0,tva:'20%',lignesInternes:[],prixManuel:false}])
     } else if(type==='categorie'||type==='sous-categorie'){
       setLignes(p=>[...p,{...base,titre:'Nouvelle catégorie'}])
     } else if(type==='note'){
@@ -272,6 +272,8 @@ export default function NouveauDevisPage(){
       const isSub=l.type==='sous-categorie'
       const col=params.couleurPrincipale||G
       return(
+        <>
+        {idx>0&&<tr><td colSpan={7} style={{height:6,background:'#fff',padding:0}}></td></tr>}
         <tr key={l.id} style={{background:isSub?col+'18':col+'30'}}>
           <td colSpan={4} style={{padding:'8px 12px'}}>
             <div style={{display:'flex',alignItems:'center',gap:8}}>
@@ -292,12 +294,13 @@ export default function NouveauDevisPage(){
             </div>}
           </td>
         </tr>
+        </>
       )
     }
 
     return(
       <>
-        <tr key={l.id} style={{borderBottom:`1px solid ${BD}`,background:'#fff'}}
+        <tr key={l.id} style={{borderBottom:`1px solid #e5e7eb`,background:'#fff'}}
           onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
           onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background='#fff'}>
           <td style={{padding:'8px 6px',width:60,textAlign:'left' as const,paddingLeft:10}}><span style={{fontSize:11,color:'#888',fontWeight:600,fontFamily:'monospace'}}>{getNumero(lignes,idx)}</span></td>
@@ -310,13 +313,9 @@ export default function NouveauDevisPage(){
                   <input value={l.designation||''} onChange={e=>updateLigne(l.id,'designation',e.target.value)} placeholder="Désignation..."
                     style={{flex:1,border:'none',background:'transparent',fontSize:13,fontWeight:600,color:'#111',outline:'none',fontFamily:'system-ui'}}/>
                 </div>
-                <div style={{display:'flex',alignItems:'center',gap:6,marginTop:2}}>
+                <div style={{marginTop:2}}>
                   <input value={l.description||''} onChange={e=>updateLigne(l.id,'description',e.target.value)} placeholder="Description optionnelle..."
-                    style={{flex:1,border:'none',background:'transparent',fontSize:11,color:'#888',outline:'none',fontFamily:'system-ui'}}/>
-                  <select value={l.unite||'u'} onChange={e=>updateLigne(l.id,'unite',e.target.value)}
-                    style={{border:`1px solid ${BD}`,borderRadius:5,fontSize:10,padding:'2px 4px',outline:'none',background:'#f3f4f6',color:'#555',cursor:'pointer'}}>
-                    {UNITES.map(u=><option key={u}>{u}</option>)}
-                  </select>
+                    style={{width:'100%',border:'none',background:'transparent',fontSize:11,color:'#888',outline:'none',fontFamily:'system-ui'}}/>
                 </div>
               </div>
             </div>
