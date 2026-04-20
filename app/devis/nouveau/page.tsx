@@ -278,7 +278,7 @@ export default function NouveauDevisPage(){
           <td colSpan={4} style={{padding:'8px 12px'}}>
             <div style={{display:'flex',alignItems:'center',gap:8}}>
               {editMode&&<button onClick={()=>updateLigne(l.id,'collapsed',!l.collapsed)} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#888',padding:0}}>{l.collapsed?'▶':'▼'}</button>}
-              <span style={{fontSize:isSub?12:13,fontWeight:800,color:'#111',fontFamily:'monospace',flexShrink:0,minWidth:isSub?32:20}}>{getNumero(lignes,idx)}</span>
+              <span style={{fontSize:isSub?12:13,fontWeight:400,color:'#555',fontFamily:'system-ui',flexShrink:0,minWidth:isSub?32:20}}>{getNumero(lignes,idx)}</span>
               <input value={l.titre||''} onChange={e=>updateLigne(l.id,'titre',e.target.value)}
                 style={{flex:1,border:'none',background:'transparent',fontSize:isSub?13:14,fontWeight:700,color:'#111',outline:'none',fontFamily:'system-ui'}}
                 placeholder={isSub?'Sous-catégorie':'Catégorie'}/>
@@ -300,11 +300,11 @@ export default function NouveauDevisPage(){
 
     return(
       <>
-        <tr key={l.id} style={{borderBottom:`1px solid #e5e7eb`,background:'#fff'}}
+        <tr key={l.id} style={{background:'#fff'}}
           onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
           onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background='#fff'}>
-          <td style={{padding:'8px 6px',width:60,textAlign:'left' as const,paddingLeft:10}}><span style={{fontSize:11,color:'#888',fontWeight:600,fontFamily:'monospace'}}>{getNumero(lignes,idx)}</span></td>
-          <td style={{padding:'8px 8px',minWidth:240}}>
+          <td style={{padding:'8px 6px',width:60,textAlign:'left' as const,paddingLeft:10,borderRight:'1px solid #f3f4f6'}}><span style={{fontSize:11,color:'#333',fontWeight:400,fontFamily:'system-ui'}}>{getNumero(lignes,idx)}</span></td>
+          <td style={{padding:'8px 8px',minWidth:240,borderRight:'1px solid #f3f4f6'}}>
             <div style={{display:'flex',alignItems:'center',gap:6}}>
               
               <div style={{flex:1}}>
@@ -321,24 +321,23 @@ export default function NouveauDevisPage(){
             </div>
           </td>
           {/* QTÉ + UNITÉ */}
-          <td style={{padding:'6px 8px',width:100}} onClick={()=>setEditingCell({id:l.id,field:'qte'})}>
-            {isEditing(l.id,'qte')?(
+          <td style={{padding:'6px 8px',width:120,borderRight:'1px solid #f3f4f6'}}>
+            {editMode?(
               <div style={{display:'flex',alignItems:'center',gap:4}}>
-                <input type="number" autoFocus value={l.qte||0} min={0} step={0.5}
+                <input type="number" value={l.qte||0} min={0} step={0.5}
                   onChange={e=>updateLigne(l.id,'qte',parseFloat(e.target.value)||0)}
-                  onBlur={()=>setEditingCell(null)}
-                  style={{width:55,border:`1px solid ${G}`,borderRadius:5,fontSize:13,padding:'4px 6px',outline:'none',textAlign:'right' as const,color:'#111',fontWeight:500}}/>
-                <select value={l.unite||'u'} onChange={e=>updateLigne(l.id,'unite',e.target.value)}
-                  onBlur={()=>setEditingCell(null)}
-                  style={{border:`1px solid ${G}`,borderRadius:5,fontSize:12,padding:'4px 4px',outline:'none',background:'#fff',color:'#111'}}>
-                  {UNITES.map(u=><option key={u}>{u}</option>)}
+                  style={{width:50,border:`1px solid ${BD}`,borderRadius:5,fontSize:12,padding:'4px 6px',outline:'none',textAlign:'right' as const,color:'#111'}}
+                  onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+                  onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+                <select value={l.unite||''} onChange={e=>updateLigne(l.id,'unite',e.target.value)}
+                  style={{border:`1px solid ${BD}`,borderRadius:5,fontSize:12,padding:'4px 4px',outline:'none',background:'#fff',color:'#111',cursor:'pointer'}}>
+                  <option value="">-</option>
+                  {UNITES.map(u=><option key={u} value={u}>{u}</option>)}
                 </select>
               </div>
             ):(
-              <div style={{fontSize:13,color:'#333',cursor:'pointer',padding:'4px 6px',borderRadius:5,textAlign:'right' as const}}
-                onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
-                onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-                {l.qte||0} <span style={{fontSize:11,color:'#888'}}>{l.unite||'u'}</span>
+              <div style={{fontSize:13,color:'#333',textAlign:'right' as const,padding:'4px 6px'}}>
+                {l.qte||0} <span style={{fontSize:11,color:'#888'}}>{l.unite||''}</span>
               </div>
             )}
           </td>
@@ -358,17 +357,12 @@ export default function NouveauDevisPage(){
                 ):(
                   <span style={{fontWeight:500}}>{fmt(isOuvrage?l.prixForce||0:l.pu||0)} €</span>
                 )}
-                {isOuvrage&&(
-                  <label style={{display:'flex',alignItems:'center',gap:3,cursor:'pointer'}} onClick={e=>e.stopPropagation()}>
-                    <input type="checkbox" checked={l.prixManuel||false} onChange={e=>updateLigne(l.id,'prixManuel',e.target.checked)} style={{accentColor:G,width:10,height:10}}/>
-                    <span style={{fontSize:9,color:'#888'}}>Manuel</span>
-                  </label>
-                )}
+
               </div>
             )}
           </td>
           {/* TVA */}
-          <td style={{padding:'6px 8px',width:70}} onClick={()=>setEditingCell({id:l.id,field:'tva'})}>
+          <td style={{padding:'6px 8px',width:70,borderRight:'1px solid #f3f4f6'}}>
             {isEditing(l.id,'tva')?(
               <select autoFocus value={l.tva||'20%'} onChange={e=>updateLigne(l.id,'tva',e.target.value)}
                 onBlur={()=>setEditingCell(null)}
@@ -634,11 +628,11 @@ export default function NouveauDevisPage(){
                 <table style={{width:'100%',borderCollapse:'collapse',minWidth:700}}>
                   <thead>
                     <tr style={{background:'#f9fafb',borderBottom:`2px solid ${BD}`}}>
-                      <th style={{padding:'10px 10px',fontSize:11,color:'#888',fontWeight:600,textAlign:'left' as const,width:60}}>N°</th>
-                      <th style={{padding:'10px 8px',fontSize:11,color:'#888',fontWeight:600,textAlign:'left' as const}}>Désignation</th>
-                      <th style={{padding:'10px 4px',fontSize:11,color:'#888',fontWeight:600,textAlign:'right' as const,width:70}}>Qté</th>
-                      <th style={{padding:'10px 4px',fontSize:11,color:'#888',fontWeight:600,textAlign:'right' as const,width:90}}>PU HT</th>
-                      <th style={{padding:'10px 4px',fontSize:11,color:'#888',fontWeight:600,textAlign:'center' as const,width:70}}>TVA</th>
+                      <th style={{padding:'10px 10px',fontSize:11,color:'#888',fontWeight:600,textAlign:'left' as const,width:60,borderRight:'1px solid #e5e7eb'}}>N°</th>
+                      <th style={{padding:'10px 8px',fontSize:11,color:'#888',fontWeight:600,textAlign:'left' as const,borderRight:'1px solid #e5e7eb'}}>Désignation</th>
+                      <th style={{padding:'10px 4px',fontSize:11,color:'#888',fontWeight:600,textAlign:'right' as const,width:70,borderRight:'1px solid #e5e7eb'}}>Qté</th>
+                      <th style={{padding:'10px 4px',fontSize:11,color:'#888',fontWeight:600,textAlign:'right' as const,width:90,borderRight:'1px solid #e5e7eb'}}>PU HT</th>
+                      <th style={{padding:'10px 4px',fontSize:11,color:'#888',fontWeight:600,textAlign:'center' as const,width:70,borderRight:'1px solid #e5e7eb'}}>TVA</th>
                       <th style={{padding:'10px 8px',fontSize:11,color:'#888',fontWeight:600,textAlign:'right' as const,width:110}}>Total HT</th>
                       <th style={{width:50}}></th>
                     </tr>
