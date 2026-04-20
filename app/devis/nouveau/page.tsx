@@ -344,7 +344,7 @@ export default function NouveauDevisPage(){
       const col=params.couleurPrincipale||G
       return(
         <>
-        {idx>0&&<tr><td colSpan={7} style={{height:isSub?16:24,background:'#fff',padding:0}}></td></tr>}
+        {idx>0&&<tr><td colSpan={7} style={{height:isSub?24:32,background:'#fff',padding:0}}></td></tr>}
         <tr key={l.id} style={{background:selectedLigne===l.id&&editMode?'#fff3e0':isSub?col+'18':col+'30',cursor:editMode?'pointer':'default'}}
           onClick={()=>editMode&&setSelectedLigne(selectedLigne===l.id?null:l.id)}>
           <td style={{padding:'6px 6px',paddingLeft:10,width:60,background:'transparent'}}>
@@ -432,7 +432,7 @@ export default function NouveauDevisPage(){
 
     return(
       <>
-        {idx>0&&lignes[idx-1]&&!['categorie','sous-categorie'].includes(lignes[idx-1].type)&&<tr><td colSpan={7} style={{height:6,background:'#fff',padding:0}}></td></tr>}
+        {idx>0&&<tr><td colSpan={7} style={{height:16,background:'#fff',padding:0}}></td></tr>}
         <tr key={l.id}
           style={{background:selectedLigne===l.id&&editMode?'#fff3e0':'#fff',transition:'background 0.1s'}}
           onMouseEnter={()=>editMode&&setHoverLigne(l.id)}
@@ -523,7 +523,7 @@ export default function NouveauDevisPage(){
             <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{fmt(ht)} €</div>
             
           </td>
-          <td style={{padding:'4px 4px',width:40,position:'relative' as const}} onClick={e=>e.stopPropagation()}>
+          <td style={{padding:'4px 4px',width:40,position:'relative' as const,verticalAlign:'top' as const}} onClick={e=>e.stopPropagation()}>
             {selectedLigne===l.id&&editMode&&(
               <div style={{display:'flex',alignItems:'center',gap:2}}>
                 <div style={{display:'flex',flexDirection:'column' as const,gap:0}}>
