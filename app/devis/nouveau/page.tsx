@@ -796,145 +796,170 @@ export default function NouveauDevisPage(){
             <div id="devis-content" style={{background:'#fff',borderRadius:0,border:'none',boxShadow:'0 2px 12px rgba(0,0,0,0.08)',overflow:'hidden'}}>
 
               {/* EN-TÊTE */}
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',borderBottom:`1px solid ${BD}`}}>
-                <div style={{padding:'24px',borderRight:`1px solid ${BD}`,cursor:'pointer',position:'relative'}}
-                  onClick={()=>setShowHeaderInfo(true)}
-                  onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
-                  onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-                  {/* Logo depuis Paramètres */}
-                  {logoPreview&&(
-                    <img src={logoPreview} alt="logo" style={{height:48,maxWidth:160,objectFit:'contain',display:'block',marginBottom:12}}/>
-                  )}
-                  <div style={{fontSize:15,fontWeight:800,color:'#111',marginBottom:6}}>
-                    {params.nomEntreprise||'Mon entreprise'}
-                    {params.showFormeJuridique&&params.formeJuridique?' — '+params.formeJuridique:''}
-                  </div>
-                  <div style={{fontSize:12,color:'#555',lineHeight:1.9}}>
-                    {params.showAdresse&&params.adresseLigne1&&<div>{params.adresseLigne1}{params.codePostal?' '+params.codePostal:''}{params.ville?' '+params.ville:''}</div>}
-                    {params.showTel&&params.tel&&<div>{params.tel}</div>}
-                    {params.showEmail&&params.email&&<div>{params.email}</div>}
-                    {params.showSiteWeb&&params.siteWeb&&<div>{params.siteWeb}</div>}
-                  </div>
-                  <div style={{position:'absolute',top:8,right:8,fontSize:10,color:'#bbb',background:'#f3f4f6',padding:'2px 7px',borderRadius:4}}>Modifier dans Paramètres</div>
-                </div>
-                <div style={{padding:'24px'}}>
+              <div style={{padding:'28px 28px 0 28px',position:'relative' as const}}>
+                {/* Bouton Paramètres discret — editMode seulement */}
+                {editMode&&<a href="/parametres" style={{position:'absolute',top:12,right:12,fontSize:10,color:'#bbb',background:'#f3f4f6',padding:'2px 8px',borderRadius:4,textDecoration:'none'}}
+                  onMouseEnter={e=>(e.currentTarget as HTMLAnchorElement).style.color='#555'}
+                  onMouseLeave={e=>(e.currentTarget as HTMLAnchorElement).style.color='#bbb'}>⚙ Paramètres</a>}
 
-                  {client?(
-                    <div>
-                      <div style={{fontSize:14,fontWeight:700,color:'#111',marginBottom:4}}>{client.nom}</div>
-                      <div style={{fontSize:12,color:'#555',lineHeight:1.8}}>
-                        <div>{client.adresse}</div>
-                        <div>{client.email}</div>
-                        <div>{client.tel}</div>
-                        {client.siret&&<div style={{color:'#888',fontSize:11}}>SIRET: {client.siret}</div>}
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:32,alignItems:'flex-start'}}>
+                  {/* Bloc entreprise */}
+                  <div>
+                    {logoPreview&&<img src={logoPreview} alt="logo" style={{height:52,maxWidth:160,objectFit:'contain' as const,display:'block',marginBottom:12}}/>}
+                    <div style={{fontSize:16,fontWeight:700,color:'#111',marginBottom:16}}>
+                      {params.nomEntreprise||'Mon entreprise'}
+                      {params.showFormeJuridique&&params.formeJuridique?' — '+params.formeJuridique:''}
+                    </div>
+                    <div style={{fontSize:13,color:'#555',lineHeight:1.6}}>
+                      {params.showAdresse&&params.adresseLigne1&&<div>{params.adresseLigne1}{params.codePostal?' '+params.codePostal:''}{params.ville?' '+params.ville:''}</div>}
+                      {params.showTel&&params.tel&&<div>{params.tel}</div>}
+                      {params.showEmail&&params.email&&<div>{params.email}</div>}
+                      {params.showSiteWeb&&params.siteWeb&&<div>{params.siteWeb}</div>}
+                    </div>
+                  </div>
+
+                  {/* Bloc client */}
+                  <div>
+                    {client?(
+                      <div style={{background:'#F5F5F5',borderRadius:8,padding:'20px 24px',position:'relative' as const}}>
+                        <div style={{fontSize:15,fontWeight:700,color:'#111',marginBottom:12}}>
+                          {client.nom.includes('—')?client.nom.split('—')[0].trim():client.nom}
+                          {client.nom.includes('—')&&<div style={{fontSize:13,fontWeight:400,color:'#555',marginTop:2}}>{client.nom.split('—')[1].trim()}</div>}
+                        </div>
+                        <div style={{fontSize:13,color:'#555',lineHeight:1.5}}>
+                          {client.adresse&&<div>{client.adresse}</div>}
+                          {client.email&&<div>{client.email}</div>}
+                          {client.tel&&<div>{client.tel}</div>}
+                          {client.siret&&<div style={{color:'#888',fontSize:12,marginTop:4}}>SIRET : {client.siret}</div>}
+                        </div>
+                        {editMode&&<button onClick={()=>{setClientSearch(client?.nom||'');setShowClientDD(true);setClient(null)}}
+                          style={{position:'absolute',top:10,right:10,background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:13}}
+                          onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'}
+                          onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>✏</button>}
                       </div>
-                      {editMode&&<button onClick={()=>{setClientSearch(client?.nom||'');setShowClientDD(true);setClient(null)}}
-                        style={{position:'absolute',top:8,right:8,background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:14,lineHeight:1,padding:2}}
-                        onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'}
-                        onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>✏</button>}
-                    </div>
-                  ):(
-                    <div>
-                    <div style={{background:'#f3f4f6',borderRadius:8,padding:'12px 14px',marginBottom:10,fontSize:12,color:'#aaa',fontStyle:'italic',minHeight:60,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                      Aucun client sélectionné
-                    </div>
-                    <div style={{position:'relative'}}>
-                      <svg style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)'}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                      <input value={clientSearch} onChange={e=>{setClientSearch(e.target.value);setShowClientDD(true)}}
-                        onFocus={e=>{setShowClientDD(true);(e.currentTarget as HTMLInputElement).style.borderColor=G}}
-                        placeholder="Chercher ou créer un client..."
-                        style={{width:'100%',padding:'10px 12px 10px 32px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
-                      {showClientDD&&(
-                        <div style={{position:'absolute',top:'110%',left:0,right:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:100,overflow:'hidden'}}>
-                          {clientsExistants.filter(c=>c.nom.toLowerCase().includes(clientSearch.toLowerCase())).map((c,i)=>(
-                            <div key={i} onClick={()=>{setClient(c);setShowClientDD(false);setClientSearch('')}}
-                              style={{padding:'10px 14px',cursor:'pointer',borderBottom:'1px solid #f3f4f6'}}
-                              onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
-                              onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-                              <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{c.nom}</div>
-                              <div style={{fontSize:11,color:'#888'}}>{c.adresse}</div>
+                    ):(
+                      <div>
+                        {editMode&&<div style={{background:'#F5F5F5',borderRadius:8,padding:'16px',marginBottom:10,fontSize:12,color:'#bbb',fontStyle:'italic',minHeight:60,display:'flex',alignItems:'center',justifyContent:'center'}}>Aucun client sélectionné</div>}
+                        <div style={{position:'relative'}}>
+                          <svg style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)'}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                          <input value={clientSearch} onChange={e=>{setClientSearch(e.target.value);setShowClientDD(true)}}
+                            onFocus={e=>{setShowClientDD(true);(e.currentTarget as HTMLInputElement).style.borderColor=G}}
+                            placeholder="Chercher ou créer un client..."
+                            style={{width:'100%',padding:'10px 12px 10px 32px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
+                          {showClientDD&&(
+                            <div style={{position:'absolute',top:'110%',left:0,right:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:100,overflow:'hidden'}}>
+                              {clientsExistants.filter(c=>c.nom.toLowerCase().includes(clientSearch.toLowerCase())).map((c,i)=>(
+                                <div key={i} onClick={()=>{setClient(c);setShowClientDD(false);setClientSearch('')}}
+                                  style={{padding:'10px 14px',cursor:'pointer',borderBottom:'1px solid #f3f4f6'}}
+                                  onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
+                                  onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                                  <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{c.nom}</div>
+                                  <div style={{fontSize:11,color:'#888'}}>{c.adresse}</div>
+                                </div>
+                              ))}
+                              {clientSearch&&(
+                                <div onClick={()=>{setClient({nom:clientSearch,adresse:'',email:'',tel:''});setShowClientDD(false);setClientSearch('')}}
+                                  style={{padding:'10px 14px',cursor:'pointer',background:'#f0fdf4',display:'flex',alignItems:'center',gap:8}}
+                                  onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#dcfce7'}
+                                  onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}>
+                                  <span style={{color:G,fontWeight:700}}>+</span>
+                                  <span style={{fontSize:13,color:G,fontWeight:600}}>Créer "{clientSearch}"</span>
+                                </div>
+                              )}
                             </div>
-                          ))}
-                          {clientSearch&&(
-                            <div onClick={()=>{setClient({nom:clientSearch,adresse:'',email:'',tel:''});setShowClientDD(false);setClientSearch('')}}
-                              style={{padding:'10px 14px',cursor:'pointer',background:'#f0fdf4',display:'flex',alignItems:'center',gap:8}}
-                              onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#dcfce7'}
-                              onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}>
-                              <span style={{color:G,fontWeight:700}}>+</span>
-                              <span style={{fontSize:13,color:G,fontWeight:600}}>Créer "{clientSearch}"</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* MÉTADONNÉES */}
+                <div style={{marginTop:24,paddingBottom:20}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:4}}>
+                    {/* Gauche : Devis n° + Valable */}
+                    <div>
+                      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                        <span style={{fontSize:20,fontWeight:700,color:'#111'}}>Devis n° {numeroDevis||'—'}</span>
+                        {editMode&&!numeroDevis&&<button onClick={()=>setShowNumeroModal(true)}
+                          style={{fontSize:11,color:G,background:'none',border:`1px solid ${G}40`,borderRadius:4,padding:'2px 7px',cursor:'pointer'}}>Attribuer</button>}
+                      </div>
+                      {(validite||editMode)&&(
+                        <div style={{fontSize:14,color:'#555'}}>
+                          {editMode?(
+                            <span>Valable <input value={validite} onChange={e=>setValidite(e.target.value)}
+                              style={{width:80,border:'none',borderBottom:`1px solid ${BD}`,fontSize:14,color:'#555',outline:'none',background:'transparent',padding:'0 2px'}}
+                              placeholder="ex: 30 jours"/></span>
+                          ):(validite&&<span>Valable {validite}</span>)}
+                        </div>
+                      )}
+                    </div>
+                    {/* Droite : Date */}
+                    <div style={{fontSize:14,color:'#555',textAlign:'right' as const}}>
+                      {editMode?(
+                        <span>En date du <input type="date" value={dateDevis} onChange={e=>setDateDevis(e.target.value)}
+                          style={{border:'none',borderBottom:`1px solid ${BD}`,fontSize:14,color:'#555',outline:'none',background:'transparent',padding:'0 2px'}}/></span>
+                      ):(
+                        dateDevis&&<span>En date du {new Date(dateDevis).toLocaleDateString('fr-FR')}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Adresse projet */}
+                  {(adresseMode&&adresseMode!=='hidden'||editMode)&&(
+                    <div style={{marginTop:12}}>
+                      {(adresseMode&&adresseMode!=='hidden')||editMode?(
+                        <div style={{fontSize:12,color:'#666',fontStyle:'italic',marginBottom:6}}>Adresse du projet :</div>
+                      ):null}
+                      {adresseMode===null&&editMode&&(
+                        <div style={{position:'relative' as const}}>
+                          <div onClick={()=>setShowAdresseMenu(!showAdresseMenu)}
+                            style={{background:'#F5F5F5',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#bbb',fontStyle:'italic',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                            <span>Optionnel — cliquez pour définir</span>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
+                          </div>
+                          {showAdresseMenu&&(
+                            <div style={{position:'absolute',top:'110%',left:0,right:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:200,overflow:'hidden'}}>
+                              <div onClick={()=>{setAdresseMode('client');setAdresseProjet(client?.adresse||'');setShowAdresseMenu(false)}}
+                                style={{padding:'10px 14px',cursor:'pointer',borderBottom:'1px solid #f3f4f6',fontSize:13}}
+                                onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                                onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                                <div style={{fontWeight:600,color:'#111'}}>📍 Utiliser l'adresse du client</div>
+                                <div style={{fontSize:11,color:'#888',marginTop:1}}>{client?.adresse||"Sélectionnez d'abord un client"}</div>
+                              </div>
+                              <div onClick={()=>{setAdresseMode('manuel');setShowAdresseMenu(false)}}
+                                style={{padding:'10px 14px',cursor:'pointer',borderBottom:'1px solid #f3f4f6',fontSize:13}}
+                                onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                                onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                                <div style={{fontWeight:600,color:'#111'}}>✏️ Saisir une autre adresse</div>
+                              </div>
+                              <div onClick={()=>{setAdresseMode('hidden');setShowAdresseMenu(false)}}
+                                style={{padding:'10px 14px',cursor:'pointer',fontSize:13}}
+                                onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                                onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                                <div style={{fontWeight:600,color:'#888'}}>🚫 Ne pas indiquer d'adresse</div>
+                              </div>
                             </div>
                           )}
                         </div>
                       )}
-                    </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* MÉTADONNÉES */}
-              <div style={{padding:'14px 24px',borderBottom:`1px solid ${BD}`,background:'#fafafa',display:'flex',gap:20,flexWrap:'wrap' as const,alignItems:'flex-end'}}>
-                <div>
-                  <label style={{fontSize:11,color:'#444',fontWeight:500,display:'block',marginBottom:3}}>Devis n°</label>
-                  {numeroDevis?(
-                    <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{numeroDevis}</div>
-                  ):(
-                    <div onClick={()=>setShowNumeroModal(true)}
-                      style={{fontSize:13,fontWeight:600,color:'#aaa',fontStyle:'italic',cursor:'pointer',padding:'3px 8px',borderRadius:6,border:'1px dashed #d1d5db',display:'inline-block',transition:'all 0.15s'}}
-                      onMouseEnter={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor=G;d.style.color=G}}
-                      onMouseLeave={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor='#d1d5db';d.style.color='#aaa'}}>
-                      Sans numéro
-                    </div>
-                  )}
-                </div>
-                <div><label style={{fontSize:11,color:'#444',fontWeight:500,display:'block',marginBottom:3}}>Date</label>
-                  <input type="date" value={dateDevis} onChange={e=>setDateDevis(e.target.value)} disabled={!editMode} style={{padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,outline:'none',color:'#111'}}/></div>
-                <div><label style={{fontSize:11,color:'#444',fontWeight:500,display:'block',marginBottom:3}}>Validité</label>
-                  <input value={validite} onChange={e=>setValidite(e.target.value)} disabled={!editMode} style={{width:80,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,outline:'none',color:'#111'}}/></div>
-                <div style={{flex:1,position:'relative'}}>
-                  <label style={{fontSize:11,color:'#444',fontWeight:500,display:'block',marginBottom:3}}>Adresse du projet</label>
-                  {adresseMode===null&&(
-                    <div onClick={()=>setShowAdresseMenu(!showAdresseMenu)}
-                      style={{padding:'5px 10px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,color:'#aaa',cursor:'pointer',background:'#fff',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                      <span>Optionnel — cliquez pour définir</span>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
-                    </div>
-                  )}
-                  {adresseMode==='client'&&(
-                    <div style={{padding:'5px 10px',border:`1px solid ${G}`,borderRadius:6,fontSize:12,color:'#555',background:'#f0fdf4',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                      <span>{client?.adresse||'Adresse client non renseignée'}</span>
-                      <button onClick={()=>{setAdresseMode(null);setAdresseProjet('')}} style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:14}}>×</button>
-                    </div>
-                  )}
-                  {adresseMode==='manuel'&&(
-                    <div style={{display:'flex',gap:6}}>
-                      <input value={adresseProjet} onChange={e=>setAdresseProjet(e.target.value)} placeholder="Saisir l'adresse du projet..."
-                        style={{flex:1,padding:'5px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,outline:'none',color:'#111'}}/>
-                      <button onClick={()=>{setAdresseMode(null);setAdresseProjet('')}} style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:16}}>×</button>
-                    </div>
-                  )}
-                  {showAdresseMenu&&adresseMode===null&&(
-                    <div style={{position:'absolute',top:'110%',left:0,right:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:200,overflow:'hidden'}}>
-                      <div onClick={()=>{setAdresseMode('client');setAdresseProjet(client?.adresse||'');setShowAdresseMenu(false)}}
-                        style={{padding:'10px 14px',cursor:'pointer',borderBottom:`1px solid #f3f4f6`,fontSize:13}}
-                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
-                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-                        <div style={{fontWeight:600,color:'#111'}}>📍 Utiliser l\'adresse du client</div>
-                        <div style={{fontSize:11,color:'#888',marginTop:1}}>{client?.adresse||'Sélectionnez d\'abord un client'}</div>
-                      </div>
-                      <div onClick={()=>{setAdresseMode('manuel');setShowAdresseMenu(false)}}
-                        style={{padding:'10px 14px',cursor:'pointer',borderBottom:`1px solid #f3f4f6`,fontSize:13}}
-                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f0fdf4'}
-                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-                        <div style={{fontWeight:600,color:'#111'}}>✏️ Saisir une autre adresse</div>
-                        <div style={{fontSize:11,color:'#888',marginTop:1}}>Adresse de chantier différente</div>
-                      </div>
-                      <div onClick={()=>{setAdresseMode('hidden');setShowAdresseMenu(false)}}
-                        style={{padding:'10px 14px',cursor:'pointer',fontSize:13}}
-                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
-                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-                        <div style={{fontWeight:600,color:'#888'}}>🚫 Ne pas indiquer d'adresse</div>
-                      </div>
+                      {adresseMode==='client'&&(
+                        <div style={{background:'#F5F5F5',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#333',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                          <span>{client?.adresse||'Adresse client non renseignée'}</span>
+                          {editMode&&<button onClick={()=>{setAdresseMode(null);setAdresseProjet('')}} style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:14}}>×</button>}
+                        </div>
+                      )}
+                      {adresseMode==='manuel'&&(
+                        editMode?(
+                          <div style={{display:'flex',gap:6}}>
+                            <input value={adresseProjet} onChange={e=>setAdresseProjet(e.target.value)} placeholder="Saisir l'adresse du projet..."
+                              style={{flex:1,padding:'10px 14px',background:'#F5F5F5',border:'none',borderRadius:8,fontSize:13,outline:'none',color:'#111'}}/>
+                            <button onClick={()=>{setAdresseMode(null);setAdresseProjet('')}} style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:16}}>×</button>
+                          </div>
+                        ):(
+                          adresseProjet&&<div style={{background:'#F5F5F5',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#333'}}>{adresseProjet}</div>
+                        )
+                      )}
                     </div>
                   )}
                 </div>
