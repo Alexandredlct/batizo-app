@@ -107,6 +107,11 @@ export default function NouveauDevisPage(){
   const[prime,setPrime]=useState<{label:string,val:number}|null>(null)
   const[showPrimePopover,setShowPrimePopover]=useState(false)
   const[showAcomptePopover,setShowAcomptePopover]=useState<string|null>(null)
+  const[showClientMenu,setShowClientMenu]=useState(false)
+  const[showClientModal,setShowClientModal]=useState(false)
+  const[editingMeta,setEditingMeta]=useState<string|null>(null)
+  const[showValiditePopover,setShowValiditePopover]=useState(false)
+  const[showDatePopover,setShowDatePopover]=useState(false)
   const[biblioSearch,setBiblioSearch]=useState('')
   const[biblioOuvrages,setBiblioOuvrages]=useState<any[]>([])
   const[biblioMats,setBiblioMats]=useState<any[]>([])
@@ -800,12 +805,12 @@ export default function NouveauDevisPage(){
                 {/* Bouton Paramètres discret — editMode seulement */}
                 {editMode&&<a href="/parametres" style={{position:'absolute',top:12,right:12,fontSize:10,color:'#bbb',background:'#f3f4f6',padding:'2px 8px',borderRadius:4,textDecoration:'none'}}
                   onMouseEnter={e=>(e.currentTarget as HTMLAnchorElement).style.color='#555'}
-                  onMouseLeave={e=>(e.currentTarget as HTMLAnchorElement).style.color='#bbb'}>⚙ Paramètres</a>}
+                  onMouseLeave={e=>(e.currentTarget as HTMLAnchorElement).style.color='#bbb'}>⚙ Modifier dans Paramètres</a>}
 
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:32,alignItems:'flex-start'}}>
                   {/* Bloc entreprise */}
                   <div>
-                    {logoPreview&&<img src={logoPreview} alt="logo" style={{height:52,maxWidth:160,objectFit:'contain' as const,display:'block',marginBottom:12}}/>}
+                    {logoPreview&&<img src={logoPreview} alt="logo" style={{height:40,maxWidth:140,objectFit:'contain' as const,display:'block',marginBottom:12}}/>}
                     <div style={{fontSize:16,fontWeight:700,color:'#111',marginBottom:16}}>
                       {params.nomEntreprise||'Mon entreprise'}
                       {params.showFormeJuridique&&params.formeJuridique?' — '+params.formeJuridique:''}
@@ -821,25 +826,49 @@ export default function NouveauDevisPage(){
                   {/* Bloc client */}
                   <div>
                     {client?(
-                      <div style={{background:'#F5F5F5',borderRadius:8,padding:'20px 24px',position:'relative' as const}}>
-                        <div style={{fontSize:15,fontWeight:700,color:'#111',marginBottom:12}}>
-                          {client.nom.includes('—')?client.nom.split('—')[0].trim():client.nom}
-                          {client.nom.includes('—')&&<div style={{fontSize:13,fontWeight:400,color:'#555',marginTop:2}}>{client.nom.split('—')[1].trim()}</div>}
+                      <div style={{position:'relative' as const}}>
+                        <div
+                          style={{background:editMode&&showClientMenu?'#FBE5D5':'#F5F5F5',borderRadius:8,padding:'20px 24px',cursor:editMode?'pointer':'default',transition:'background 0.15s',position:'relative' as const}}
+                          onClick={()=>editMode&&setShowClientMenu(!showClientMenu)}
+                          onMouseEnter={e=>{if(editMode)(e.currentTarget as HTMLDivElement).style.background='#FBE5D5'}}
+                          onMouseLeave={e=>{if(!showClientMenu)(e.currentTarget as HTMLDivElement).style.background='#F5F5F5'}}>
+                          {editMode&&<span style={{position:'absolute',top:10,right:12,fontSize:13,color:'#aaa'}}>✏</span>}
+                          <div style={{fontSize:15,fontWeight:700,color:'#111',marginBottom:12}}>
+                            {client.nom.includes('—')?client.nom.split('—')[0].trim():client.nom}
+                            {client.nom.includes('—')&&<div style={{fontSize:13,fontWeight:400,color:'#555',marginTop:2}}>{client.nom.split('—')[1].trim()}</div>}
+                          </div>
+                          <div style={{fontSize:13,color:'#555',lineHeight:1.5}}>
+                            {client.adresse&&<div>{client.adresse}</div>}
+                            {client.email&&<div>{client.email}</div>}
+                            {client.tel&&<div>{client.tel}</div>}
+                            {client.siret&&<div style={{color:'#888',fontSize:12,marginTop:4}}>SIRET : {client.siret}</div>}
+                          </div>
                         </div>
-                        <div style={{fontSize:13,color:'#555',lineHeight:1.5}}>
-                          {client.adresse&&<div>{client.adresse}</div>}
-                          {client.email&&<div>{client.email}</div>}
-                          {client.tel&&<div>{client.tel}</div>}
-                          {client.siret&&<div style={{color:'#888',fontSize:12,marginTop:4}}>SIRET : {client.siret}</div>}
-                        </div>
-                        {editMode&&<button onClick={()=>{setClientSearch(client?.nom||'');setShowClientDD(true);setClient(null)}}
-                          style={{position:'absolute',top:10,right:10,background:'none',border:'none',cursor:'pointer',color:'#ccc',fontSize:13}}
-                          onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#555'}
-                          onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#ccc'}>✏</button>}
+                        {showClientMenu&&(
+                          <div style={{position:'absolute',top:'calc(100% + 4px)',right:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',zIndex:200,minWidth:220,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
+                            <div onClick={()=>{setShowClientMenu(false)}}
+                              style={{padding:'10px 14px',fontSize:13,cursor:'pointer',color:'#333',fontWeight:500}}
+                              onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                              onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                              ✏ Modifier {client.nom.split('—')[0].trim()}
+                            </div>
+                            <div onClick={()=>{setShowClientMenu(false);setShowClientModal(true)}}
+                              style={{padding:'10px 14px',fontSize:13,cursor:'pointer',color:'#333',borderTop:`1px solid #f3f4f6`}}
+                              onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                              onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                              🔄 Créer ou choisir un autre client...
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ):(
                       <div>
-                        {editMode&&<div style={{background:'#F5F5F5',borderRadius:8,padding:'16px',marginBottom:10,fontSize:12,color:'#bbb',fontStyle:'italic',minHeight:60,display:'flex',alignItems:'center',justifyContent:'center'}}>Aucun client sélectionné</div>}
+                        {editMode&&<div style={{background:'#F5F5F5',borderRadius:8,padding:'16px',marginBottom:10,fontSize:12,color:'#bbb',fontStyle:'italic',minHeight:60,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}
+                          onClick={()=>setShowClientModal(true)}
+                          onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#FBE5D5'}
+                          onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#F5F5F5'}>
+                          Aucun client sélectionné — cliquez pour choisir
+                        </div>}
                         <div style={{position:'relative'}}>
                           <svg style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)'}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                           <input value={clientSearch} onChange={e=>{setClientSearch(e.target.value);setShowClientDD(true)}}
@@ -875,33 +904,64 @@ export default function NouveauDevisPage(){
                 </div>
 
                 {/* MÉTADONNÉES */}
-                <div style={{marginTop:24,paddingBottom:20}}>
+                <div style={{marginTop:20,paddingBottom:20}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:4}}>
                     {/* Gauche : Devis n° + Valable */}
                     <div>
                       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
-                        <span style={{fontSize:20,fontWeight:700,color:'#111'}}>Devis n° {numeroDevis||'—'}</span>
+                        {editingMeta==='numero'?(
+                          <input autoFocus value={numeroDevis||''} onChange={e=>setNumeroDevis(e.target.value)}
+                            onBlur={()=>setEditingMeta(null)} onKeyDown={e=>{if(e.key==='Enter'||e.key==='Escape')setEditingMeta(null)}}
+                            style={{fontSize:20,fontWeight:700,color:'#111',border:'none',outline:'none',background:'transparent',minWidth:200}}/>
+                        ):(
+                          <span style={{fontSize:20,fontWeight:700,color:'#111',cursor:editMode?'text':'default',padding:'2px 4px',borderRadius:4,transition:'background 0.1s'}}
+                            onClick={()=>editMode&&setEditingMeta('numero')}
+                            onMouseEnter={e=>{if(editMode)(e.currentTarget as HTMLSpanElement).style.background='#FBE5D5'}}
+                            onMouseLeave={e=>(e.currentTarget as HTMLSpanElement).style.background='transparent'}>
+                            Devis n° {numeroDevis||'—'}
+                          </span>
+                        )}
                         {editMode&&!numeroDevis&&<button onClick={()=>setShowNumeroModal(true)}
                           style={{fontSize:11,color:G,background:'none',border:`1px solid ${G}40`,borderRadius:4,padding:'2px 7px',cursor:'pointer'}}>Attribuer</button>}
                       </div>
                       {(validite||editMode)&&(
-                        <div style={{fontSize:14,color:'#555'}}>
-                          {editMode?(
-                            <span>Valable <input value={validite} onChange={e=>setValidite(e.target.value)}
-                              style={{width:80,border:'none',borderBottom:`1px solid ${BD}`,fontSize:14,color:'#555',outline:'none',background:'transparent',padding:'0 2px'}}
-                              placeholder="ex: 30 jours"/></span>
-                          ):(validite&&<span>Valable {validite}</span>)}
+                        <div style={{fontSize:14,color:'#555',position:'relative' as const}}>
+                          {editingMeta==='validite'?(
+                            <div style={{position:'absolute',top:'100%',left:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',padding:'12px 16px',zIndex:200,minWidth:200}} onClick={e=>e.stopPropagation()}>
+                              <div style={{fontSize:12,fontWeight:600,color:'#555',marginBottom:8}}>Durée de validité</div>
+                              <input autoFocus value={validite} onChange={e=>setValidite(e.target.value)}
+                                onKeyDown={e=>{if(e.key==='Enter'||e.key==='Escape')setEditingMeta(null)}}
+                                style={{width:'100%',padding:'7px 10px',border:`1px solid ${BD}`,borderRadius:6,fontSize:13,outline:'none'}}
+                                placeholder="ex: 30 jours, 2 mois..."/>
+                              <button onClick={()=>setEditingMeta(null)} style={{marginTop:8,padding:'5px 12px',background:G,color:'#fff',border:'none',borderRadius:6,fontSize:12,cursor:'pointer',width:'100%'}}>OK</button>
+                            </div>
+                          ):null}
+                          <span style={{cursor:editMode?'text':'default',padding:'2px 4px',borderRadius:4,transition:'background 0.1s'}}
+                            onClick={()=>editMode&&setEditingMeta('validite')}
+                            onMouseEnter={e=>{if(editMode)(e.currentTarget as HTMLSpanElement).style.background='#FBE5D5'}}
+                            onMouseLeave={e=>(e.currentTarget as HTMLSpanElement).style.background='transparent'}>
+                            {validite?'Valable '+validite:<span style={{color:'#bbb',fontStyle:'italic'}}>{editMode?'Ajouter une validité':''}</span>}
+                          </span>
                         </div>
                       )}
                     </div>
                     {/* Droite : Date */}
-                    <div style={{fontSize:14,color:'#555',textAlign:'right' as const}}>
-                      {editMode?(
-                        <span>En date du <input type="date" value={dateDevis} onChange={e=>setDateDevis(e.target.value)}
-                          style={{border:'none',borderBottom:`1px solid ${BD}`,fontSize:14,color:'#555',outline:'none',background:'transparent',padding:'0 2px'}}/></span>
-                      ):(
-                        dateDevis&&<span>En date du {new Date(dateDevis).toLocaleDateString('fr-FR')}</span>
+                    <div style={{fontSize:14,color:'#555',textAlign:'right' as const,position:'relative' as const}}>
+                      {editingMeta==='date'&&(
+                        <div style={{position:'absolute',right:0,top:'100%',background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',padding:'12px 16px',zIndex:200}} onClick={e=>e.stopPropagation()}>
+                          <div style={{fontSize:12,fontWeight:600,color:'#555',marginBottom:8}}>Date du devis</div>
+                          <input autoFocus type="date" value={dateDevis} onChange={e=>setDateDevis(e.target.value)}
+                            onKeyDown={e=>{if(e.key==='Enter'||e.key==='Escape')setEditingMeta(null)}}
+                            style={{padding:'7px 10px',border:`1px solid ${BD}`,borderRadius:6,fontSize:13,outline:'none'}}/>
+                          <button onClick={()=>setEditingMeta(null)} style={{marginTop:8,padding:'5px 12px',background:G,color:'#fff',border:'none',borderRadius:6,fontSize:12,cursor:'pointer',width:'100%'}}>OK</button>
+                        </div>
                       )}
+                      <span style={{cursor:editMode?'text':'default',padding:'2px 4px',borderRadius:4,transition:'background 0.1s'}}
+                        onClick={()=>editMode&&setEditingMeta('date')}
+                        onMouseEnter={e=>{if(editMode)(e.currentTarget as HTMLSpanElement).style.background='#FBE5D5'}}
+                        onMouseLeave={e=>(e.currentTarget as HTMLSpanElement).style.background='transparent'}>
+                        {dateDevis?'En date du '+new Date(dateDevis).toLocaleDateString('fr-FR'):''}
+                      </span>
                     </div>
                   </div>
 
@@ -1490,7 +1550,7 @@ export default function NouveauDevisPage(){
         </div>
       )}
 
-      {(showClientDD||showFactureMenu||showContextMenu||showMoyensPopover||showAcompteMenu||showAcomptePopover||showRemisePopover||showPrimePopover)&&<div onClick={()=>{setShowClientDD(false);setShowFactureMenu(false);setShowContextMenu(null);setShowInsertMenu(null);setShowMoyensPopover(false);setShowAcompteMenu(false);setShowAcomptePopover(null);setShowRemisePopover(null);setShowPrimePopover(false)}} style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',zIndex:50}}/>}
+      {(showClientDD||showFactureMenu||showContextMenu||showMoyensPopover||showAcompteMenu||showAcomptePopover||showRemisePopover||showPrimePopover)&&<div onClick={()=>{setShowClientDD(false);setShowFactureMenu(false);setShowContextMenu(null);setShowInsertMenu(null);setShowMoyensPopover(false);setShowAcompteMenu(false);setShowAcomptePopover(null);setShowRemisePopover(null);setShowPrimePopover(false);setShowClientMenu(false);setEditingMeta(null)}} style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',zIndex:50}}/>}
 
       {/* Modal confirmation suppression */}
       {showDeleteConfirm&&(
@@ -1570,6 +1630,44 @@ export default function NouveauDevisPage(){
               }}
                 style={{flex:1,padding:'10px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>
                 ✔ Valider
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal sélection client */}
+      {showClientModal&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowClientModal(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:500,width:'92%',maxHeight:'75vh',display:'flex',flexDirection:'column' as const,gap:14}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
+              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Choisir un client</div>
+              <button onClick={()=>setShowClientModal(false)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
+            </div>
+            <div style={{position:'relative',flexShrink:0}}>
+              <svg style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)'}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input value={clientSearch} onChange={e=>setClientSearch(e.target.value)}
+                placeholder="Rechercher un client..."
+                autoFocus
+                style={{width:'100%',padding:'9px 12px 9px 32px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}
+                onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+                onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+            </div>
+            <div style={{overflowY:'auto' as const,flex:1,display:'flex',flexDirection:'column' as const,gap:6}}>
+              {clientsExistants.filter(c=>c.nom.toLowerCase().includes(clientSearch.toLowerCase())).map((c,i)=>(
+                <div key={i} onClick={()=>{setClient(c);setShowClientModal(false);setClientSearch('')}}
+                  style={{padding:'12px 14px',border:`1px solid ${BD}`,borderRadius:8,cursor:'pointer'}}
+                  onMouseEnter={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor=G;d.style.background='#f0fdf4'}}
+                  onMouseLeave={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor=BD;d.style.background=''}}>
+                  <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{c.nom}</div>
+                  <div style={{fontSize:11,color:'#888',marginTop:2}}>{c.adresse}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{flexShrink:0,paddingTop:8,borderTop:`1px solid ${BD}`}}>
+              <button onClick={()=>{if(clientSearch){setClient({nom:clientSearch,adresse:'',email:'',tel:''});setShowClientModal(false);setClientSearch('')}}}
+                style={{width:'100%',padding:'10px',background:'#f0fdf4',border:`1px solid ${G}40`,borderRadius:8,fontSize:13,fontWeight:600,color:G,cursor:'pointer'}}>
+                + Créer "{clientSearch||'nouveau client'}"
               </button>
             </div>
           </div>
