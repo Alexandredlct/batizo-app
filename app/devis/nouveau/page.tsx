@@ -116,6 +116,7 @@ export default function NouveauDevisPage(){
   const[factureAmount,setFactureAmount]=useState('')
   const[facturePct,setFacturePct]=useState(true)
   const[showSaved,setShowSaved]=useState(false)
+  const[generatingPdf,setGeneratingPdf]=useState(false)
   const[showHeaderInfo,setShowHeaderInfo]=useState(false)
   const[ouvrageExpanded,setOuvrageExpanded]=useState<Record<string,boolean>>({})
   const[editingCell,setEditingCell]=useState<{id:string,field:string}|null>(null)
@@ -746,7 +747,19 @@ export default function NouveauDevisPage(){
                 </div>
               )}
             </div>
-            <button style={{padding:'8px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',color:'#333',fontWeight:500}}>Aperçu PDF</button>
+            <button
+              onClick={async()=>{
+                setGeneratingPdf(true)
+                try{
+                  const{genererPDF}=await import('../../lib/pdfGenerator')
+                  await genererPDF(params,'devis-content')
+                }catch(e){console.error(e);alert('Erreur lors de la génération PDF')}
+                finally{setGeneratingPdf(false)}
+              }}
+              disabled={generatingPdf}
+              style={{padding:'8px 14px',background:generatingPdf?'#f3f4f6':'#fff',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:generatingPdf?'not-allowed':'pointer',color:'#333',fontWeight:500,display:'flex',alignItems:'center',gap:6,opacity:generatingPdf?0.7:1}}>
+              {generatingPdf?<>⏳ Génération...</>:<>⬇ Télécharger PDF</>}
+            </button>
             {editMode&&snapshot&&(
               <button onClick={annulerModifications} style={{padding:'8px 14px',background:'#fff',border:`1px solid ${RD}`,borderRadius:8,fontSize:13,cursor:'pointer',color:'#D32F2F',fontWeight:500}}>Annuler</button>
             )}
@@ -763,7 +776,7 @@ export default function NouveauDevisPage(){
 
         <div style={{flex:1,overflowY:'auto',padding:'20px 24px'}}>
           <div style={{maxWidth:1100,margin:'0 auto'}}>
-            <div style={{background:'#fff',borderRadius:0,border:'none',boxShadow:'0 2px 12px rgba(0,0,0,0.08)',overflow:'hidden'}}>
+            <div id="devis-content" style={{background:'#fff',borderRadius:0,border:'none',boxShadow:'0 2px 12px rgba(0,0,0,0.08)',overflow:'hidden'}}>
 
               {/* EN-TÊTE */}
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',borderBottom:`1px solid ${BD}`}}>
