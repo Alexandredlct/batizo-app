@@ -320,6 +320,7 @@ export default function BibliothequePage() {
   const genId=()=>Math.random().toString(36).slice(2,8)
 
   const[showHistorique,setShowHistorique]=useState<{item:any,type:PanelType}|null>(null)
+  const[kebabMenu,setKebabMenu]=useState<string|null>(null)
   const[showImport,setShowImport]=useState(false)
   const[showStats,setShowStats]=useState(false)
   const[deletedItems,setDeletedItems]=useState<{item:any,type:PanelType}[]>([])
@@ -461,23 +462,38 @@ export default function BibliothequePage() {
         )}
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
           <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:20,background:`${catColor(item.categorie)}18`,color:catColor(item.categorie)}}>{item.categorie}</span>
-          <div style={{display:'flex',gap:4}}>
-            <button onClick={()=>dupliquer(type,item)} title="Dupliquer"
-              style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:14,padding:3,borderRadius:4,transition:'color 0.15s'}}
-              onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color='#2563eb'}
-              onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>📋</button>
-            <button onClick={()=>openEdit(type,item)} title="Modifier"
-              style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:14,padding:3,borderRadius:4,transition:'color 0.15s'}}
-              onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=G}
-              onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>✏️</button>
-            <button onClick={()=>setShowHistorique({item,type})} title="Historique prix"
-              style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:14,padding:3,borderRadius:4,transition:'color 0.15s'}}
-              onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=AM}
-              onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>📈</button>
-            <button onClick={()=>setDeleteConfirm(item.id)} title="Supprimer"
-              style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:14,padding:3,borderRadius:4,transition:'color 0.15s'}}
-              onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=RD}
-              onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>🗑</button>
+          <div style={{position:'relative' as const}}>
+            <button
+              onClick={e=>{e.stopPropagation();setKebabMenu(kebabMenu===item.id?null:item.id)}}
+              style={{width:30,height:30,border:'none',borderRadius:6,background:'transparent',cursor:'pointer',fontSize:16,color:'#aaa',display:'flex',alignItems:'center',justifyContent:'center'}}
+              onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#F5F5F5'}
+              onMouseLeave={e=>{if(kebabMenu!==item.id)(e.currentTarget as HTMLButtonElement).style.background='transparent'}}>
+              ⋮
+            </button>
+            {kebabMenu===item.id&&(
+              <div onClick={e=>e.stopPropagation()} style={{position:'absolute' as const,top:'100%',right:0,background:'#fff',border:'0.5px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',zIndex:100,minWidth:180,overflow:'hidden'}}>
+                {[
+                  {label:'Modifier',icon:'✏️',action:()=>{openEdit(type,item);setKebabMenu(null)}},
+                  {label:'Dupliquer',icon:'📋',action:()=>{dupliquer(type,item);setKebabMenu(null)}},
+                  {label:'Historique',icon:'📈',action:()=>{setShowHistorique({item,type});setKebabMenu(null)}},
+                ].map(it=>(
+                  <div key={it.label} onClick={it.action}
+                    style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333',display:'flex',alignItems:'center',gap:8}}
+                    onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                    onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                    <span>{it.icon}</span>{it.label}
+                  </div>
+                ))}
+                <div style={{borderTop:'1px solid #f3f4f6'}}>
+                  <div onClick={()=>{setDeleteConfirm(item.id);setKebabMenu(null)}}
+                    style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#D32F2F',display:'flex',alignItems:'center',gap:8}}
+                    onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#fef2f2'}
+                    onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                    <span>🗑</span>Supprimer
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:4,flexWrap:'wrap' as const}}>
