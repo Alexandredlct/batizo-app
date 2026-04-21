@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import RichTextEditor from '../../components/RichTextEditor'
 import { getBiblioOuvrages, getBiblioMats, getBiblioMO } from '../../lib/bibliothequeStore'
 import Sidebar from '../../components/Sidebar'
@@ -802,6 +802,11 @@ export default function NouveauDevisPage(){
 
               {/* EN-TÊTE */}
               <div style={{padding:'28px 28px 0 28px',position:'relative' as const}}>
+                {/* Bouton Paramètres discret — editMode seulement */}
+                {editMode&&<a href="/parametres" style={{position:'absolute',top:12,right:12,fontSize:10,color:'#bbb',background:'#f3f4f6',padding:'2px 8px',borderRadius:4,textDecoration:'none'}}
+                  onMouseEnter={e=>(e.currentTarget as HTMLAnchorElement).style.color='#555'}
+                  onMouseLeave={e=>(e.currentTarget as HTMLAnchorElement).style.color='#bbb'}>⚙ Modifier dans Paramètres</a>}
+
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:32,alignItems:'flex-start'}}>
                   {/* Bloc entreprise */}
                   <div>
@@ -1631,98 +1636,43 @@ export default function NouveauDevisPage(){
         </div>
       )}
 
-      {/* Modal sélection/création client */}
-      {showClientModal&&(()=>{
-        const[newClientForm,setNewClientForm]=React.useState<any>(null)
-        const[newNom,setNewNom]=React.useState('')
-        const[newEmail,setNewEmail]=React.useState('')
-        const[newTel,setNewTel]=React.useState('')
-        const[newAdresse,setNewAdresse]=React.useState('')
-        const[newSiret,setNewSiret]=React.useState('')
-        return(
-        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>{setShowClientModal(false);setClientSearch('')}}>
-          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:500,width:'92%',maxHeight:'80vh',display:'flex',flexDirection:'column' as const,gap:14}}>
+      {/* Modal sélection client */}
+      {showClientModal&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowClientModal(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:500,width:'92%',maxHeight:'75vh',display:'flex',flexDirection:'column' as const,gap:14}}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
-              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>{newClientForm?'Nouveau client':'Choisir un client'}</div>
-              <button onClick={()=>{setShowClientModal(false);setClientSearch('')}} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
+              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Choisir un client</div>
+              <button onClick={()=>setShowClientModal(false)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
             </div>
-
-            {!newClientForm?(
-              <>
-                <div style={{position:'relative',flexShrink:0}}>
-                  <svg style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)'}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                  <input value={clientSearch} onChange={e=>setClientSearch(e.target.value)}
-                    placeholder="Rechercher un client..."
-                    autoFocus
-                    style={{width:'100%',padding:'9px 12px 9px 32px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}
-                    onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
-                    onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+            <div style={{position:'relative',flexShrink:0}}>
+              <svg style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)'}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input value={clientSearch} onChange={e=>setClientSearch(e.target.value)}
+                placeholder="Rechercher un client..."
+                autoFocus
+                style={{width:'100%',padding:'9px 12px 9px 32px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}
+                onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+                onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+            </div>
+            <div style={{overflowY:'auto' as const,flex:1,display:'flex',flexDirection:'column' as const,gap:6}}>
+              {clientsExistants.filter(c=>c.nom.toLowerCase().includes(clientSearch.toLowerCase())).map((c,i)=>(
+                <div key={i} onClick={()=>{setClient(c);setShowClientModal(false);setClientSearch('')}}
+                  style={{padding:'12px 14px',border:`1px solid ${BD}`,borderRadius:8,cursor:'pointer'}}
+                  onMouseEnter={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor=G;d.style.background='#f0fdf4'}}
+                  onMouseLeave={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor=BD;d.style.background=''}}>
+                  <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{c.nom}</div>
+                  <div style={{fontSize:11,color:'#888',marginTop:2}}>{c.adresse}</div>
                 </div>
-                <div style={{overflowY:'auto' as const,flex:1,display:'flex',flexDirection:'column' as const,gap:6}}>
-                  {clientsExistants.filter(c=>c.nom.toLowerCase().includes(clientSearch.toLowerCase())).map((c,i)=>(
-                    <div key={i} onClick={()=>{setClient(c);setShowClientModal(false);setClientSearch('')}}
-                      style={{padding:'12px 14px',border:`1px solid ${BD}`,borderRadius:8,cursor:'pointer'}}
-                      onMouseEnter={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor=G;d.style.background='#f0fdf4'}}
-                      onMouseLeave={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor=BD;d.style.background=''}}>
-                      <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{c.nom}</div>
-                      <div style={{fontSize:11,color:'#888',marginTop:2}}>{c.adresse}</div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{flexShrink:0,paddingTop:8,borderTop:`1px solid ${BD}`}}>
-                  <button onClick={()=>setNewClientForm(true)}
-                    style={{width:'100%',padding:'10px',background:'#f0fdf4',border:`1px solid ${G}40`,borderRadius:8,fontSize:13,fontWeight:600,color:G,cursor:'pointer'}}>
-                    + Créer un nouveau client
-                  </button>
-                </div>
-              </>
-            ):(
-              <>
-                <div style={{display:'flex',flexDirection:'column' as const,gap:10,overflowY:'auto' as const,flex:1}}>
-                  <div>
-                    <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Nom / Raison sociale *</label>
-                    <input value={newNom} onChange={e=>setNewNom(e.target.value)} autoFocus placeholder="Ex: Jean Dupont ou Dupont Immobilier SAS"
-                      style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
-                  </div>
-                  <div>
-                    <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Email</label>
-                    <input value={newEmail} onChange={e=>setNewEmail(e.target.value)} placeholder="email@exemple.fr" type="email"
-                      style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
-                  </div>
-                  <div>
-                    <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Téléphone</label>
-                    <input value={newTel} onChange={e=>setNewTel(e.target.value)} placeholder="06 XX XX XX XX"
-                      style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
-                  </div>
-                  <div>
-                    <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Adresse</label>
-                    <input value={newAdresse} onChange={e=>setNewAdresse(e.target.value)} placeholder="Adresse complète"
-                      style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
-                  </div>
-                  <div>
-                    <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>SIRET (optionnel)</label>
-                    <input value={newSiret} onChange={e=>setNewSiret(e.target.value)} placeholder="Ex: 85357201400012"
-                      style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
-                  </div>
-                </div>
-                <div style={{display:'flex',gap:10,flexShrink:0,paddingTop:8,borderTop:`1px solid ${BD}`}}>
-                  <button onClick={()=>setNewClientForm(null)} style={{flex:1,padding:'10px',border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555'}}>← Retour</button>
-                  <button onClick={()=>{
-                    if(!newNom.trim()) return alert('Le nom est obligatoire')
-                    const nouveau={nom:newNom.trim(),email:newEmail.trim(),tel:newTel.trim(),adresse:newAdresse.trim(),siret:newSiret.trim()||undefined}
-                    setClient(nouveau)
-                    setShowClientModal(false)
-                    setClientSearch('')
-                  }} style={{flex:2,padding:'10px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>
-                    ✔ Créer et sélectionner
-                  </button>
-                </div>
-              </>
-            )}
+              ))}
+            </div>
+            <div style={{flexShrink:0,paddingTop:8,borderTop:`1px solid ${BD}`}}>
+              <button onClick={()=>{if(clientSearch){setClient({nom:clientSearch,adresse:'',email:'',tel:''});setShowClientModal(false);setClientSearch('')}}}
+                style={{width:'100%',padding:'10px',background:'#f0fdf4',border:`1px solid ${G}40`,borderRadius:8,fontSize:13,fontWeight:600,color:G,cursor:'pointer'}}>
+                + Créer "{clientSearch||'nouveau client'}"
+              </button>
+            </div>
           </div>
         </div>
-        )
-      })()}
+      )}
 
       {showSaved&&(
         <div style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',color:'#fff',borderRadius:10,padding:'12px 24px',zIndex:9999,display:'flex',alignItems:'center',gap:10,boxShadow:'0 4px 20px rgba(0,0,0,0.3)'}}>
