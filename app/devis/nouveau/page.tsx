@@ -109,6 +109,7 @@ export default function NouveauDevisPage(){
   const[showAcomptePopover,setShowAcomptePopover]=useState<string|null>(null)
   const[showClientMenu,setShowClientMenu]=useState(false)
   const[showClientModal,setShowClientModal]=useState(false)
+  const[showEditClientModal,setShowEditClientModal]=useState(false)
   const[editingMeta,setEditingMeta]=useState<string|null>(null)
   const[showValiditePopover,setShowValiditePopover]=useState(false)
   const[showDatePopover,setShowDatePopover]=useState(false)
@@ -846,7 +847,7 @@ export default function NouveauDevisPage(){
                         </div>
                         {showClientMenu&&(
                           <div style={{position:'absolute',top:'calc(100% + 4px)',right:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',zIndex:200,minWidth:220,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
-                            <div onClick={()=>{setShowClientMenu(false)}}
+                            <div onClick={()=>{setShowClientMenu(false);setShowEditClientModal(true)}}
                               style={{padding:'10px 14px',fontSize:13,cursor:'pointer',color:'#333',fontWeight:500}}
                               onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
                               onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
@@ -1673,6 +1674,188 @@ export default function NouveauDevisPage(){
           </div>
         </div>
       )}
+
+      {/* Modal édition client */}
+      {showEditClientModal&&client&&(()=>{
+        const isPro = client.nom.includes('—') || (client as any).raisonSociale
+        const[type,setType]=React.useState<'particulier'|'pro'>(isPro?'pro':'particulier')
+        const[statut,setStatut]=React.useState<string>((client as any).statut||'actif')
+        const[civilite,setCivilite]=React.useState<string>((client as any).civilite||'M.')
+        const[prenom,setPrenom]=React.useState<string>((client as any).prenom||client.nom.split(' ')[0]||'')
+        const[nom,setNom]=React.useState<string>((client as any).nomFamille||client.nom.split(' ').slice(1).join(' ')||client.nom.split('—')[0].trim()||'')
+        const[email,setEmail]=React.useState(client.email||'')
+        const[tel,setTel]=React.useState(client.tel||'')
+        const[adresse,setAdresse]=React.useState(client.adresse||'')
+        const[cp,setCp]=React.useState((client as any).cp||'')
+        const[ville,setVille]=React.useState((client as any).ville||'')
+        const[pays,setPays]=React.useState((client as any).pays||'France')
+        const[adresseChantier,setAdresseChantier]=React.useState((client as any).adresseChantier||'')
+        const[cpChantier,setCpChantier]=React.useState((client as any).cpChantier||'')
+        const[villeChantier,setVilleChantier]=React.useState((client as any).villeChantier||'')
+        const[raisonSociale,setRaisonSociale]=React.useState((client as any).raisonSociale||client.nom.split('—')[1]?.trim()||'')
+        const[formeJuridique,setFormeJuridique]=React.useState((client as any).formeJuridique||'')
+        const[paysImmat,setPaysImmat]=React.useState((client as any).paysImmat||'France')
+        const[siren,setSiren]=React.useState((client as any).siren||'')
+        const[siret,setSiret]=React.useState(client.siret||'')
+        const[tvaIntra,setTvaIntra]=React.useState((client as any).tvaIntra||'')
+        const[nomContact,setNomContact]=React.useState((client as any).nomContact||'')
+        const[poste,setPoste]=React.useState((client as any).poste||'')
+        const[adresseIdentique,setAdresseIdentique]=React.useState((client as any).adresseIdentique!==false)
+
+        const Field=({label,value,onChange,placeholder,type:ftype='text',required=false}:{label:string,value:string,onChange:(v:string)=>void,placeholder?:string,type?:string,required?:boolean})=>(
+          <div style={{marginBottom:12}}>
+            <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>{label}{required&&' *'}</label>
+            <input type={ftype} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
+              style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}
+              onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+              onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+          </div>
+        )
+
+        const handleSave=()=>{
+          const nomComplet = type==='pro'
+            ? (nomContact?nomContact+' — ':'')+raisonSociale
+            : civilite+' '+prenom+' '+nom
+          setClient({
+            ...client,
+            nom:nomComplet.trim(),
+            email,tel,
+            adresse:[adresse,cp,ville].filter(Boolean).join(', '),
+            siret,
+            ...(type==='pro'?{raisonSociale,formeJuridique,siren,tvaIntra,nomContact,poste}:{}),
+            cp,ville,pays,adresseChantier,cpChantier,villeChantier,
+            statut,civilite,prenom,nomFamille:nom,type,adresseIdentique,paysImmat
+          } as any)
+          setShowEditClientModal(false)
+        }
+
+        return(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowEditClientModal(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,maxWidth:540,width:'94%',maxHeight:'88vh',display:'flex',flexDirection:'column' as const}}>
+            
+            {/* Header */}
+            <div style={{padding:'20px 24px',borderBottom:`1px solid ${BD}`,display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
+              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Modifier le client</div>
+              <button onClick={()=>setShowEditClientModal(false)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
+            </div>
+
+            {/* Contenu scrollable */}
+            <div style={{padding:'20px 24px',overflowY:'auto' as const,flex:1}}>
+
+              {/* Type */}
+              <div style={{marginBottom:16}}>
+                <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:6}}>Type de client</label>
+                <div style={{display:'flex',gap:8}}>
+                  {([['particulier','👤 Particulier'],['pro','🏢 Pro']] as const).map(([v,l])=>(
+                    <button key={v} onClick={()=>setType(v)}
+                      style={{flex:1,padding:'8px',border:`1px solid ${type===v?G:BD}`,borderRadius:8,background:type===v?`${G}10`:'#fff',fontSize:13,fontWeight:type===v?600:400,color:type===v?G:'#555',cursor:'pointer'}}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Statut */}
+              <div style={{marginBottom:16}}>
+                <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:6}}>Statut</label>
+                <div style={{display:'flex',gap:8}}>
+                  {([['actif','✅ Actif'],['prospect','🔍 Prospect'],['inactif','⏸ Inactif']] as const).map(([v,l])=>(
+                    <button key={v} onClick={()=>setStatut(v)}
+                      style={{flex:1,padding:'7px',border:`1px solid ${statut===v?G:BD}`,borderRadius:8,background:statut===v?`${G}10`:'#fff',fontSize:12,fontWeight:statut===v?600:400,color:statut===v?G:'#555',cursor:'pointer'}}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {type==='pro'&&(
+                <>
+                  <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,marginTop:8,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Informations entreprise</div>
+                  <Field label="Raison sociale" value={raisonSociale} onChange={setRaisonSociale} placeholder="Ex: Dupont Immobilier SAS" required/>
+                  <div style={{marginBottom:12}}>
+                    <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Forme juridique</label>
+                    <select value={formeJuridique} onChange={e=>setFormeJuridique(e.target.value)}
+                      style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff'}}>
+                      <option value="">Choisir...</option>
+                      {['SAS','SARL','SCI','SAS','UE','URL','SA','Auto-entrepreneur','EI','Autre'].map(f=><option key={f}>{f}</option>)}
+                    </select>
+                  </div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
+                    <Field label="SIREN" value={siren} onChange={setSiren} placeholder="123456789"/>
+                    <Field label="SIRET" value={siret} onChange={setSiret} placeholder="12345678900001"/>
+                  </div>
+                  <Field label="N° TVA intracommunautaire" value={tvaIntra} onChange={setTvaIntra} placeholder="FR12345678901"/>
+                  <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,marginTop:8,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Contact principal</div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                    <Field label="Nom du contact" value={nomContact} onChange={setNomContact}/>
+                    <Field label="Poste" value={poste} onChange={setPoste}/>
+                  </div>
+                </>
+              )}
+
+              <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,marginTop:8,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Informations personnelles</div>
+              
+              <div style={{marginBottom:12}}>
+                <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:6}}>Civilité</label>
+                <div style={{display:'flex',gap:6}}>
+                  {['M.','Mme','Dr','Me'].map(cv=>(
+                    <button key={cv} onClick={()=>setCivilite(cv)}
+                      style={{padding:'6px 12px',border:`1px solid ${civilite===cv?G:BD}`,borderRadius:6,background:civilite===cv?`${G}10`:'#fff',fontSize:12,fontWeight:civilite===cv?600:400,color:civilite===cv?G:'#555',cursor:'pointer'}}>
+                      {cv}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                <Field label="Prénom" value={prenom} onChange={setPrenom} required/>
+                <Field label="Nom" value={nom} onChange={setNom} required/>
+              </div>
+              <Field label="Email" value={email} onChange={setEmail} type="email"/>
+              <Field label="Téléphone" value={tel} onChange={setTel}/>
+
+              <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,marginTop:8,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Adresse de facturation</div>
+              <Field label="Adresse" value={adresse} onChange={setAdresse}/>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 2fr',gap:12}}>
+                <Field label="Code postal" value={cp} onChange={setCp}/>
+                <Field label="Ville" value={ville} onChange={setVille}/>
+              </div>
+              <Field label="Pays" value={pays} onChange={setPays}/>
+
+              <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,marginTop:8,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Adresse chantier</div>
+              {type==='pro'&&(
+                <label style={{display:'flex',alignItems:'center',gap:8,marginBottom:12,cursor:'pointer',fontSize:13,color:'#555'}}>
+                  <input type="checkbox" checked={adresseIdentique} onChange={e=>setAdresseIdentique(e.target.checked)} style={{accentColor:G}}/>
+                  Identique à l'adresse de facturation
+                </label>
+              )}
+              {!adresseIdentique&&(
+                <>
+                  <Field label="Adresse chantier" value={adresseChantier} onChange={setAdresseChantier}/>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 2fr',gap:12}}>
+                    <Field label="Code postal" value={cpChantier} onChange={setCpChantier}/>
+                    <Field label="Ville chantier" value={villeChantier} onChange={setVilleChantier}/>
+                  </div>
+                </>
+              )}
+
+            </div>
+
+            {/* Footer */}
+            <div style={{padding:'16px 24px',borderTop:`1px solid ${BD}`,display:'flex',gap:10,flexShrink:0}}>
+              <button onClick={()=>setShowEditClientModal(false)}
+                style={{flex:1,padding:'10px',border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555',fontWeight:500}}>
+                Annuler
+              </button>
+              <button onClick={handleSave}
+                style={{flex:2,padding:'10px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                ✔ Enregistrer les modifications
+              </button>
+            </div>
+          </div>
+        </div>
+        )
+      })()}
 
       {showSaved&&(
         <div style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',color:'#fff',borderRadius:10,padding:'12px 24px',zIndex:9999,display:'flex',alignItems:'center',gap:10,boxShadow:'0 4px 20px rgba(0,0,0,0.3)'}}>
