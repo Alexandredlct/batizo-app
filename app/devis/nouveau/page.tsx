@@ -49,6 +49,160 @@ const biblioOuvrages=[
 ]
 const genId=()=>Math.random().toString(36).slice(2,8)
 
+
+// Composant modal édition client
+function EditClientModal({client,onSave,onClose,G,BD}:{client:any,onSave:(c:any)=>void,onClose:()=>void,G:string,BD:string}){
+  const isPro = client.nom.includes('—') || client.raisonSociale
+  const[type,setType]=useState<'particulier'|'pro'>(isPro?'pro':'particulier')
+  const[statut,setStatut]=useState<string>(client.statut||'actif')
+  const[civilite,setCivilite]=useState<string>(client.civilite||'M.')
+  const[prenom,setPrenom]=useState<string>(client.prenom||client.nom.split(' ')[0]||'')
+  const[nom,setNom]=useState<string>(client.nomFamille||client.nom.split(' ').slice(1).join(' ')||client.nom.split('—')[0].trim()||'')
+  const[email,setEmail]=useState(client.email||'')
+  const[tel,setTel]=useState(client.tel||'')
+  const[adresse,setAdresse]=useState(client.adresse||'')
+  const[cp,setCp]=useState(client.cp||'')
+  const[ville,setVille]=useState(client.ville||'')
+  const[pays,setPays]=useState(client.pays||'France')
+  const[adresseChantier,setAdresseChantier]=useState(client.adresseChantier||'')
+  const[cpChantier,setCpChantier]=useState(client.cpChantier||'')
+  const[villeChantier,setVilleChantier]=useState(client.villeChantier||'')
+  const[raisonSociale,setRaisonSociale]=useState(client.raisonSociale||client.nom.split('—')[1]?.trim()||'')
+  const[formeJuridique,setFormeJuridique]=useState(client.formeJuridique||'')
+  const[siren,setSiren]=useState(client.siren||'')
+  const[siret,setSiret]=useState(client.siret||'')
+  const[tvaIntra,setTvaIntra]=useState(client.tvaIntra||'')
+  const[nomContact,setNomContact]=useState(client.nomContact||'')
+  const[poste,setPoste]=useState(client.poste||'')
+  const[adresseIdentique,setAdresseIdentique]=useState(client.adresseIdentique!==false)
+
+  const Field=({label,value,onChange,placeholder,type:ftype='text',required=false}:{label:string,value:string,onChange:(v:string)=>void,placeholder?:string,type?:string,required?:boolean})=>(
+    <div style={{marginBottom:12}}>
+      <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>{label}{required&&' *'}</label>
+      <input type={ftype} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
+        style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}
+        onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+        onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+    </div>
+  )
+
+  const handleSave=()=>{
+    const nomComplet = type==='pro'
+      ? (nomContact?nomContact+' — ':'')+raisonSociale
+      : civilite+' '+prenom+' '+nom
+    onSave({
+      ...client,
+      nom:nomComplet.trim(),
+      email,tel,
+      adresse:[adresse,cp,ville].filter(Boolean).join(', '),
+      siret,raisonSociale,formeJuridique,siren,tvaIntra,nomContact,poste,
+      cp,ville,pays,adresseChantier,cpChantier,villeChantier,
+      statut,civilite,prenom,nomFamille:nom,type,adresseIdentique
+    })
+    onClose()
+  }
+
+  return(
+    <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,maxWidth:540,width:'94%',maxHeight:'88vh',display:'flex',flexDirection:'column' as const}}>
+        <div style={{padding:'20px 24px',borderBottom:`1px solid ${BD}`,display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
+          <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Modifier le client</div>
+          <button onClick={onClose} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
+        </div>
+        <div style={{padding:'20px 24px',overflowY:'auto' as const,flex:1}}>
+          <div style={{marginBottom:16}}>
+            <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:6}}>Type de client</label>
+            <div style={{display:'flex',gap:8}}>
+              {(['particulier','pro'] as const).map(v=>(
+                <button key={v} onClick={()=>setType(v)}
+                  style={{flex:1,padding:'8px',border:`1px solid ${type===v?G:BD}`,borderRadius:8,background:type===v?`${G}10`:'#fff',fontSize:13,fontWeight:type===v?600:400,color:type===v?G:'#555',cursor:'pointer'}}>
+                  {v==='particulier'?'👤 Particulier':'🏢 Pro'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div style={{marginBottom:16}}>
+            <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:6}}>Statut</label>
+            <div style={{display:'flex',gap:8}}>
+              {[['actif','✅ Actif'],['prospect','🔍 Prospect'],['inactif','⏸ Inactif']].map(([v,l])=>(
+                <button key={v} onClick={()=>setStatut(v)}
+                  style={{flex:1,padding:'7px',border:`1px solid ${statut===v?G:BD}`,borderRadius:8,background:statut===v?`${G}10`:'#fff',fontSize:12,fontWeight:statut===v?600:400,color:statut===v?G:'#555',cursor:'pointer'}}>
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
+          {type==='pro'&&(<>
+            <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Informations entreprise</div>
+            <Field label="Raison sociale" value={raisonSociale} onChange={setRaisonSociale} required/>
+            <div style={{marginBottom:12}}>
+              <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Forme juridique</label>
+              <select value={formeJuridique} onChange={e=>setFormeJuridique(e.target.value)}
+                style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff'}}>
+                <option value="">Choisir...</option>
+                {['SAS','SARL','SCI','SAS','SASU','EURL','SA','Auto-entrepreneur','EI','Autre'].map(f=><option key={f}>{f}</option>)}
+              </select>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:0}}>
+              <Field label="SIREN" value={siren} onChange={setSiren}/>
+              <Field label="SIRET" value={siret} onChange={setSiret}/>
+            </div>
+            <Field label="N° TVA intracommunautaire" value={tvaIntra} onChange={setTvaIntra}/>
+            <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Contact principal</div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:0}}>
+              <Field label="Nom du contact" value={nomContact} onChange={setNomContact}/>
+              <Field label="Poste" value={poste} onChange={setPoste}/>
+            </div>
+          </>)}
+          <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Informations personnelles</div>
+          <div style={{marginBottom:12}}>
+            <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:6}}>Civilité</label>
+            <div style={{display:'flex',gap:6}}>
+              {['M.','Mme','Dr','Me'].map(cv=>(
+                <button key={cv} onClick={()=>setCivilite(cv)}
+                  style={{padding:'6px 12px',border:`1px solid ${civilite===cv?G:BD}`,borderRadius:6,background:civilite===cv?`${G}10`:'#fff',fontSize:12,fontWeight:civilite===cv?600:400,color:civilite===cv?G:'#555',cursor:'pointer'}}>
+                  {cv}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:0}}>
+            <Field label="Prénom" value={prenom} onChange={setPrenom} required/>
+            <Field label="Nom" value={nom} onChange={setNom} required/>
+          </div>
+          <Field label="Email" value={email} onChange={setEmail} type="email"/>
+          <Field label="Téléphone" value={tel} onChange={setTel}/>
+          <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Adresse de facturation</div>
+          <Field label="Adresse" value={adresse} onChange={setAdresse}/>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 2fr',gap:12,marginBottom:0}}>
+            <Field label="Code postal" value={cp} onChange={setCp}/>
+            <Field label="Ville" value={ville} onChange={setVille}/>
+          </div>
+          <Field label="Pays" value={pays} onChange={setPays}/>
+          <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Adresse chantier</div>
+          {type==='pro'&&(
+            <label style={{display:'flex',alignItems:'center',gap:8,marginBottom:12,cursor:'pointer',fontSize:13,color:'#555'}}>
+              <input type="checkbox" checked={adresseIdentique} onChange={e=>setAdresseIdentique(e.target.checked)} style={{accentColor:G}}/>
+              Identique à l'adresse de facturation
+            </label>
+          )}
+          {(!adresseIdentique||type==='particulier')&&(<>
+            <Field label="Adresse chantier" value={adresseChantier} onChange={setAdresseChantier}/>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 2fr',gap:12,marginBottom:0}}>
+              <Field label="Code postal" value={cpChantier} onChange={setCpChantier}/>
+              <Field label="Ville chantier" value={villeChantier} onChange={setVilleChantier}/>
+            </div>
+          </>)}
+        </div>
+        <div style={{padding:'16px 24px',borderTop:`1px solid ${BD}`,display:'flex',gap:10,flexShrink:0}}>
+          <button onClick={onClose} style={{flex:1,padding:'10px',border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555',fontWeight:500}}>Annuler</button>
+          <button onClick={handleSave} style={{flex:2,padding:'10px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>✔ Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function NouveauDevisPage(){
   const[params,setParams]=useState<any>({})
   const[logoPreview,setLogoPreview]=useState<string|null>(null)
@@ -1544,157 +1698,9 @@ export default function NouveauDevisPage(){
         <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowHeaderInfo(false)}>
           <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:14,padding:24,maxWidth:360,width:'90%',textAlign:'center' as const}}>
             <div style={{fontSize:24,marginBottom:10}}>⚙️</div>
-            <div style={{fontSize:15,fontWeight:700,color:'#111',marginBottom:8}}>Modifier mon en-tête</div>
-            <p style={{fontSize:13,color:'#555',lineHeight:1.6,marginBottom:16}}>L'apparence de vos documents est paramétrable depuis la page Paramètres.</p>
-            <a href="/parametres" style={{display:'inline-block',padding:'10px 20px',background:G,color:'#fff',borderRadius:8,textDecoration:'none',fontSize:13,fontWeight:600}}>Aller aux Paramètres →</a>
-          </div>
-        </div>
-      )}
+       {showEditClientModal&&client&&<EditClientModal client={client} onSave={setClient as any} onClose={()=>setShowEditClientModal(false)} G={G} BD={BD}/>}
 
-      {(showClientDD||showFactureMenu||showContextMenu||showMoyensPopover||showAcompteMenu||showAcomptePopover||showRemisePopover||showPrimePopover)&&<div onClick={()=>{setShowClientDD(false);setShowFactureMenu(false);setShowContextMenu(null);setShowInsertMenu(null);setShowMoyensPopover(false);setShowAcompteMenu(false);setShowAcomptePopover(null);setShowRemisePopover(null);setShowPrimePopover(false);setShowClientMenu(false);setEditingMeta(null)}} style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',zIndex:50}}/>}
-
-      {/* Modal confirmation suppression */}
-      {showDeleteConfirm&&(
-        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowDeleteConfirm(null)}>
-          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:14,padding:24,maxWidth:360,width:'90%',textAlign:'center' as const}}>
-            <div style={{fontSize:20,marginBottom:8}}>🗑</div>
-            <div style={{fontSize:15,fontWeight:700,color:'#111',marginBottom:8}}>Retirer cette ligne ?</div>
-            <div style={{fontSize:13,color:'#555',marginBottom:20}}>Cette action est irréversible dans le devis.</div>
-            <div style={{display:'flex',gap:10}}>
-              <button onClick={()=>setShowDeleteConfirm(null)} style={{flex:1,padding:'10px',border:'1px solid #e5e7eb',borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer'}}>Annuler</button>
-              <button onClick={()=>{deleteBlocLigne(showDeleteConfirm!);setShowDeleteConfirm(null);setSelectedLigne(null)}}
-                style={{flex:1,padding:'10px',background:RD,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>Supprimer</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal édition ouvrage */}
-      {showEditOuvrage&&(
-        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowEditOuvrage(null)}>
-          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:560,width:'92%',maxHeight:'85vh',display:'flex',flexDirection:'column' as const,gap:14,overflowY:'auto'}}>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
-              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Éditer l'ouvrage</div>
-              <button onClick={()=>setShowEditOuvrage(null)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
-            </div>
-
-            {/* Nom */}
-            <div>
-              <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Nom</label>
-              <input value={showEditOuvrage.designation||''} onChange={e=>setShowEditOuvrage({...showEditOuvrage,designation:e.target.value})}
-                style={{width:'100%',padding:'9px 12px',border:'1px solid #e5e7eb',borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
-            </div>
-
-            {/* Description */}
-            <div>
-              <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Description</label>
-              <textarea value={showEditOuvrage.description||''} onChange={e=>setShowEditOuvrage({...showEditOuvrage,description:e.target.value})}
-                rows={3} style={{width:'100%',padding:'9px 12px',border:'1px solid #e5e7eb',borderRadius:8,fontSize:13,outline:'none',resize:'none' as const,fontFamily:'system-ui',boxSizing:'border-box' as const}}/>
-            </div>
-
-            {/* Unité + Prix */}
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12}}>
-              <div>
-                <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Unité</label>
-                <select value={showEditOuvrage.unite||'u'} onChange={e=>setShowEditOuvrage({...showEditOuvrage,unite:e.target.value})}
-                  style={{width:'100%',padding:'8px 10px',border:'1px solid #e5e7eb',borderRadius:7,fontSize:13,outline:'none',background:'#fff'}}>
-                  {UNITES.map(u=><option key={u}>{u}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>PU HT (€)</label>
-                <input type="number" value={showEditOuvrage.pu||0} onChange={e=>setShowEditOuvrage({...showEditOuvrage,pu:parseFloat(e.target.value)||0})}
-                  style={{width:'100%',padding:'8px 10px',border:'1px solid #e5e7eb',borderRadius:7,fontSize:13,outline:'none',textAlign:'right' as const,boxSizing:'border-box' as const}}/>
-              </div>
-              <div>
-                <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>TVA</label>
-                <select value={showEditOuvrage.tva||'20%'} onChange={e=>setShowEditOuvrage({...showEditOuvrage,tva:e.target.value})}
-                  style={{width:'100%',padding:'8px 10px',border:'1px solid #e5e7eb',borderRadius:7,fontSize:13,outline:'none',background:'#fff'}}>
-                  {TVA_OPTIONS.map(t=><option key={t}>{t}</option>)}
-                </select>
-              </div>
-            </div>
-
-            {/* Boutons */}
-            <div style={{display:'flex',gap:10,flexShrink:0,paddingTop:4}}>
-              <button onClick={()=>setShowEditOuvrage(null)}
-                style={{flex:1,padding:'10px',border:'1px solid #e5e7eb',borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555',fontWeight:500}}>
-                Annuler
-              </button>
-              <button onClick={()=>{
-                updateLigne(showEditOuvrage.id,'designation',showEditOuvrage.designation)
-                updateLigne(showEditOuvrage.id,'description',showEditOuvrage.description)
-                updateLigne(showEditOuvrage.id,'unite',showEditOuvrage.unite)
-                updateLigne(showEditOuvrage.id,'pu',showEditOuvrage.pu)
-                updateLigne(showEditOuvrage.id,'tva',showEditOuvrage.tva)
-                setShowEditOuvrage(null)
-              }}
-                style={{flex:1,padding:'10px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>
-                ✔ Valider
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal sélection client */}
-      {showClientModal&&(
-        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowClientModal(false)}>
-          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:500,width:'92%',maxHeight:'75vh',display:'flex',flexDirection:'column' as const,gap:14}}>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
-              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Choisir un client</div>
-              <button onClick={()=>setShowClientModal(false)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
-            </div>
-            <div style={{position:'relative',flexShrink:0}}>
-              <svg style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)'}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input value={clientSearch} onChange={e=>setClientSearch(e.target.value)}
-                placeholder="Rechercher un client..."
-                autoFocus
-                style={{width:'100%',padding:'9px 12px 9px 32px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}
-                onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
-                onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
-            </div>
-            <div style={{overflowY:'auto' as const,flex:1,display:'flex',flexDirection:'column' as const,gap:6}}>
-              {clientsExistants.filter(c=>c.nom.toLowerCase().includes(clientSearch.toLowerCase())).map((c,i)=>(
-                <div key={i} onClick={()=>{setClient(c);setShowClientModal(false);setClientSearch('')}}
-                  style={{padding:'12px 14px',border:`1px solid ${BD}`,borderRadius:8,cursor:'pointer'}}
-                  onMouseEnter={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor=G;d.style.background='#f0fdf4'}}
-                  onMouseLeave={e=>{const d=e.currentTarget as HTMLDivElement;d.style.borderColor=BD;d.style.background=''}}>
-                  <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{c.nom}</div>
-                  <div style={{fontSize:11,color:'#888',marginTop:2}}>{c.adresse}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{flexShrink:0,paddingTop:8,borderTop:`1px solid ${BD}`}}>
-              <button onClick={()=>{if(clientSearch){setClient({nom:clientSearch,adresse:'',email:'',tel:''});setShowClientModal(false);setClientSearch('')}}}
-                style={{width:'100%',padding:'10px',background:'#f0fdf4',border:`1px solid ${G}40`,borderRadius:8,fontSize:13,fontWeight:600,color:G,cursor:'pointer'}}>
-                + Créer "{clientSearch||'nouveau client'}"
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal édition client */}
-      {showEditClientModal&&client&&(()=>{
-        const isPro = client.nom.includes('—') || (client as any).raisonSociale
-        const[type,setType]=useState<'particulier'|'pro'>(isPro?'pro':'particulier')
-        const[statut,setStatut]=useState<string>((client as any).statut||'actif')
-        const[civilite,setCivilite]=useState<string>((client as any).civilite||'M.')
-        const[prenom,setPrenom]=useState<string>((client as any).prenom||client.nom.split(' ')[0]||'')
-        const[nom,setNom]=useState<string>((client as any).nomFamille||client.nom.split(' ').slice(1).join(' ')||client.nom.split('—')[0].trim()||'')
-        const[email,setEmail]=useState(client.email||'')
-        const[tel,setTel]=useState(client.tel||'')
-        const[adresse,setAdresse]=useState(client.adresse||'')
-        const[cp,setCp]=useState((client as any).cp||'')
-        const[ville,setVille]=useState((client as any).ville||'')
-        const[pays,setPays]=useState((client as any).pays||'France')
-        const[adresseChantier,setAdresseChantier]=useState((client as any).adresseChantier||'')
-        const[cpChantier,setCpChantier]=useState((client as any).cpChantier||'')
-        const[villeChantier,setVilleChantier]=useState((client as any).villeChantier||'')
-        const[raisonSociale,setRaisonSociale]=useState((client as any).raisonSociale||client.nom.split('—')[1]?.trim()||'')
-        const[formeJuridique,setFormeJuridique]=useState((client as any).formeJuridique||'')
-        const[paysImmat,setPaysImmat]=useState((client as any).paysImmat||'France')
+            {showSaved&&(=useState((client as any).paysImmat||'France')
         const[siren,setSiren]=useState((client as any).siren||'')
         const[siret,setSiret]=useState(client.siret||'')
         const[tvaIntra,setTvaIntra]=useState((client as any).tvaIntra||'')
