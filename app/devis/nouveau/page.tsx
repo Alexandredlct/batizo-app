@@ -912,7 +912,7 @@ export default function NouveauDevisPage(){
                   placeholder="Titre du devis (optionnel)"
                   defaultFont={params.police||'Georgia,serif'}
                   style={{textAlign:'center' as const,fontSize:15,fontStyle:'italic',color:'#555',minHeight:28}}/>
-              </div>}}
+              </div>}
 
               {/* INTRO */}
               {(introTexte||editMode)&&(
