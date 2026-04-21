@@ -303,7 +303,7 @@ export async function POST(req: NextRequest) {
     const date = new Date().toISOString().split('T')[0]
     const nom = devisData.numeroDevis ? `Devis_${devisData.numeroDevis}_${date}` : `Devis_${date}`
 
-    return new NextResponse(finalBytes, {
+    return new NextResponse(Buffer.from(finalBytes), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
