@@ -462,39 +462,11 @@ export default function BibliothequePage() {
         )}
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
           <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:20,background:`${catColor(item.categorie)}18`,color:catColor(item.categorie)}}>{item.categorie}</span>
-          <div style={{position:'relative' as const}}>
-            <button
-              onClick={e=>{e.stopPropagation();setKebabMenu(kebabMenu===item.id?null:item.id)}}
-              style={{width:30,height:30,border:'none',borderRadius:6,background:'transparent',cursor:'pointer',fontSize:16,color:'#aaa',display:'flex',alignItems:'center',justifyContent:'center'}}
-              onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#F5F5F5'}
-              onMouseLeave={e=>{if(kebabMenu!==item.id)(e.currentTarget as HTMLButtonElement).style.background='transparent'}}>
-              ⋮
-            </button>
-            {kebabMenu===item.id&&(
-              <div onClick={e=>e.stopPropagation()} style={{position:'absolute' as const,top:'100%',right:0,background:'#fff',border:'0.5px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',zIndex:100,minWidth:180,overflow:'hidden'}}>
-                {[
-                  {label:'Modifier',icon:'✏️',action:()=>{openEdit(type,item);setKebabMenu(null)}},
-                  {label:'Dupliquer',icon:'📋',action:()=>{dupliquer(type,item);setKebabMenu(null)}},
-                  {label:'Historique',icon:'📈',action:()=>{setShowHistorique({item,type});setKebabMenu(null)}},
-                ].map(it=>(
-                  <div key={it.label} onClick={it.action}
-                    style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333',display:'flex',alignItems:'center',gap:8}}
-                    onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
-                    onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-                    <span>{it.icon}</span>{it.label}
-                  </div>
-                ))}
-                <div style={{borderTop:'1px solid #f3f4f6'}}>
-                  <div onClick={()=>{setDeleteConfirm(item.id);setKebabMenu(null)}}
-                    style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#D32F2F',display:'flex',alignItems:'center',gap:8}}
-                    onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#fef2f2'}
-                    onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-                    <span>🗑</span>Supprimer
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+          <ActionMenu itemId={item.id} kebabMenu={kebabMenu} setKebabMenu={setKebabMenu}
+            onModifier={()=>openEdit(type,item)}
+            onDupliquer={()=>dupliquer(type,item)}
+            onHistorique={()=>setShowHistorique({item,type})}
+            onSupprimer={()=>setDeleteConfirm(item.id)}/>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:4,flexWrap:'wrap' as const}}>
           <div style={{fontSize:14,fontWeight:700,color:'#111',lineHeight:1.3}}>{item.nom}</div>
@@ -988,9 +960,11 @@ export default function BibliothequePage() {
                         <td style={{padding:'10px 16px',fontSize:13,fontWeight:700,color:'#111'}}>{fmt(o.prixFacture)}</td>
                         <td style={{padding:'10px 16px'}}><span style={{fontSize:12,fontWeight:700,color:margeColor(m)}}>{m}%</span></td>
                         <td style={{padding:'10px 16px'}}><div style={{display:'flex',gap:4}}>
-                          <button onClick={()=>dupliquer('ouvrage',o)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>📋</button>
-                          <button onClick={()=>openEdit('ouvrage',o)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>✏️</button>
-                          <button onClick={()=>setDeleteConfirm(o.id)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>🗑</button>
+                          <ActionMenu itemId={o.id} kebabMenu={kebabMenu} setKebabMenu={setKebabMenu}
+                            onModifier={()=>openEdit('ouvrage',o)}
+                            onDupliquer={()=>dupliquer('ouvrage',o)}
+                            onHistorique={()=>setShowHistorique({item:o,type:'ouvrage'})}
+                            onSupprimer={()=>setDeleteConfirm(o.id)}/>
                         </div></td>
                       </tr>
                     )})}</tbody>
@@ -1025,9 +999,11 @@ export default function BibliothequePage() {
                         <td style={{padding:'10px 16px',fontSize:13,fontWeight:700,color:'#111'}}>{fmt(mat.prixFacture)}</td>
                         <td style={{padding:'10px 16px'}}><span style={{fontSize:12,fontWeight:700,color:margeColor(m)}}>{m}%</span></td>
                         <td style={{padding:'10px 16px'}}><div style={{display:'flex',gap:4}}>
-                          <button onClick={()=>dupliquer('materiau',mat)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>📋</button>
-                          <button onClick={()=>openEdit('materiau',mat)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>✏️</button>
-                          <button onClick={()=>setDeleteConfirm(mat.id)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>🗑</button>
+                          <ActionMenu itemId={mat.id} kebabMenu={kebabMenu} setKebabMenu={setKebabMenu}
+                            onModifier={()=>openEdit('materiau',mat)}
+                            onDupliquer={()=>dupliquer('materiau',mat)}
+                            onHistorique={()=>setShowHistorique({item:mat,type:'materiau'})}
+                            onSupprimer={()=>setDeleteConfirm(mat.id)}/>
                         </div></td>
                       </tr>
                     )})}</tbody>
@@ -1062,9 +1038,11 @@ export default function BibliothequePage() {
                         <td style={{padding:'10px 16px',fontSize:13,fontWeight:700,color:'#111'}}>{fmt(moItem.prixFacture)}</td>
                         <td style={{padding:'10px 16px'}}><span style={{fontSize:12,fontWeight:700,color:margeColor(m)}}>{m}%</span></td>
                         <td style={{padding:'10px 16px'}}><div style={{display:'flex',gap:4}}>
-                          <button onClick={()=>dupliquer('mo',moItem)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>📋</button>
-                          <button onClick={()=>openEdit('mo',moItem)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>✏️</button>
-                          <button onClick={()=>setDeleteConfirm(moItem.id)} style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}>🗑</button>
+                          <ActionMenu itemId={moItem.id} kebabMenu={kebabMenu} setKebabMenu={setKebabMenu}
+                            onModifier={()=>openEdit('mo',moItem)}
+                            onDupliquer={()=>dupliquer('mo',moItem)}
+                            onHistorique={()=>setShowHistorique({item:moItem,type:'mo'})}
+                            onSupprimer={()=>setDeleteConfirm(moItem.id)}/>
                         </div></td>
                       </tr>
                     )})}</tbody>
