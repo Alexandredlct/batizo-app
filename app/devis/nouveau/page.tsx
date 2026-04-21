@@ -341,7 +341,7 @@ export default function NouveauDevisPage(){
     if(l.type==='categorie'||l.type==='sous-categorie'){
       const st=getSousTotal(idx)
       const isSub=l.type==='sous-categorie'
-      const col='ignore'
+      const col=params.couleurPrincipale||G
       return(
         <>
         {idx>0&&(
@@ -355,7 +355,7 @@ export default function NouveauDevisPage(){
             <td style={{width:40,padding:0}}></td>
           </tr>
         )}
-        <tr key={l.id} style={{background:selectedLigne===l.id&&editMode?'#fff3e0':isSub?'#F5E6E2':'#EDD8D3',cursor:editMode?'pointer':'default'}}
+        <tr key={l.id} style={{background:selectedLigne===l.id&&editMode?'#fff3e0':isSub?col+'22':col+'44',cursor:editMode?'pointer':'default'}}
           onClick={()=>editMode&&setSelectedLigne(selectedLigne===l.id?null:l.id)}>
           <td style={{padding:'6px 16px',width:60,background:'transparent',verticalAlign:'top' as const}}>
             <div style={{display:'flex',alignItems:'center',gap:4}}>
