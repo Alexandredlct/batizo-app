@@ -91,6 +91,18 @@ export default function NouveauDevisPage(){
   const[statut,setStatut]=useState<'brouillon'|'en_attente'|'finalise'|'signe'|'refuse'>('brouillon')
   const[showBiblio,setShowBiblio]=useState<'materiau'|'mo'|'ouvrage'|null>(null)
   const[insertAtIdx,setInsertAtIdx]=useState<number|null>(null)
+  // Bas du devis
+  const[moyens,setMoyens]=useState({especes:false,cheque:true,virement:true,carte:false})
+  const[showMoyensPopover,setShowMoyensPopover]=useState(false)
+  const[acomptes,setAcomptes]=useState<{id:string,type:string,pct:number}[]>([])
+  const[showAcompteMenu,setShowAcompteMenu]=useState(false)
+  const[activeAcompte,setActiveAcompte]=useState<string|null>(null)
+  const[mentionsLegales,setMentionsLegales]=useState(false)
+  const[remises,setRemises]=useState<{id:string,label:string,val:number,isPct:boolean}[]>([])
+  const[showRemisePopover,setShowRemisePopover]=useState<string|null>(null)
+  const[prime,setPrime]=useState<{label:string,val:number}|null>(null)
+  const[showPrimePopover,setShowPrimePopover]=useState(false)
+  const[showAcomptePopover,setShowAcomptePopover]=useState<string|null>(null)
   const[biblioSearch,setBiblioSearch]=useState('')
   const[biblioOuvrages,setBiblioOuvrages]=useState<any[]>([])
   const[biblioMats,setBiblioMats]=useState<any[]>([])
@@ -149,6 +161,46 @@ export default function NouveauDevisPage(){
   const remiseMt=remisePct?(totalHT*remise/100):remise
   const acompteMt=acomptePct?(totalTTC*acompte/100):acompte
   const netAPayer=totalTTC-remiseMt-primeCEE
+  
+  // Calculs bas de devis
+  const totalRemises=remises.reduce((s,r)=>s+(r.isPct?totalHT*r.val/100:r.val),0)
+  const totalHTapresRemises=totalHT-totalRemises
+  const totalPrime=prime?prime.val:0
+  // TVA ventilée par taux
+  const tvaVentilee=lignes.reduce((acc,l)=>{
+    const ht=calcLigneHT(l)
+    if(ht===0) return acc
+    const taux=parseFloat((l.tva||'0%').replace('%',''))
+    if(taux===0) return acc
+    const tauxKey=taux.toString()
+    const remisePct=totalHT>0?totalRemises/totalHT:0
+    const htNet=ht*(1-remisePct)
+    const tvaAmt=htNet*taux/100
+    acc[tauxKey]=(acc[tauxKey]||0)+tvaAmt
+    return acc
+  },{} as Record<string,number>)
+  const totalTVAVentilee=Object.values(tvaVentilee).reduce((s,v)=>s+v,0)
+  const totalTTCFinal=totalHTapresRemises+totalTVAVentilee
+  const resteAPayer=totalTTCFinal-totalPrime
+  
+  // Moyens de paiement texte
+  const getMoyensTexte=()=>{
+    const m=[]
+    if(moyens.especes) m.push('espèces')
+    if(moyens.cheque) m.push('chèque')
+    if(moyens.virement) m.push('virement bancaire')
+    if(moyens.carte) m.push('carte bleue')
+    if(m.length===0) return ''
+    if(m.length===1) return `Paiement par ${m[0]}.`
+    const last=m.pop()
+    return `Paiement par ${m.join(', ')} ou par ${last}.`
+  }
+  
+  const ACOMPTE_TYPES=[
+    {id:'signature',label:'Acompte à la signature de'},
+    {id:'intermediaire',label:'Versement intermédiaire de'},
+    {id:'solde',label:'Solde à réception de chantier'},
+  ]
 
   const addLigne=(type:LigneType,data?:any,atIdx?:number)=>{
     const base:Ligne={id:genId(),type}
@@ -855,7 +907,7 @@ export default function NouveauDevisPage(){
               </div>
 
               {/* TITRE */}
-              {(titre||editMode)&&{(titre||editMode)&&<div style={{padding:'12px 24px',textAlign:'center' as const}}>
+              {(titre||editMode)&&<div style={{padding:'12px 24px',textAlign:'center' as const}}>
                 <RichTextEditor value={titre} onChange={setTitre} readOnly={!editMode}
                   placeholder="Titre du devis (optionnel)"
                   defaultFont={params.police||'Georgia,serif'}
@@ -954,89 +1006,239 @@ export default function NouveauDevisPage(){
               )}
 
               {/* PIED DE PAGE */}
-              <div style={{display:'grid',gridTemplateColumns:'1fr 320px'}}>
-                <div style={{padding:'20px 24px',borderRight:`1px solid ${BD}`}}>
-                  <div style={{marginBottom:14}}>
-                    <label style={{fontSize:11,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',display:'block',marginBottom:5}}>Conditions de paiement</label>
-                    <textarea value={condPaiement} onChange={e=>setCondPaiement(e.target.value)} disabled={!editMode} rows={2}
-                      style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,color:'#555',outline:'none',resize:'none' as const,fontFamily:'system-ui',boxSizing:'border-box' as const}}/>
-                  </div>
-                  <div style={{marginBottom:14}}>
-                    <label style={{fontSize:11,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',display:'block',marginBottom:5}}>Acompte</label>
-                    <div style={{display:'flex',gap:8,alignItems:'center'}}>
-                      <input type="number" value={acompte} min={0} onChange={e=>setAcompte(parseFloat(e.target.value)||0)} disabled={!editMode}
-                        style={{width:80,padding:'6px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,outline:'none',color:'#111',textAlign:'right' as const}}/>
-                      <select value={acomptePct?'%':'€'} onChange={e=>setAcomptePct(e.target.value==='%')}
-                        style={{padding:'6px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:12,outline:'none',background:'#fff',color:'#111'}}>
-                        <option>%</option><option>€</option>
-                      </select>
-                      {acompte>0&&<span style={{fontSize:12,color:'#555'}}>{fmt(acompteMt)} €</span>}
+              <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',borderTop:`1px solid ${BD}`}}>
+
+                {/* COLONNE GAUCHE */}
+                <div style={{padding:'20px 24px',borderRight:`1px solid ${BD}`,display:'flex',flexDirection:'column' as const,gap:14}}>
+
+                  {/* 1.1 Moyens de paiement */}
+                  <div style={{position:'relative' as const}}>
+                    <div
+                      onClick={()=>editMode&&setShowMoyensPopover(!showMoyensPopover)}
+                      style={{padding:'6px 8px',borderRadius:6,background:editMode&&showMoyensPopover?'#FBE5D5':'transparent',cursor:editMode?'pointer':'default',display:'flex',alignItems:'center',gap:8,transition:'background 0.15s'}}
+                      onMouseEnter={e=>{if(editMode&&!showMoyensPopover)(e.currentTarget as HTMLDivElement).style.background='#FBE5D5'}}
+                      onMouseLeave={e=>{if(!showMoyensPopover)(e.currentTarget as HTMLDivElement).style.background='transparent'}}>
+                      <span style={{fontSize:13,color:'#333',flex:1}}>{getMoyensTexte()||<span style={{color:'#aaa',fontStyle:'italic'}}>Aucun moyen de paiement sélectionné</span>}</span>
+                      {editMode&&<span style={{fontSize:12,color:'#aaa'}}>✏</span>}
                     </div>
+                    {showMoyensPopover&&(
+                      <div style={{position:'absolute' as const,top:'100%',left:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',zIndex:200,padding:'14px 16px',minWidth:240}} onClick={e=>e.stopPropagation()}>
+                        <div style={{fontSize:12,fontWeight:600,color:'#555',marginBottom:10}}>Moyens de paiement acceptés :</div>
+                        {[['especes','Espèces'],['cheque','Chèque'],['virement','Virement bancaire'],['carte','Carte bleue']].map(([k,l])=>(
+                          <label key={k} style={{display:'flex',alignItems:'center',gap:8,marginBottom:8,cursor:'pointer',fontSize:13,color:'#333'}}>
+                            <input type="checkbox" checked={(moyens as any)[k]} onChange={e=>setMoyens(p=>({...p,[k]:e.target.checked}))} style={{accentColor:G}}/>
+                            {l}
+                          </label>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <label style={{fontSize:11,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',display:'block',marginBottom:5}}>Notes & mentions</label>
-                    <textarea value={notes} onChange={e=>setNotes(e.target.value)} disabled={!editMode} rows={3} placeholder="Conditions particulières, délais, garanties..."
-                      style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,color:'#555',outline:'none',resize:'none' as const,fontFamily:'system-ui',boxSizing:'border-box' as const}}/>
-                  </div>
-                </div>
-                <div style={{padding:'20px 24px'}}>
-                  <div style={{display:'flex',flexDirection:'column' as const,gap:8}}>
-                    {[
-                      remise>0?{label:'Sous-total HT',val:fmt(totalHT)+' €',bold:true}:null,
-                      remise>0?{label:params.libelleRemise||'Remise exceptionnelle',val:'− '+fmt(remiseMt)+' €',bold:false,red:true}:null,
-                      {label:'Total HT',val:fmt(totalHT-remiseMt)+' €',bold:true},
-                      {label:'TVA',val:fmt(totalTVA)+' €',bold:false},
-                      {label:'Total TTC',val:fmt(totalTTC-remiseMt)+' €',bold:true},
-                      primeCEE>0?{label:params.libellePrime||primeCEELabel||'Prime Maprimerénov',val:'− '+fmt(primeCEE)+' €',bold:false,red:true}:null,
-                    ].filter(Boolean).map((row:any)=>(
-                      <div key={row.label} style={{display:'flex',justifyContent:'space-between',fontSize:13,paddingBottom:4,paddingTop:4,borderBottom:`1px solid #f3f4f6`}}>
-                        <span style={{color:row.bold?'#111':'#555',fontWeight:row.bold?700:400}}>{row.label}</span>
-                        <span style={{fontWeight:row.bold?700:400,color:row.red?RD:'#111'}}>{row.val}</span>
+
+                  {/* 1.2 Acomptes */}
+                  <div style={{display:'flex',flexDirection:'column' as const,gap:6}}>
+                    {acomptes.map(a=>(
+                      <div key={a.id} style={{position:'relative' as const}}>
+                        <div onClick={()=>editMode&&setShowAcomptePopover(showAcomptePopover===a.id?null:a.id)}
+                          style={{padding:'6px 8px',borderRadius:6,background:editMode&&showAcomptePopover===a.id?'#FBE5D5':'transparent',cursor:editMode?'pointer':'default',fontSize:13,color:'#333',display:'flex',alignItems:'center',gap:8}}
+                          onMouseEnter={e=>{if(editMode&&showAcomptePopover!==a.id)(e.currentTarget as HTMLDivElement).style.background='#FBE5D5'}}
+                          onMouseLeave={e=>{if(showAcomptePopover!==a.id)(e.currentTarget as HTMLDivElement).style.background='transparent'}}>
+                          <span style={{flex:1}}>
+                            {ACOMPTE_TYPES.find(t=>t.id===a.type)?.label} {a.pct} %, soit {fmt(resteAPayer*a.pct/100)} €.
+                          </span>
+                          {editMode&&<span style={{fontSize:12,color:'#aaa'}}>✏</span>}
+                        </div>
+                        {showAcomptePopover===a.id&&(
+                          <div style={{position:'absolute' as const,top:'100%',left:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',zIndex:200,padding:'14px 16px',minWidth:260}} onClick={e=>e.stopPropagation()}>
+                            <div style={{fontSize:12,fontWeight:600,color:'#555',marginBottom:10}}>{ACOMPTE_TYPES.find(t=>t.id===a.type)?.label}</div>
+                            <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:12}}>
+                              <input type="number" value={a.pct} min={0} max={100}
+                                onChange={e=>setAcomptes(p=>p.map(x=>x.id===a.id?{...x,pct:parseFloat(e.target.value)||0}:x))}
+                                style={{width:60,padding:'6px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:13,outline:'none',textAlign:'right' as const}}/>
+                              <span style={{fontSize:13,color:'#555'}}>% = {fmt(resteAPayer*a.pct/100)} € TTC</span>
+                            </div>
+                            <button onClick={()=>setAcomptes(p=>p.filter(x=>x.id!==a.id))}
+                              style={{fontSize:12,color:RD,background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline'}}>
+                              Supprimer cette échéance
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
-                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,fontSize:13}}>
-                      <span style={{color:'#555',flexShrink:0}}>Remise</span>
-                      <div style={{display:'flex',gap:4,alignItems:'center'}}>
-                        <input type="number" value={remise} min={0} onChange={e=>setRemise(parseFloat(e.target.value)||0)} disabled={!editMode}
-                          style={{width:55,padding:'4px 6px',border:`1px solid ${BD}`,borderRadius:5,fontSize:12,outline:'none',textAlign:'right' as const,color:'#111'}}/>
-                        <select value={remisePct?'%':'€'} onChange={e=>setRemisePct(e.target.value==='%')}
-                          style={{padding:'4px 5px',border:`1px solid ${BD}`,borderRadius:5,fontSize:11,outline:'none',background:'#fff',color:'#111'}}>
-                          <option>%</option><option>€</option>
-                        </select>
-                        {remise>0&&<span style={{fontSize:11,color:RD}}>−{fmt(remiseMt)} €</span>}
-                      </div>
-                    </div>
-                    <div style={{background:'#fff8f0',border:'1px solid #fde8c8',borderRadius:8,padding:'10px 12px'}}>
-                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}>
-                        <div style={{display:'flex',alignItems:'center',gap:6}}>
-                          <input value={primeCEELabel||'Prime non soumise à TVA à déduire…'} onChange={e=>setPrimeCEELabel(e.target.value)}
-                            style={{border:'none',background:'transparent',fontSize:12,color:'#555',outline:'none',fontStyle:'italic',minWidth:200,fontFamily:'system-ui'}}/>
-                          <div style={{position:'relative',display:'inline-block'}}>
-                            <span style={{width:16,height:16,borderRadius:'50%',background:'#f59e0b',color:'#fff',fontSize:10,fontWeight:700,display:'inline-flex',alignItems:'center',justifyContent:'center',cursor:'help'}}>?</span>
-                            <div style={{position:'absolute',bottom:'120%',left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',color:'#fff',fontSize:11,padding:'8px 12px',borderRadius:8,whiteSpace:'nowrap' as const,zIndex:300,width:260,textAlign:'center' as const,lineHeight:1.5,pointerEvents:'none',opacity:0,transition:'opacity 0.2s'}}
-                              onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.opacity='1'}
-                              className="tooltip-content">
-                              Déduisez vos primes non assujetties à la TVA (ex. CEE, MaPrimeRénov'…)
-                            </div>
+                    {editMode&&(
+                      <div style={{position:'relative' as const,display:'inline-block'}}>
+                        <button onClick={()=>setShowAcompteMenu(!showAcompteMenu)}
+                          style={{padding:'5px 12px',background:'#f3f4f6',border:`1px solid ${BD}`,borderRadius:20,fontSize:12,cursor:'pointer',color:'#555',display:'flex',alignItems:'center',gap:6}}>
+                          📅 Ajouter un acompte
+                        </button>
+                        {showAcompteMenu&&(
+                          <div style={{position:'absolute' as const,top:'100%',left:0,marginTop:4,background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',zIndex:200,overflow:'hidden',minWidth:240}} onClick={e=>e.stopPropagation()}>
+                            {ACOMPTE_TYPES.map(t=>(
+                              <div key={t.id} onClick={()=>{setAcomptes(p=>[...p,{id:genId(),type:t.id,pct:30}]);setShowAcompteMenu(false)}}
+                                style={{padding:'10px 14px',fontSize:13,cursor:'pointer',color:'#333'}}
+                                onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                                onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                                {t.label}...
+                              </div>
+                            ))}
                           </div>
-                        </div>
-                        <div style={{display:'flex',gap:4,alignItems:'center'}}>
-                          <input type="number" value={primeCEE} min={0} onChange={e=>setPrimeCEE(parseFloat(e.target.value)||0)} disabled={!editMode}
-                            style={{width:65,padding:'4px 6px',border:'1px solid #fde8c8',borderRadius:5,fontSize:12,outline:'none',textAlign:'right' as const,color:'#111',background:'#fff'}}/>
-                          <span style={{fontSize:11,color:'#888'}}>€</span>
-                          {primeCEE>0&&<span style={{fontSize:11,color:RD,fontWeight:600}}>−{fmt(primeCEE)} €</span>}
-                        </div>
+                        )}
+                      </div>
+                    )}
+                    {acomptes.length>0&&editMode&&(
+                      <button onClick={()=>{}} style={{fontSize:11,color:'#2563eb',background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline',textAlign:'left' as const}}>
+                        Enregistrer ces échéances pour mes prochains devis
+                      </button>
+                    )}
+                  </div>
+
+                  {/* 1.3 Mentions légales */}
+                  {mentionsLegales?(
+                    <div style={{position:'relative' as const}}>
+                      <div style={{padding:'6px 8px',borderRadius:6,fontSize:12,color:'#555',fontStyle:'italic',lineHeight:1.6,background:'transparent',cursor:editMode?'pointer':'default'}}
+                        onMouseEnter={e=>{if(editMode)(e.currentTarget as HTMLDivElement).style.background='#FBE5D5'}}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='transparent'}>
+                        Je certifie que les travaux réalisés sont éligibles au taux de TVA réduit de 5,5 % ou 10 % et respectent les conditions prévues par les articles 279-0 bis et 278-0 bis A du Code Général des Impôts.
+                        {editMode&&<div style={{marginTop:4}}><button onClick={()=>setMentionsLegales(false)} style={{fontSize:11,color:RD,background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline'}}>Retirer les mentions légales</button></div>}
                       </div>
                     </div>
-                    <div style={{background:'#f0fdf4',borderRadius:8,padding:'12px',display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:4}}>
-                      <span style={{fontSize:15,fontWeight:700,color:'#111'}}>'Reste à payer'</span>
-                      <span style={{fontSize:18,fontWeight:800,color:G}}>{fmt(netAPayer)} €</span>
+                  ):editMode&&(
+                    <button onClick={()=>setMentionsLegales(true)}
+                      style={{padding:'5px 12px',background:'#fff8f0',border:'1px solid #fde8c8',borderRadius:20,fontSize:12,cursor:'pointer',color:'#BA7517',display:'inline-flex',alignItems:'center',gap:6,alignSelf:'flex-start' as const}}>
+                      🪓 Ajouter les mentions légales
+                    </button>
+                  )}
+
+                  {/* 1.4 Note de fin */}
+                  <div style={{padding:'6px 8px',borderRadius:6,cursor:editMode?'text':'default',background:'transparent',transition:'background 0.15s'}}
+                    onMouseEnter={e=>{if(editMode)(e.currentTarget as HTMLDivElement).style.background='#FBE5D5'}}
+                    onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='transparent'}>
+                    <RichTextEditor value={notes} onChange={setNotes} readOnly={!editMode}
+                      placeholder={editMode?"Note de fin spécifique à ce document...":''}
+                      defaultFont={params.police||'system-ui'}
+                      style={{fontSize:13,color:'#555',fontStyle:'italic'}}/>
+                  </div>
+                </div>
+
+                {/* COLONNE DROITE — récap */}
+                <div style={{padding:'20px 24px'}}>
+                  <div style={{display:'flex',flexDirection:'column' as const,gap:4}}>
+
+                    {/* Remise */}
+                    {remises.map(r=>(
+                      <div key={r.id} style={{position:'relative' as const}}>
+                        <div onClick={()=>editMode&&setShowRemisePopover(showRemisePopover===r.id?null:r.id)}
+                          style={{display:'flex',justifyContent:'space-between',fontSize:13,color:'#333',padding:'4px 6px',borderRadius:5,cursor:editMode?'pointer':'default',background:showRemisePopover===r.id?'#FBE5D5':'transparent'}}
+                          onMouseEnter={e=>{if(editMode&&showRemisePopover!==r.id)(e.currentTarget as HTMLDivElement).style.background='#FBE5D5'}}
+                          onMouseLeave={e=>{if(showRemisePopover!==r.id)(e.currentTarget as HTMLDivElement).style.background='transparent'}}>
+                          <span>{r.label||'Remise'}</span>
+                          <span style={{color:RD}}>− {fmt(r.isPct?totalHT*r.val/100:r.val)} €</span>
+                        </div>
+                        {showRemisePopover===r.id&&(
+                          <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',zIndex:200,padding:'14px 16px',minWidth:240}} onClick={e=>e.stopPropagation()}>
+                            <input value={r.label} onChange={e=>setRemises(p=>p.map(x=>x.id===r.id?{...x,label:e.target.value}:x))}
+                              placeholder="Libellé (ex: Remise commerciale)"
+                              style={{width:'100%',padding:'7px 10px',border:`1px solid ${BD}`,borderRadius:6,fontSize:13,outline:'none',marginBottom:8,boxSizing:'border-box' as const}}/>
+                            <div style={{display:'flex',gap:6,marginBottom:10}}>
+                              <input type="number" value={r.val} min={0}
+                                onChange={e=>setRemises(p=>p.map(x=>x.id===r.id?{...x,val:parseFloat(e.target.value)||0}:x))}
+                                style={{flex:1,padding:'7px 10px',border:`1px solid ${BD}`,borderRadius:6,fontSize:13,outline:'none',textAlign:'right' as const}}/>
+                              <select value={r.isPct?'%':'€'} onChange={e=>setRemises(p=>p.map(x=>x.id===r.id?{...x,isPct:e.target.value==='%'}:x))}
+                                style={{padding:'7px 8px',border:`1px solid ${BD}`,borderRadius:6,fontSize:13,outline:'none',background:'#fff'}}>
+                                <option>%</option><option>€</option>
+                              </select>
+                            </div>
+                            <button onClick={()=>{setRemises(p=>p.filter(x=>x.id!==r.id));setShowRemisePopover(null)}}
+                              style={{fontSize:12,color:RD,background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline'}}>
+                              Supprimer
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* Bouton ajouter remise */}
+                    {editMode&&(
+                      <div onClick={()=>setRemises(p=>[...p,{id:genId(),label:'Remise',val:0,isPct:true}])}
+                        style={{padding:'5px 8px',borderRadius:6,cursor:'pointer',fontSize:12,color:'#888',display:'flex',alignItems:'center',gap:6}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='transparent'}>
+                        🏷️ {remises.length>0?'Ajouter une autre remise...':'Remise ou montant à déduire...'}
+                      </div>
+                    )}
+
+                    <div style={{height:1,background:BD,margin:'4px 0'}}/>
+
+                    {/* Total HT */}
+                    <div style={{display:'flex',justifyContent:'space-between',fontSize:13,color:'#333',padding:'2px 0'}}>
+                      <span>{totalRemises>0?'Sous-total HT':'Total HT'}</span>
+                      <span style={{fontWeight:500}}>{fmt(totalHT)} €</span>
+                    </div>
+                    {totalRemises>0&&<div style={{display:'flex',justifyContent:'space-between',fontSize:13,color:'#333',padding:'2px 0',fontWeight:500}}>
+                      <span>Total HT</span><span>{fmt(totalHTapresRemises)} €</span>
+                    </div>}
+
+                    {/* TVA ventilée */}
+                    {Object.entries(tvaVentilee).sort((a,b)=>parseFloat(a[0])-parseFloat(b[0])).map(([taux,mt])=>(
+                      <div key={taux} style={{display:'flex',justifyContent:'space-between',fontSize:13,color:'#555',padding:'2px 0'}}>
+                        <span>TVA à {taux} %</span>
+                        <span>{fmt(mt)} €</span>
+                      </div>
+                    ))}
+
+                    <div style={{borderTop:`2px solid #333`,paddingTop:6,marginTop:4,display:'flex',justifyContent:'space-between',fontSize:14,fontWeight:600,color:'#333'}}>
+                      <span>Total TTC</span><span>{fmt(totalTTCFinal)} €</span>
+                    </div>
+
+                    <div style={{height:1,background:BD,margin:'4px 0'}}/>
+
+                    {/* Prime */}
+                    {prime?(
+                      <div style={{position:'relative' as const}}>
+                        <div onClick={()=>editMode&&setShowPrimePopover(!showPrimePopover)}
+                          style={{display:'flex',justifyContent:'space-between',fontSize:13,color:'#333',padding:'4px 6px',borderRadius:5,cursor:editMode?'pointer':'default',background:showPrimePopover?'#FBE5D5':'transparent'}}
+                          onMouseEnter={e=>{if(editMode&&!showPrimePopover)(e.currentTarget as HTMLDivElement).style.background='#FBE5D5'}}
+                          onMouseLeave={e=>{if(!showPrimePopover)(e.currentTarget as HTMLDivElement).style.background='transparent'}}>
+                          <span>{prime.label||'Prime à déduire'}</span>
+                          <span style={{color:RD}}>− {fmt(prime.val)} €</span>
+                        </div>
+                        {showPrimePopover&&(
+                          <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',zIndex:200,padding:'14px 16px',minWidth:240}} onClick={e=>e.stopPropagation()}>
+                            <input value={prime.label} onChange={e=>setPrime(p=>p?{...p,label:e.target.value}:p)}
+                              placeholder="Ex: Prime MaPrimeRénov'"
+                              style={{width:'100%',padding:'7px 10px',border:`1px solid ${BD}`,borderRadius:6,fontSize:13,outline:'none',marginBottom:8,boxSizing:'border-box' as const}}/>
+                            <div style={{display:'flex',gap:6,marginBottom:10}}>
+                              <input type="number" value={prime.val} min={0}
+                                onChange={e=>setPrime(p=>p?{...p,val:parseFloat(e.target.value)||0}:p)}
+                                style={{flex:1,padding:'7px 10px',border:`1px solid ${BD}`,borderRadius:6,fontSize:13,outline:'none',textAlign:'right' as const}}/>
+                              <span style={{padding:'7px 8px',fontSize:13,color:'#555'}}>€</span>
+                            </div>
+                            <button onClick={()=>{setPrime(null);setShowPrimePopover(false)}}
+                              style={{fontSize:12,color:RD,background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline'}}>
+                              Supprimer
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ):editMode&&(
+                      <div onClick={()=>setPrime({label:"Prime MaPrimeRénov'",val:0})}
+                        style={{padding:'5px 8px',borderRadius:6,cursor:'pointer',fontSize:12,color:'#888',display:'flex',alignItems:'center',gap:6}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='transparent'}>
+                        <span>🏷️ Prime non soumise à TVA à déduire...</span>
+                        <span title="Ex: prime MaPrimeRénov', CEE... à déduire directement du TTC" style={{cursor:'help',fontSize:11,background:'#f3f4f6',borderRadius:'50%',padding:'0 5px',color:'#888'}}>?</span>
+                      </div>
+                    )}
+
+                    {/* Reste à payer */}
+                    <div style={{background:'#f0fdf4',borderRadius:8,padding:'10px 12px',display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:4}}>
+                      <span style={{fontSize:15,fontWeight:700,color:'#111'}}>Reste à payer</span>
+                      <span style={{fontSize:18,fontWeight:800,color:G}}>{fmt(resteAPayer)} €</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* SIGNATURES */}
+                            {/* SIGNATURES */}
               <div style={{padding:'20px 24px',borderTop:`1px solid ${BD}`,display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
                 {/* Client */}
                 <div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',gap:6}}>
@@ -1216,7 +1418,7 @@ export default function NouveauDevisPage(){
         </div>
       )}
 
-      {(showClientDD||showFactureMenu||showContextMenu)&&<div onClick={()=>{setShowClientDD(false);setShowFactureMenu(false);setShowContextMenu(null);setShowInsertMenu(null)}} style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',zIndex:50}}/>}
+      {(showClientDD||showFactureMenu||showContextMenu||showMoyensPopover||showAcompteMenu||showAcomptePopover||showRemisePopover||showPrimePopover)&&<div onClick={()=>{setShowClientDD(false);setShowFactureMenu(false);setShowContextMenu(null);setShowInsertMenu(null);setShowMoyensPopover(false);setShowAcompteMenu(false);setShowAcomptePopover(null);setShowRemisePopover(null);setShowPrimePopover(false)}} style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',zIndex:50}}/>}
 
       {/* Modal confirmation suppression */}
       {showDeleteConfirm&&(
