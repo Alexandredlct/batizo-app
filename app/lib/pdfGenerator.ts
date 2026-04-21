@@ -49,9 +49,9 @@ export async function genererPDF(params: any, devisElementId: string) {
   // 3. Pages complémentaires filtrées (type='devis')
   const pagesComp: any[] = params.pagesComp || []
   for (const page of pagesComp) {
-    if (!page.active || !page.devis || !page.pdf) continue
+    if (!page.active || !page.devis || !page.data) continue
     try {
-      const bytes = base64ToBytes(page.pdf)
+      const bytes = base64ToBytes(page.data)
       const compPdf = await PDFDocument.load(bytes)
       const pages2 = await finalPdf.copyPages(compPdf, compPdf.getPageIndices())
       pages2.forEach(p => finalPdf.addPage(p))
