@@ -487,7 +487,7 @@ export default function NouveauDevisPage(){
             </div>
           </td>
           {/* QTÉ + UNITÉ */}
-          <td style={{padding:'4px 6px',width:90,borderRight:'1px solid #d0d0d0',background:editMode&&hoverLigne===l.id?'#fffbeb':selectedLigne===l.id&&editMode?'#fff3e0':'transparent',cursor:editMode?'pointer':'default',verticalAlign:'top' as const}}
+          <td style={{padding:'4px 6px',width:90,borderRight:'1px solid #d0d0d0',background:editMode&&hoverLigne===l.id&&selectedLigne!==l.id?'#fffbeb':selectedLigne===l.id&&editMode?'#fff3e0':'transparent',cursor:editMode?'pointer':'default',verticalAlign:'top' as const}}
             onClick={e=>{e.stopPropagation();editMode&&setEditingCell({id:l.id,field:'qte'})}}>
             {editMode&&isEditing(l.id,'qte')?(
               <div style={{display:'flex',alignItems:'center',gap:3}}>
@@ -508,7 +508,7 @@ export default function NouveauDevisPage(){
             )}
           </td>
           {/* PU HT */}
-          <td style={{padding:'4px 6px',width:85,borderRight:'1px solid #d0d0d0',background:editMode?'#fffbeb':'transparent',cursor:editMode?'pointer':'default'}}
+          <td style={{padding:'4px 6px',width:85,borderRight:'1px solid #d0d0d0',background:editMode&&hoverLigne===l.id&&selectedLigne!==l.id?'#fffbeb':selectedLigne===l.id&&editMode?'#fff3e0':'transparent',cursor:editMode?'pointer':'default',verticalAlign:'top' as const}}
             onClick={e=>{e.stopPropagation();editMode&&setEditingCell({id:l.id,field:'pu'})}}>
             {editMode&&isEditing(l.id,'pu')?(
               <div style={{display:'flex',alignItems:'center',gap:2,justifyContent:'flex-end'}}>
@@ -525,7 +525,7 @@ export default function NouveauDevisPage(){
             )}
           </td>
           {/* TVA */}
-          <td style={{padding:'4px 6px',width:65,borderRight:'1px solid #d0d0d0',background:editMode?'#fffbeb':'transparent',cursor:editMode?'pointer':'default'}}
+          <td style={{padding:'4px 6px',width:65,borderRight:'1px solid #d0d0d0',background:editMode&&hoverLigne===l.id&&selectedLigne!==l.id?'#fffbeb':selectedLigne===l.id&&editMode?'#fff3e0':'transparent',cursor:editMode?'pointer':'default',verticalAlign:'top' as const}}
             onClick={e=>{e.stopPropagation();editMode&&setEditingCell({id:l.id,field:'tva'})}}>
             {editMode&&isEditing(l.id,'tva')?(
               <select autoFocus value={l.tva||'20%'} onChange={e=>{updateLigne(l.id,'tva',e.target.value);setEditingCell(null)}}
