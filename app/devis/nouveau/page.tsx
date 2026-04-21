@@ -761,7 +761,7 @@ export default function NouveauDevisPage(){
                     headers:{'Content-Type':'application/json'},
                     body:JSON.stringify(devisData)
                   })
-                  if(!res.ok) throw new Error('Erreur serveur')
+                  if(!res.ok){const err=await res.json();throw new Error(err.error||'Erreur serveur')}
                   const blob=await res.blob()
                   const url=URL.createObjectURL(blob)
                   const a=document.createElement('a')
@@ -770,7 +770,7 @@ export default function NouveauDevisPage(){
                   a.download=`Devis_${numeroDevis||date}.pdf`
                   a.click()
                   URL.revokeObjectURL(url)
-                }catch(e){console.error(e);alert('Erreur lors de la génération PDF')}
+                }catch(e:any){console.error(e);alert('Erreur PDF: '+e.message)}
                 finally{setGeneratingPdf(false)}
               }}
               disabled={generatingPdf}
