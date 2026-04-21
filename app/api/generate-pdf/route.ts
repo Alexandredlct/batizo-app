@@ -256,7 +256,7 @@ export async function POST(req: NextRequest) {
       browser = await puppeteer.launch({
         args: chromium.args,
         executablePath: await chromium.executablePath(
-          'https://github.com/Sparticuz/chromium/releases/download/v147.0.0/chromium-v147.0.0-pack.tar'
+          'https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar'
         ),
         headless: true,
       })
