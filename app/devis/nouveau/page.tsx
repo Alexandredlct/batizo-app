@@ -855,12 +855,12 @@ export default function NouveauDevisPage(){
               </div>
 
               {/* TITRE */}
-              {(titre||editMode)&&<div style={{padding:'12px 24px',textAlign:'center' as const}}>
+              {(titre||editMode)&&{(titre||editMode)&&<div style={{padding:'12px 24px',textAlign:'center' as const}}>
                 <RichTextEditor value={titre} onChange={setTitre} readOnly={!editMode}
                   placeholder="Titre du devis (optionnel)"
                   defaultFont={params.police||'Georgia,serif'}
                   style={{textAlign:'center' as const,fontSize:15,fontStyle:'italic',color:'#555',minHeight:28}}/>
-              </div>}
+              </div>}}
 
               {/* INTRO */}
               {(introTexte||editMode)&&(
