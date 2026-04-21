@@ -1260,7 +1260,7 @@ export default function NouveauDevisPage(){
                 </div>
                 {/* Colonne droite — entreprise */}
                 <div style={{display:'grid',gridTemplateRows:'auto auto 1fr',gap:8,alignItems:'start'}}>
-                  <div style={{fontSize:13,fontWeight:700,color:'#111',textAlign:'center' as const}}>{params.nomSignataireEntreprise||params.nomEntreprise||'L'entreprise'}</div>
+                  <div style={{fontSize:13,fontWeight:700,color:'#111',textAlign:'center' as const}}>{params.nomSignataireEntreprise||params.nomEntreprise||"L'entreprise"}</div>
                   <div style={{fontSize:12,color:'#555',textAlign:'center' as const,lineHeight:1.5,minHeight:36}}>
                     {params.mentionEntreprise||''}
                   </div>
