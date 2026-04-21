@@ -751,8 +751,25 @@ export default function NouveauDevisPage(){
               onClick={async()=>{
                 setGeneratingPdf(true)
                 try{
-                  const{genererPDF}=await import('../../lib/pdfGenerator')
-                  await genererPDF(params,'devis-content')
+                  const devisData={
+                    params,lignes,client,titre,introTexte,dateDevis,validite,
+                    numeroDevis,adresseProjet,adresseMode,moyens,acomptes,
+                    mentionsLegales,notes,remises,prime,logoPreview
+                  }
+                  const res=await fetch('/api/generate-pdf',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify(devisData)
+                  })
+                  if(!res.ok) throw new Error('Erreur serveur')
+                  const blob=await res.blob()
+                  const url=URL.createObjectURL(blob)
+                  const a=document.createElement('a')
+                  a.href=url
+                  const date=new Date().toISOString().split('T')[0]
+                  a.download=`Devis_${numeroDevis||date}.pdf`
+                  a.click()
+                  URL.revokeObjectURL(url)
                 }catch(e){console.error(e);alert('Erreur lors de la génération PDF')}
                 finally{setGeneratingPdf(false)}
               }}
