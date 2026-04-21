@@ -156,6 +156,47 @@ const RichEditor=({value,onChange,placeholder}:{value:string,onChange:(v:string)
   )
 }
 
+
+function ActionMenu({itemId,onModifier,onDupliquer,onHistorique,onSupprimer,kebabMenu,setKebabMenu}:{
+  itemId:string,onModifier:()=>void,onDupliquer:()=>void,onHistorique:()=>void,onSupprimer:()=>void,
+  kebabMenu:string|null,setKebabMenu:(id:string|null)=>void
+}){
+  return(
+    <div style={{position:'relative' as const}} onClick={e=>e.stopPropagation()}>
+      <button onClick={()=>setKebabMenu(kebabMenu===itemId?null:itemId)}
+        style={{width:30,height:30,border:'none',borderRadius:6,background:'transparent',cursor:'pointer',fontSize:16,color:'#aaa',display:'flex',alignItems:'center',justifyContent:'center'}}
+        onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#F5F5F5'}
+        onMouseLeave={e=>{if(kebabMenu!==itemId)(e.currentTarget as HTMLButtonElement).style.background='transparent'}}>
+        ⋮
+      </button>
+      {kebabMenu===itemId&&(
+        <div style={{position:'absolute' as const,top:'100%',right:0,background:'#fff',border:'0.5px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',zIndex:200,minWidth:180,overflow:'hidden'}}>
+          {[
+            {label:'Modifier',icon:'✏️',action:()=>{onModifier();setKebabMenu(null)}},
+            {label:'Dupliquer',icon:'📋',action:()=>{onDupliquer();setKebabMenu(null)}},
+            {label:'Historique',icon:'📈',action:()=>{onHistorique();setKebabMenu(null)}},
+          ].map(it=>(
+            <div key={it.label} onClick={it.action}
+              style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333',display:'flex',alignItems:'center',gap:8}}
+              onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+              onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+              <span>{it.icon}</span>{it.label}
+            </div>
+          ))}
+          <div style={{borderTop:'1px solid #f3f4f6'}}>
+            <div onClick={()=>{onSupprimer();setKebabMenu(null)}}
+              style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#D32F2F',display:'flex',alignItems:'center',gap:8}}
+              onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#fef2f2'}
+              onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+              <span>🗑</span>Supprimer
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function BibliothequePage() {
   const[tab,setTab]=useState<Tab>('ouvrages')
   const[search,setSearch]=useState('')
