@@ -1,7 +1,7 @@
 'use client'
 import SearchBar from '../components/SearchBar'
-import React from 'react'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import Sidebar from '../components/Sidebar'
 
 const G='#1D9E75', AM='#BA7517', RD='#E24B4A', BD='#e5e7eb'
@@ -161,38 +161,60 @@ function ActionMenu({itemId,onModifier,onDupliquer,onHistorique,onSupprimer,keba
   itemId:string,onModifier:()=>void,onDupliquer:()=>void,onHistorique:()=>void,onSupprimer:()=>void,
   kebabMenu:string|null,setKebabMenu:(id:string|null)=>void
 }){
+  const btnRef=useRef<HTMLButtonElement>(null)
+  const[menuPos,setMenuPos]=useState({top:0,left:0,openUp:false})
+  const MENU_H=172 // hauteur approximative du menu
+
+  const handleOpen=()=>{
+    if(kebabMenu===itemId){setKebabMenu(null);return}
+    if(btnRef.current){
+      const r=btnRef.current.getBoundingClientRect()
+      const spaceBelow=window.innerHeight-r.bottom
+      const openUp=spaceBelow<MENU_H
+      setMenuPos({
+        top:openUp?r.top+window.scrollY-MENU_H:r.bottom+window.scrollY,
+        left:r.right+window.scrollX-180,
+        openUp
+      })
+    }
+    setKebabMenu(itemId)
+  }
+
+  const menu=kebabMenu===itemId?(
+    <div style={{position:'absolute' as const,top:menuPos.top,left:Math.max(8,menuPos.left),background:'#fff',border:'0.5px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.18)',zIndex:9999,minWidth:180,overflow:'hidden'}}
+      onClick={e=>e.stopPropagation()}>
+      {[
+        {label:'Modifier',icon:'✏️',action:()=>{onModifier();setKebabMenu(null)}},
+        {label:'Dupliquer',icon:'📋',action:()=>{onDupliquer();setKebabMenu(null)}},
+        {label:'Historique',icon:'📈',action:()=>{onHistorique();setKebabMenu(null)}},
+      ].map(it=>(
+        <div key={it.label} onClick={it.action}
+          style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333',display:'flex',alignItems:'center',gap:8}}
+          onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+          onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+          <span>{it.icon}</span>{it.label}
+        </div>
+      ))}
+      <div style={{borderTop:'1px solid #f3f4f6'}}>
+        <div onClick={()=>{onSupprimer();setKebabMenu(null)}}
+          style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#D32F2F',display:'flex',alignItems:'center',gap:8}}
+          onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#fef2f2'}
+          onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+          <span>🗑</span>Supprimer
+        </div>
+      </div>
+    </div>
+  ):null
+
   return(
     <div style={{position:'relative' as const}} onClick={e=>e.stopPropagation()}>
-      <button onClick={()=>setKebabMenu(kebabMenu===itemId?null:itemId)}
+      <button ref={btnRef} onClick={handleOpen}
         style={{width:30,height:30,border:'none',borderRadius:6,background:'transparent',cursor:'pointer',fontSize:16,color:'#aaa',display:'flex',alignItems:'center',justifyContent:'center'}}
         onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#F5F5F5'}
         onMouseLeave={e=>{if(kebabMenu!==itemId)(e.currentTarget as HTMLButtonElement).style.background='transparent'}}>
         ⋮
       </button>
-      {kebabMenu===itemId&&(
-        <div style={{position:'absolute' as const,top:'100%',right:0,background:'#fff',border:'0.5px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.12)',zIndex:200,minWidth:180,overflow:'hidden'}}>
-          {[
-            {label:'Modifier',icon:'✏️',action:()=>{onModifier();setKebabMenu(null)}},
-            {label:'Dupliquer',icon:'📋',action:()=>{onDupliquer();setKebabMenu(null)}},
-            {label:'Historique',icon:'📈',action:()=>{onHistorique();setKebabMenu(null)}},
-          ].map(it=>(
-            <div key={it.label} onClick={it.action}
-              style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333',display:'flex',alignItems:'center',gap:8}}
-              onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
-              onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-              <span>{it.icon}</span>{it.label}
-            </div>
-          ))}
-          <div style={{borderTop:'1px solid #f3f4f6'}}>
-            <div onClick={()=>{onSupprimer();setKebabMenu(null)}}
-              style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#D32F2F',display:'flex',alignItems:'center',gap:8}}
-              onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#fef2f2'}
-              onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-              <span>🗑</span>Supprimer
-            </div>
-          </div>
-        </div>
-      )}
+      {typeof window!=='undefined'&&menu&&createPortal(menu,document.body)}
     </div>
   )
 }
