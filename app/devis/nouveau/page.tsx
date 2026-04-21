@@ -1698,6 +1698,13 @@ export default function NouveauDevisPage(){
         <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowHeaderInfo(false)}>
           <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:14,padding:24,maxWidth:360,width:'90%',textAlign:'center' as const}}>
             <div style={{fontSize:24,marginBottom:10}}>⚙️</div>
+            <div style={{fontSize:15,fontWeight:700,color:'#111',marginBottom:8}}>Modifier mon en-tête</div>
+            <p style={{fontSize:13,color:'#555',lineHeight:1.6,marginBottom:16}}>L'apparence de vos documents est paramétrable depuis la page Paramètres.</p>
+            <a href="/parametres" style={{display:'inline-block',padding:'10px 20px',background:'#1D9E75',color:'#fff',borderRadius:8,textDecoration:'none',fontSize:13,fontWeight:600}}>Aller aux Paramètres →</a>
+          </div>
+        </div>
+      )}
+
        {showEditClientModal&&client&&<EditClientModal client={client} onSave={setClient as any} onClose={()=>setShowEditClientModal(false)} G={G} BD={BD}/>}
 
       {showSaved&&(
