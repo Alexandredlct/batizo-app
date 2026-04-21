@@ -162,59 +162,85 @@ function ActionMenu({itemId,onModifier,onDupliquer,onHistorique,onSupprimer,keba
   kebabMenu:string|null,setKebabMenu:(id:string|null)=>void
 }){
   const btnRef=useRef<HTMLButtonElement>(null)
-  const[menuPos,setMenuPos]=useState({top:0,left:0,openUp:false})
-  const MENU_H=172 // hauteur approximative du menu
+  const menuRef=useRef<HTMLDivElement>(null)
+  const[pos,setPos]=useState({top:0,left:0})
+  const isOpen=kebabMenu===itemId
+  const MENU_H=172
 
-  const handleOpen=()=>{
-    if(kebabMenu===itemId){setKebabMenu(null);return}
+  // Fermeture clic extérieur
+  useEffect(()=>{
+    if(!isOpen)return
+    const handler=(e:MouseEvent)=>{
+      if(menuRef.current?.contains(e.target as Node))return
+      if(btnRef.current?.contains(e.target as Node))return
+      setKebabMenu(null)
+    }
+    document.addEventListener('mousedown',handler)
+    return()=>document.removeEventListener('mousedown',handler)
+  },[isOpen])
+
+  // Fermeture Escape + scroll
+  useEffect(()=>{
+    if(!isOpen)return
+    const onKey=(e:KeyboardEvent)=>{if(e.key==='Escape')setKebabMenu(null)}
+    const onScroll=()=>setKebabMenu(null)
+    const onResize=()=>setKebabMenu(null)
+    document.addEventListener('keydown',onKey)
+    window.addEventListener('scroll',onScroll,true)
+    window.addEventListener('resize',onResize)
+    return()=>{
+      document.removeEventListener('keydown',onKey)
+      window.removeEventListener('scroll',onScroll,true)
+      window.removeEventListener('resize',onResize)
+    }
+  },[isOpen])
+
+  const handleOpen=(e:React.MouseEvent)=>{
+    e.stopPropagation()
+    if(isOpen){setKebabMenu(null);return}
     if(btnRef.current){
       const r=btnRef.current.getBoundingClientRect()
       const spaceBelow=window.innerHeight-r.bottom
-      const openUp=spaceBelow<MENU_H
-      setMenuPos({
-        top:openUp?r.top+window.scrollY-MENU_H:r.bottom+window.scrollY,
-        left:r.right+window.scrollX-180,
-        openUp
-      })
+      const top=spaceBelow<MENU_H?r.top-MENU_H:r.bottom
+      const left=r.right-180
+      setPos({top,left:Math.max(8,left)})
     }
     setKebabMenu(itemId)
   }
 
-  const menu=kebabMenu===itemId?(
-    <div style={{position:'absolute' as const,top:menuPos.top,left:Math.max(8,menuPos.left),background:'#fff',border:'0.5px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.18)',zIndex:9999,minWidth:180,overflow:'hidden'}}
-      onClick={e=>e.stopPropagation()}>
-      {[
-        {label:'Modifier',icon:'✏️',action:()=>{onModifier();setKebabMenu(null)}},
-        {label:'Dupliquer',icon:'📋',action:()=>{onDupliquer();setKebabMenu(null)}},
-        {label:'Historique',icon:'📈',action:()=>{onHistorique();setKebabMenu(null)}},
-      ].map(it=>(
-        <div key={it.label} onClick={it.action}
-          style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333',display:'flex',alignItems:'center',gap:8}}
-          onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
-          onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-          <span>{it.icon}</span>{it.label}
-        </div>
-      ))}
-      <div style={{borderTop:'1px solid #f3f4f6'}}>
-        <div onClick={()=>{onSupprimer();setKebabMenu(null)}}
-          style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#D32F2F',display:'flex',alignItems:'center',gap:8}}
-          onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#fef2f2'}
-          onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-          <span>🗑</span>Supprimer
-        </div>
-      </div>
-    </div>
-  ):null
-
   return(
-    <div style={{position:'relative' as const}} onClick={e=>e.stopPropagation()}>
+    <div onClick={e=>e.stopPropagation()}>
       <button ref={btnRef} onClick={handleOpen}
-        style={{width:30,height:30,border:'none',borderRadius:6,background:'transparent',cursor:'pointer',fontSize:16,color:'#aaa',display:'flex',alignItems:'center',justifyContent:'center'}}
+        style={{width:30,height:30,border:'none',borderRadius:6,background:isOpen?'#F5F5F5':'transparent',cursor:'pointer',fontSize:16,color:'#666',display:'flex',alignItems:'center',justifyContent:'center'}}
         onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#F5F5F5'}
-        onMouseLeave={e=>{if(kebabMenu!==itemId)(e.currentTarget as HTMLButtonElement).style.background='transparent'}}>
+        onMouseLeave={e=>{if(!isOpen)(e.currentTarget as HTMLButtonElement).style.background='transparent'}}>
         ⋮
       </button>
-      {typeof window!=='undefined'&&menu&&createPortal(menu,document.body)}
+      {isOpen&&typeof window!=='undefined'&&createPortal(
+        <div ref={menuRef} style={{position:'fixed' as const,top:pos.top,left:pos.left,background:'#fff',border:'0.5px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.18)',zIndex:9999,minWidth:180,overflow:'hidden'}}>
+          {[
+            {label:'Modifier',icon:'✏️',action:()=>{onModifier();setKebabMenu(null)}},
+            {label:'Dupliquer',icon:'📋',action:()=>{onDupliquer();setKebabMenu(null)}},
+            {label:'Historique',icon:'📈',action:()=>{onHistorique();setKebabMenu(null)}},
+          ].map(it=>(
+            <div key={it.label} onClick={it.action}
+              style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#333',display:'flex',alignItems:'center',gap:8}}
+              onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+              onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+              <span>{it.icon}</span>{it.label}
+            </div>
+          ))}
+          <div style={{borderTop:'1px solid #f3f4f6'}}>
+            <div onClick={()=>{onSupprimer();setKebabMenu(null)}}
+              style={{padding:'9px 14px',fontSize:13,cursor:'pointer',color:'#D32F2F',display:'flex',alignItems:'center',gap:8}}
+              onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#fef2f2'}
+              onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+              <span>🗑</span>Supprimer
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   )
 }
