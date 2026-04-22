@@ -1281,7 +1281,7 @@ export default function BibliothequePage() {
                           {(s as any).type==='ouvrage'?'Ouvrage':(s as any).type==='materiau'?'Matériau':'MO'}
                         </span>
                       </td>
-                      <td style={{padding:'10px 12px',fontSize:12,color:'#555'}}>{s.categorie}</td>
+                      <td style={{padding:'10px 12px',fontSize:12,color:'#555'}}>{(s as any).categorie}</td>
                       <td style={{padding:'10px 12px'}}>
                         <div style={{display:'flex',alignItems:'center',gap:8}}>
                           <div style={{flex:1,height:4,background:'#f3f4f6',borderRadius:4,overflow:'hidden',minWidth:60}}>
