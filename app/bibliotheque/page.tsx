@@ -956,13 +956,13 @@ export default function BibliothequePage() {
               {search&&<button onClick={()=>setSearch('')} style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:18}}>×</button>}
             </div>
 <select value={catFiltre} onChange={e=>setCatFiltre(e.target.value)}
-              style={{padding:'9px 12px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111',minWidth:160,height:40}}>
+              style={{padding:'9px 12px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111',width:'auto',height:40}}>
               <option value="">Toutes catégories</option>
               {categories.map(cat=><option key={cat.nom}>{cat.nom}</option>)}
             </select>
             {/* Tri */}
             <select value={tri} onChange={e=>{setTri(e.target.value as typeof tri);setTriDir('asc')}}
-              style={{padding:'9px 12px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111',height:40}}>
+              style={{padding:'9px 12px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111',width:'auto',height:40}}>
               <option value="nom">Trier : Nom</option>
               <option value="marge">Trier : Marge</option>
               <option value="prix">Trier : Prix facturé</option>
