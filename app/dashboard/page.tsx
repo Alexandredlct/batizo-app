@@ -33,7 +33,7 @@ export default function DashboardPage() {
       if (!data.user) window.location.href = '/login'
       else setUser(data.user)
     })
-  }, [caMoisPeriode,caAnneePeriode,devisPeriode])
+  }, [])
 
   const[prenomLocal,setPrenomLocal]=useState<string>(()=>{
     if(typeof window==='undefined') return ''
