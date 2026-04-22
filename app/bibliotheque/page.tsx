@@ -948,13 +948,14 @@ export default function BibliothequePage() {
           </div>
 
           {/* Recherche + filtre */}
-          <div style={{display:'flex',gap:8,marginBottom:20,alignItems:'center'}}>
-            <div style={{flex:'1 1 0',maxWidth:420,position:'relative'}}>
+          <div style={{display:'flex',gap:8,marginBottom:20,alignItems:'center',width:'100%'}}>
+            <div style={{flex:1,minWidth:240,maxWidth:600,position:'relative'}}>
               <svg style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)'}} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher par nom, description, catégorie..."
                 style={{width:'100%',padding:'9px 12px 9px 36px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const,color:'#111'}}/>
               {search&&<button onClick={()=>setSearch('')} style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:18}}>×</button>}
             </div>
+<div style={{display:'flex',alignItems:'center',gap:8,marginLeft:'auto'}}>
 <select value={catFiltre} onChange={e=>setCatFiltre(e.target.value)}
               style={{padding:'9px 12px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111',width:'auto',height:40,flexShrink:0}}>
               <option value="">Toutes catégories</option>
@@ -985,6 +986,7 @@ export default function BibliothequePage() {
               </button>
             </div>
           </div>
+          </div>{/* /filters-right */}
 
           {/* Grille */}
           {tab==='ouvrages'&&(
