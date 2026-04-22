@@ -1120,7 +1120,7 @@ export default function BibliothequePage() {
                         <td style={{padding:'10px 16px',fontSize:12,color:'#555'}}>{moItem.unite}</td>
                         <td style={{padding:'10px 16px',fontSize:13,color:'#555'}}>{fmt(moItem.debourse)}</td>
                         <td style={{padding:'10px 16px',fontSize:13,fontWeight:700,color:'#111'}}>{fmt(moItem.prixFacture)}</td>
-                        <td style={{padding:'10px 16px'}}><span style={{fontSize:12,fontWeight:700,color:margeColor(m,tab)}>{m}%</span></td>
+                        <td style={{padding:'10px 16px'}}><span style={{fontSize:12,fontWeight:700,color:margeColor(m,tab)}}>{m}%</span></td>
                         <td style={{padding:'10px 16px'}}><div style={{display:'flex',gap:4}}>
                           <ActionMenu itemId={moItem.id} kebabMenu={kebabMenu} setKebabMenu={setKebabMenu}
                             onModifier={()=>openEdit('mo',moItem)}
@@ -1363,7 +1363,7 @@ export default function BibliothequePage() {
                           <td style={{padding:'8px 10px',fontSize:12,color:'#555'}}>{item.debourse} €</td>
                           <td style={{padding:'8px 10px',fontSize:12,fontWeight:600,color:'#111'}}>{item.prixFacture} €</td>
                           <td style={{padding:'8px 10px'}}>
-                            <span style={{fontSize:11,fontWeight:700,color:margeColor(m,tab)}>{m}%</span>
+                            <span style={{fontSize:11,fontWeight:700,color:margeColor(m,tab)}}>{m}%</span>
                           </td>
                         </tr>
                       )
