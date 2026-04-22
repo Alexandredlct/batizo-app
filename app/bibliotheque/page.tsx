@@ -245,6 +245,227 @@ function ActionMenu({itemId,onModifier,onDupliquer,onHistorique,onSupprimer,keba
   )
 }
 
+function PanelForm({panel,panelType,form,setForm,categories,closePanel,saveForm,ajouterLigne,updateLigne,removeLigne,marge,setShowBiblioMat,setShowBiblioMO}:{
+  panel:string|null,panelType:string|null,form:any,setForm:any,categories:any[],
+  closePanel:()=>void,saveForm:()=>void,ajouterLigne:(type:string,item:any)=>void,
+  updateLigne:(idx:number,field:string,val:any)=>void,removeLigne:(idx:number)=>void,
+  marge:(d:number,p:number)=>number,
+  setShowBiblioMat:(v:boolean)=>void,setShowBiblioMO:(v:boolean)=>void
+}){
+  const debourseAuto=form.lignes?.reduce((s:number,l:LigneOuvrage)=>s+l.qte*l.pu,0)||form.debourse||0
+  const margeVal=marge(debourseAuto,form.prixFacture||0)
+  const unites=panelType==='mo'?UNITES_MO:UNITES_MAT
+  return(
+    <div style={{position:'fixed',top:0,right:0,width:520,height:'100vh',background:'#fff',boxShadow:'-4px 0 24px rgba(0,0,0,0.12)',zIndex:400,display:'flex',flexDirection:'column',overflow:'hidden'}}>
+      {/* Header */}
+      <div style={{padding:'16px 20px',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
+        <div style={{fontSize:15,fontWeight:700,color:'#111'}}>
+          {panel==='edit'?'Modifier':'Ajouter'} {panelType==='ouvrage'?'un ouvrage':panelType==='materiau'?'un matériau':'une main d\'oeuvre'}
+        </div>
+        <div style={{display:'flex',gap:8}}>
+          <button onClick={saveForm} style={{padding:'8px 18px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>
+            {panel==='edit'?'Enregistrer':'Ajouter'}
+          </button>
+          <button onClick={closePanel} style={{width:32,height:32,borderRadius:'50%',border:`1px solid ${BD}`,background:'#f9fafb',cursor:'pointer',fontSize:16,color:'#888',display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
+        </div>
+      </div>
+      {/* Contenu scrollable */}
+      <div style={{flex:1,overflowY:'auto',padding:20,display:'flex',flexDirection:'column',gap:14}}>
+
+        {/* Nom */}
+        <div>
+          <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Nom *</label>
+          <input value={form.nom||''} onChange={e=>setForm((p:any)=>({...p,nom:e.target.value}))}
+            placeholder={panelType==='ouvrage'?'Ex: Pose parquet chêne massif':panelType==='materiau'?'Ex: Parquet chêne 12mm':'Ex: Électricien qualifié'}
+            style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const,color:'#111'}}
+            onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+            onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+        </div>
+
+
+
+        {/* Catégorie + Unité + TVA */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
+          <div>
+            <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Catégorie</label>
+            <select value={form.categorie||'Autre'} onChange={e=>setForm((p:any)=>({...p,categorie:e.target.value}))}
+              style={{width:'100%',padding:'9px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,outline:'none',background:'#fff',color:'#111'}}>
+              {categories.map(c=><option key={c.nom}>{c.nom}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Unité</label>
+            <select value={form.unite||'u'} onChange={e=>setForm((p:any)=>({...p,unite:e.target.value}))}
+              style={{width:'100%',padding:'9px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,outline:'none',background:'#fff',color:'#111'}}>
+              {unites.map(u=><option key={u}>{u}</option>)}
+            </select>
+            {form.unite==='Personnalisé'&&(
+              <input value={form.uniteCustom||''} onChange={e=>setForm((p:any)=>({...p,uniteCustom:e.target.value}))}
+                placeholder="Ex: kg, palette, jour..."
+                style={{width:'100%',marginTop:6,padding:'7px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
+            )}
+          </div>
+          <div>
+            <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>TVA</label>
+            <select value={form.tva||'20%'} onChange={e=>setForm((p:any)=>({...p,tva:e.target.value}))}
+              style={{width:'100%',padding:'9px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,outline:'none',background:'#fff',color:'#111'}}>
+              {TVA_OPTIONS.map(t=><option key={t}>{t}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* Description */}
+        <div>
+          <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Description</label>
+          <RichEditor value={form.description||''} onChange={v=>setForm((p:any)=>({...p,description:v}))} placeholder="Détail de l'élément..."/>
+        </div>
+
+
+
+
+
+        {/* Composition ouvrage */}
+        {panelType==='ouvrage'&&(
+          <div style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:10,padding:14}}>
+            <div style={{fontSize:13,fontWeight:600,color:'#111',marginBottom:10}}>Composition de l'ouvrage</div>
+            {(form.lignes||[]).length>0&&(
+              <table style={{width:'100%',borderCollapse:'collapse',marginBottom:10}}>
+                <thead><tr style={{background:'#f3f4f6'}}>
+                  <th style={{padding:'6px 10px',textAlign:'left' as const,fontSize:11,color:'#888',fontWeight:600}}>Élément</th>
+                  <th style={{padding:'6px 10px',textAlign:'center' as const,fontSize:11,color:'#888',fontWeight:600}}>Qté</th>
+                  <th style={{padding:'6px 10px',textAlign:'right' as const,fontSize:11,color:'#888',fontWeight:600}}>P.U.</th>
+                  <th style={{padding:'6px 10px',textAlign:'right' as const,fontSize:11,color:'#888',fontWeight:600}}>Total</th>
+                  <th style={{width:30}}></th>
+                </tr></thead>
+                <tbody>
+                  {(form.lignes||[]).map((l:LigneOuvrage,i:number)=>(
+                    <tr key={i} style={{borderTop:`1px solid ${BD}`}}>
+                      <td style={{padding:'8px 10px',fontSize:12,color:'#333'}}>
+                        <span style={{fontSize:10,color:l.type==='materiau'?'#2563eb':AM,fontWeight:600,marginRight:4}}>{l.type==='materiau'?'MAT':'MO'}</span>
+                        {l.nom}
+                      </td>
+                      <td style={{padding:'8px 10px',textAlign:'center' as const}}>
+                        <input type="number" value={l.qte} min={0.1} step={0.5}
+                          onChange={e=>updateLigne(i,'qte',parseFloat(e.target.value)||0)}
+                          style={{width:50,padding:'3px 6px',border:`1px solid ${BD}`,borderRadius:5,fontSize:12,textAlign:'center' as const,outline:'none',color:'#111'}}/>
+                      </td>
+                      <td style={{padding:'8px 10px',textAlign:'right' as const}}>
+                        <input type="number" value={l.pu} min={0}
+                          onChange={e=>updateLigne(i,'pu',parseFloat(e.target.value)||0)}
+                          style={{width:70,padding:'3px 6px',border:`1px solid ${BD}`,borderRadius:5,fontSize:12,textAlign:'right' as const,outline:'none',color:'#111'}}/>
+                      </td>
+                      <td style={{padding:'8px 10px',textAlign:'right' as const,fontSize:12,fontWeight:600,color:'#111'}}>{fmt(l.qte*l.pu)}</td>
+                      <td style={{padding:'8px 10px',textAlign:'center' as const}}>
+                        <button onClick={()=>removeLigne(i)} style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:14}}
+                          onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=RD}
+                          onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>×</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <div style={{display:'flex',gap:8}}>
+              <button onClick={()=>setShowBiblioMat(true)}
+                style={{flex:1,padding:'7px 10px',background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:7,fontSize:12,fontWeight:600,color:'#2563eb',cursor:'pointer'}}>
+                + Matériau
+              </button>
+              <button onClick={()=>setShowBiblioMO(true)}
+                style={{flex:1,padding:'7px 10px',background:'#fffbeb',border:`1px solid #fde68a`,borderRadius:7,fontSize:12,fontWeight:600,color:AM,cursor:'pointer'}}>
+                + Main d\'oeuvre
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Prix */}
+        <div style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:10,padding:14}}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
+            <div>
+              <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>
+                Déboursé sec HT {panelType==='ouvrage'&&(form.lignes||[]).length>0?'(calculé)':''}
+              </label>
+              <input type="number" value={panelType==='ouvrage'&&(form.lignes||[]).length>0?debourseAuto:(form.debourse||0)}
+                readOnly={panelType==='ouvrage'&&(form.lignes||[]).length>0}
+                onChange={e=>setForm((p:any)=>({...p,debourse:parseFloat(e.target.value)||0}))}
+                style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',background:panelType==='ouvrage'&&(form.lignes||[]).length>0?'#f3f4f6':'#fff',boxSizing:'border-box' as const}}/>
+            </div>
+            <div>
+              <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Prix facturé HT</label>
+              <input type="number" value={form.prixFacture||0}
+                onChange={e=>setForm((p:any)=>({...p,prixFacture:parseFloat(e.target.value)||0}))}
+                style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}
+                onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+                onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+            </div>
+          </div>
+
+          {/* Prix fournisseur + coeff */}
+          <div style={{borderTop:`1px solid ${BD}`,paddingTop:12,marginTop:4}}>
+            <div style={{fontSize:12,fontWeight:600,color:'#555',marginBottom:10}}>Prix fournisseur & coefficient</div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:10}}>
+              <div>
+                <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Prix fournisseur HT</label>
+                <input type="number" value={form.prixFournisseur||''} min={0}
+                  onChange={e=>{
+                    const pf=parseFloat(e.target.value)||0
+                    const coeff=form.coeffMarge||1
+                    setForm((p:any)=>({...p,prixFournisseur:pf,debourse:pf,prixFacture:Math.round(pf*coeff*100)/100}))
+                  }}
+                  placeholder="Ex: 28"
+                  style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}
+                  onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor='#2563eb'}
+                  onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+              </div>
+              <div>
+                <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>
+                  Coefficient de marge
+                  {form.coeffMarge&&<span style={{fontSize:11,color:G,marginLeft:6,fontWeight:600}}>= {Math.round((1-1/form.coeffMarge)*100)}% marge</span>}
+                </label>
+                <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                  <input type="number" value={form.coeffMarge||''} min={1} step={0.05}
+                    onChange={e=>{
+                      const coeff=parseFloat(e.target.value)||1
+                      const pf=form.prixFournisseur||form.debourse||0
+                      setForm((p:any)=>({...p,coeffMarge:coeff,prixFacture:Math.round(pf*coeff*100)/100}))
+                    }}
+                    placeholder="Ex: 1.40"
+                    style={{flex:1,padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}
+                    onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+                    onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+                </div>
+                {/* Raccourcis coefficients */}
+                <div style={{display:'flex',gap:4,marginTop:6,flexWrap:'wrap' as const}}>
+                  {[[1.25,'25%'],[1.40,'40%'],[1.50,'50%'],[1.67,'60%'],[2,'100%']].map(([coeff,label])=>(
+                    <button key={String(label)} type="button"
+                      onClick={()=>{
+                        const pf=form.prixFournisseur||form.debourse||0
+                        setForm((p:any)=>({...p,coeffMarge:coeff,prixFacture:Math.round(Number(pf)*Number(coeff)*100)/100}))
+                      }}
+                      style={{padding:'3px 8px',fontSize:11,border:`1px solid ${form.coeffMarge===coeff?G:BD}`,borderRadius:12,background:form.coeffMarge===coeff?'#f0fdf4':'#fff',color:form.coeffMarge===coeff?G:'#555',cursor:'pointer',fontWeight:600}}>
+                      ×{coeff} ({label})
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Calcul marge */}
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:8}}>
+            <span style={{fontSize:13,color:'#555'}}>Marge calculée</span>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <span style={{fontSize:14,fontWeight:700,color:margeColor(margeVal)}}>{fmt((form.prixFacture||0)-(panelType==='ouvrage'&&(form.lignes||[]).length>0?debourseAuto:(form.debourse||0)))}</span>
+              <span style={{fontSize:12,fontWeight:700,padding:'3px 10px',borderRadius:20,background:`${margeColor(margeVal)}18`,color:margeColor(margeVal)}}>{margeVal}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
 export default function BibliothequePage() {
   const[tab,setTab]=useState<Tab>('ouvrages')
   const[search,setSearch]=useState('')
@@ -646,219 +867,6 @@ export default function BibliothequePage() {
   }
 
   // Formulaire panneau latéral
-  const PanelForm=()=>{
-    const debourseAuto=form.lignes?.reduce((s:number,l:LigneOuvrage)=>s+l.qte*l.pu,0)||form.debourse||0
-    const margeVal=marge(debourseAuto,form.prixFacture||0)
-    const unites=panelType==='mo'?UNITES_MO:UNITES_MAT
-    return(
-      <div style={{position:'fixed',top:0,right:0,width:520,height:'100vh',background:'#fff',boxShadow:'-4px 0 24px rgba(0,0,0,0.12)',zIndex:400,display:'flex',flexDirection:'column',overflow:'hidden'}}>
-        {/* Header */}
-        <div style={{padding:'16px 20px',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
-          <div style={{fontSize:15,fontWeight:700,color:'#111'}}>
-            {panel==='edit'?'Modifier':'Ajouter'} {panelType==='ouvrage'?'un ouvrage':panelType==='materiau'?'un matériau':'une main d\'oeuvre'}
-          </div>
-          <div style={{display:'flex',gap:8}}>
-            <button onClick={save} style={{padding:'8px 18px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>
-              {panel==='edit'?'Enregistrer':'Ajouter'}
-            </button>
-            <button onClick={closePanel} style={{width:32,height:32,borderRadius:'50%',border:`1px solid ${BD}`,background:'#f9fafb',cursor:'pointer',fontSize:16,color:'#888',display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
-          </div>
-        </div>
-        {/* Contenu scrollable */}
-        <div style={{flex:1,overflowY:'auto',padding:20,display:'flex',flexDirection:'column',gap:14}}>
-
-          {/* Nom */}
-          <div>
-            <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Nom *</label>
-            <input value={form.nom||''} onChange={e=>setForm((p:any)=>({...p,nom:e.target.value}))}
-              placeholder={panelType==='ouvrage'?'Ex: Pose parquet chêne massif':panelType==='materiau'?'Ex: Parquet chêne 12mm':'Ex: Électricien qualifié'}
-              style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const,color:'#111'}}
-              onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
-              onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
-          </div>
-
-
-
-          {/* Catégorie + Unité + TVA */}
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
-            <div>
-              <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Catégorie</label>
-              <select value={form.categorie||'Autre'} onChange={e=>setForm((p:any)=>({...p,categorie:e.target.value}))}
-                style={{width:'100%',padding:'9px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,outline:'none',background:'#fff',color:'#111'}}>
-                {categories.map(c=><option key={c.nom}>{c.nom}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Unité</label>
-              <select value={form.unite||'u'} onChange={e=>setForm((p:any)=>({...p,unite:e.target.value}))}
-                style={{width:'100%',padding:'9px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,outline:'none',background:'#fff',color:'#111'}}>
-                {unites.map(u=><option key={u}>{u}</option>)}
-              </select>
-              {form.unite==='Personnalisé'&&(
-                <input value={form.uniteCustom||''} onChange={e=>setForm((p:any)=>({...p,uniteCustom:e.target.value}))}
-                  placeholder="Ex: kg, palette, jour..."
-                  style={{width:'100%',marginTop:6,padding:'7px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
-              )}
-            </div>
-            <div>
-              <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>TVA</label>
-              <select value={form.tva||'20%'} onChange={e=>setForm((p:any)=>({...p,tva:e.target.value}))}
-                style={{width:'100%',padding:'9px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:12,outline:'none',background:'#fff',color:'#111'}}>
-                {TVA_OPTIONS.map(t=><option key={t}>{t}</option>)}
-              </select>
-            </div>
-          </div>
-
-          {/* Description */}
-          <div>
-            <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Description</label>
-            <RichEditor value={form.description||''} onChange={v=>setForm((p:any)=>({...p,description:v}))} placeholder="Détail de l'élément..."/>
-          </div>
-
-
-
-
-
-          {/* Composition ouvrage */}
-          {panelType==='ouvrage'&&(
-            <div style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:10,padding:14}}>
-              <div style={{fontSize:13,fontWeight:600,color:'#111',marginBottom:10}}>Composition de l'ouvrage</div>
-              {(form.lignes||[]).length>0&&(
-                <table style={{width:'100%',borderCollapse:'collapse',marginBottom:10}}>
-                  <thead><tr style={{background:'#f3f4f6'}}>
-                    <th style={{padding:'6px 10px',textAlign:'left' as const,fontSize:11,color:'#888',fontWeight:600}}>Élément</th>
-                    <th style={{padding:'6px 10px',textAlign:'center' as const,fontSize:11,color:'#888',fontWeight:600}}>Qté</th>
-                    <th style={{padding:'6px 10px',textAlign:'right' as const,fontSize:11,color:'#888',fontWeight:600}}>P.U.</th>
-                    <th style={{padding:'6px 10px',textAlign:'right' as const,fontSize:11,color:'#888',fontWeight:600}}>Total</th>
-                    <th style={{width:30}}></th>
-                  </tr></thead>
-                  <tbody>
-                    {(form.lignes||[]).map((l:LigneOuvrage,i:number)=>(
-                      <tr key={i} style={{borderTop:`1px solid ${BD}`}}>
-                        <td style={{padding:'8px 10px',fontSize:12,color:'#333'}}>
-                          <span style={{fontSize:10,color:l.type==='materiau'?'#2563eb':AM,fontWeight:600,marginRight:4}}>{l.type==='materiau'?'MAT':'MO'}</span>
-                          {l.nom}
-                        </td>
-                        <td style={{padding:'8px 10px',textAlign:'center' as const}}>
-                          <input type="number" value={l.qte} min={0.1} step={0.5}
-                            onChange={e=>updateLigne(i,'qte',parseFloat(e.target.value)||0)}
-                            style={{width:50,padding:'3px 6px',border:`1px solid ${BD}`,borderRadius:5,fontSize:12,textAlign:'center' as const,outline:'none',color:'#111'}}/>
-                        </td>
-                        <td style={{padding:'8px 10px',textAlign:'right' as const}}>
-                          <input type="number" value={l.pu} min={0}
-                            onChange={e=>updateLigne(i,'pu',parseFloat(e.target.value)||0)}
-                            style={{width:70,padding:'3px 6px',border:`1px solid ${BD}`,borderRadius:5,fontSize:12,textAlign:'right' as const,outline:'none',color:'#111'}}/>
-                        </td>
-                        <td style={{padding:'8px 10px',textAlign:'right' as const,fontSize:12,fontWeight:600,color:'#111'}}>{fmt(l.qte*l.pu)}</td>
-                        <td style={{padding:'8px 10px',textAlign:'center' as const}}>
-                          <button onClick={()=>removeLigne(i)} style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:14}}
-                            onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=RD}
-                            onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>×</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-              <div style={{display:'flex',gap:8}}>
-                <button onClick={()=>setShowBiblioMat(true)}
-                  style={{flex:1,padding:'7px 10px',background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:7,fontSize:12,fontWeight:600,color:'#2563eb',cursor:'pointer'}}>
-                  + Matériau
-                </button>
-                <button onClick={()=>setShowBiblioMO(true)}
-                  style={{flex:1,padding:'7px 10px',background:'#fffbeb',border:`1px solid #fde68a`,borderRadius:7,fontSize:12,fontWeight:600,color:AM,cursor:'pointer'}}>
-                  + Main d\'oeuvre
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Prix */}
-          <div style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:10,padding:14}}>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
-              <div>
-                <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>
-                  Déboursé sec HT {panelType==='ouvrage'&&(form.lignes||[]).length>0?'(calculé)':''}
-                </label>
-                <input type="number" value={panelType==='ouvrage'&&(form.lignes||[]).length>0?debourseAuto:(form.debourse||0)}
-                  readOnly={panelType==='ouvrage'&&(form.lignes||[]).length>0}
-                  onChange={e=>setForm((p:any)=>({...p,debourse:parseFloat(e.target.value)||0}))}
-                  style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',background:panelType==='ouvrage'&&(form.lignes||[]).length>0?'#f3f4f6':'#fff',boxSizing:'border-box' as const}}/>
-              </div>
-              <div>
-                <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Prix facturé HT</label>
-                <input type="number" value={form.prixFacture||0}
-                  onChange={e=>setForm((p:any)=>({...p,prixFacture:parseFloat(e.target.value)||0}))}
-                  style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}
-                  onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
-                  onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
-              </div>
-            </div>
-
-            {/* Prix fournisseur + coeff */}
-            <div style={{borderTop:`1px solid ${BD}`,paddingTop:12,marginTop:4}}>
-              <div style={{fontSize:12,fontWeight:600,color:'#555',marginBottom:10}}>Prix fournisseur & coefficient</div>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:10}}>
-                <div>
-                  <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Prix fournisseur HT</label>
-                  <input type="number" value={form.prixFournisseur||''} min={0}
-                    onChange={e=>{
-                      const pf=parseFloat(e.target.value)||0
-                      const coeff=form.coeffMarge||1
-                      setForm((p:any)=>({...p,prixFournisseur:pf,debourse:pf,prixFacture:Math.round(pf*coeff*100)/100}))
-                    }}
-                    placeholder="Ex: 28"
-                    style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}
-                    onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor='#2563eb'}
-                    onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
-                </div>
-                <div>
-                  <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>
-                    Coefficient de marge
-                    {form.coeffMarge&&<span style={{fontSize:11,color:G,marginLeft:6,fontWeight:600}}>= {Math.round((1-1/form.coeffMarge)*100)}% marge</span>}
-                  </label>
-                  <div style={{display:'flex',gap:6,alignItems:'center'}}>
-                    <input type="number" value={form.coeffMarge||''} min={1} step={0.05}
-                      onChange={e=>{
-                        const coeff=parseFloat(e.target.value)||1
-                        const pf=form.prixFournisseur||form.debourse||0
-                        setForm((p:any)=>({...p,coeffMarge:coeff,prixFacture:Math.round(pf*coeff*100)/100}))
-                      }}
-                      placeholder="Ex: 1.40"
-                      style={{flex:1,padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}
-                      onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
-                      onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
-                  </div>
-                  {/* Raccourcis coefficients */}
-                  <div style={{display:'flex',gap:4,marginTop:6,flexWrap:'wrap' as const}}>
-                    {[[1.25,'25%'],[1.40,'40%'],[1.50,'50%'],[1.67,'60%'],[2,'100%']].map(([coeff,label])=>(
-                      <button key={String(label)} type="button"
-                        onClick={()=>{
-                          const pf=form.prixFournisseur||form.debourse||0
-                          setForm((p:any)=>({...p,coeffMarge:coeff,prixFacture:Math.round(Number(pf)*Number(coeff)*100)/100}))
-                        }}
-                        style={{padding:'3px 8px',fontSize:11,border:`1px solid ${form.coeffMarge===coeff?G:BD}`,borderRadius:12,background:form.coeffMarge===coeff?'#f0fdf4':'#fff',color:form.coeffMarge===coeff?G:'#555',cursor:'pointer',fontWeight:600}}>
-                        ×{coeff} ({label})
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Calcul marge */}
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:8}}>
-              <span style={{fontSize:13,color:'#555'}}>Marge calculée</span>
-              <div style={{display:'flex',alignItems:'center',gap:10}}>
-                <span style={{fontSize:14,fontWeight:700,color:margeColor(margeVal)}}>{fmt((form.prixFacture||0)-(panelType==='ouvrage'&&(form.lignes||[]).length>0?debourseAuto:(form.debourse||0)))}</span>
-                <span style={{fontSize:12,fontWeight:700,padding:'3px 10px',borderRadius:20,background:`${margeColor(margeVal)}18`,color:margeColor(margeVal)}}>{margeVal}%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return(
     <div style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}} onClick={()=>{if(panel)setPanel(null)}}>
@@ -1087,7 +1095,7 @@ export default function BibliothequePage() {
         <>
           <div onClick={closePanel} style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.3)',zIndex:399}}/>
           <div onClick={e=>e.stopPropagation()}>
-            <PanelForm/>
+            <PanelForm panel={panel} panelType={panelType} form={form} setForm={setForm} categories={categories} closePanel={closePanel} saveForm={save} ajouterLigne={ajouterLigne} updateLigne={updateLigne} removeLigne={removeLigne} marge={marge} setShowBiblioMat={setShowBiblioMat} setShowBiblioMO={setShowBiblioMO}/>
           </div>
         </>
       )}
