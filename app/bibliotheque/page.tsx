@@ -497,7 +497,7 @@ function PanelForm({panel,panelType,form,setForm,categories,closePanel,saveForm,
 
 export default function BibliothequePage() {
   const[tab,setTab]=useState<Tab>('ouvrages')
-  const[margePeriode,setMargePeriode]=useState<string>(()=>{try{return localStorage.getItem('batizo_marge_periode')||'annee'}catch(e){return 'annee'}})
+  const[margePeriode,setMargePeriode]=useState<string>(()=>{try{return localStorage.getItem('batizo_marge_periode')||'mois'}catch(e){return 'mois'}})
   const[margeDebut,setMargeDebut]=useState('')
   const[margeFin,setMargeFin]=useState('')
   const[showMargePeriode,setShowMargePeriode]=useState(false)
