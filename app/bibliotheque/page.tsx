@@ -469,13 +469,13 @@ function PanelForm({panel,panelType,form,setForm,categories,closePanel,saveForm,
 
 
 export default function BibliothequePage() {
+  const[tab,setTab]=useState<Tab>('ouvrages')
+  const[search,setSearch]=useState('')
+
   // Persister dans localStorage à chaque changement
   useEffect(()=>{
     try{localStorage.setItem('batizo_biblio_v2',JSON.stringify({materiaux,mo,ouvrages}))}catch(e){}
   },[materiaux,mo,ouvrages])
-
-  const[tab,setTab]=useState<Tab>('ouvrages')
-  const[search,setSearch]=useState('')
   const[catFiltre,setCatFiltre]=useState('')
   const[materiaux,setMateriaux]=useState<Materiau[]>(()=>{
     try{const s=localStorage.getItem('batizo_biblio_v2');if(s){const d=JSON.parse(s);if(d.materiaux)return d.materiaux}}catch(e){}
