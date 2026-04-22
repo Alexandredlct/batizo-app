@@ -50,6 +50,7 @@ export default function DashboardPage() {
   const[devisPeriode,setDevisPeriode]=useState('mois')
   const[facturesPeriode,setFacturesPeriode]=useState('mois')
   const[showCaMoisDD,setShowCaMoisDD]=useState(false)
+
   const[showCaAnneeDD,setShowCaAnneeDD]=useState(false)
   const[showDevisDD,setShowDevisDD]=useState(false)
   const[showFacturesDD,setShowFacturesDD]=useState(false)
@@ -212,7 +213,7 @@ export default function DashboardPage() {
 
   return (
     <>
-    <div onClick={() => setUserMenu(false)} style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}}>
+    <div onClick={() => {setUserMenu(false);setShowCaMoisDD(false);setShowCaAnneeDD(false);setShowDevisDD(false);setShowFacturesDD(false);setShowMargePeriode(false)}} style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}}>
 
       <Sidebar activePage="dashboard"/>
 
@@ -238,7 +239,7 @@ export default function DashboardPage() {
           <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:12,marginBottom:20}}>
             {/* CA ce mois */}
             {(()=>{
-              const pLabel=(p:string)=>p==='mois'?'Ce mois-ci':p==='trimestre'?'Ce trimestre':p==='annee'?'Cette année':p==='12mois'?'12 mois':'Perso.'
+              const pLabel=(p:string)=>p==='mois'?'Ce mois-ci':p==='trimestre'?'Ce trimestre':p==='annee'?'Cette année':p==='12mois'?'12 mois':p==='custom'?'Personnalisée':'Ce mois-ci'
               const KpiCard=({label,value,change,color,period,setPeriod,showDD,setShowDD,valueColor}:{label:string,value:string,change:string,color:string,period:string,setPeriod:(v:string)=>void,showDD:boolean,setShowDD:(v:boolean)=>void,valueColor?:string})=>(
                 <div style={{background:'#fff',borderRadius:12,padding:16,border:`1px solid ${BD}`,position:'relative' as const}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
@@ -250,7 +251,7 @@ export default function DashboardPage() {
                       </button>
                       {showDD&&(
                         <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:200,minWidth:150,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
-                          {[['mois','Ce mois-ci'],['trimestre','Ce trimestre'],['annee','Cette année'],['12mois','12 derniers mois']].map(([v,l])=>(
+                          {[['mois','Ce mois-ci'],['trimestre','Ce trimestre'],['annee','Cette année'],['12mois','12 derniers mois'],['custom','Personnalisée']].map(([v,l])=>(
                             <div key={v} onClick={()=>{setPeriod(v);setShowDD(false)}}
                               style={{padding:'8px 12px',fontSize:12,cursor:'pointer',background:period===v?'#f0fdf4':'',color:period===v?G:'#333'}}
                               onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
