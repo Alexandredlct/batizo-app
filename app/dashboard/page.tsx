@@ -77,6 +77,69 @@ export default function DashboardPage() {
     } catch(e) { return {marge:0,nbDevis:0,caTotal:0} }
   },[margePeriode,margeDebut,margeFin])
 
+  // Calculs dynamiques KPIs dashboard
+  const dashboardStats = React.useMemo(()=>{
+    try {
+      const devisRaw = localStorage.getItem('batizo_devis')
+      const devisList: any[] = devisRaw ? JSON.parse(devisRaw) : []
+      const now = new Date()
+      const moisDebut = new Date(now.getFullYear(), now.getMonth(), 1)
+      const moisFin = new Date(now.getFullYear(), now.getMonth()+1, 0)
+      const anneeDebut = new Date(now.getFullYear(), 0, 1)
+      const moisPrecDebut = new Date(now.getFullYear(), now.getMonth()-1, 1)
+      const moisPrecFin = new Date(now.getFullYear(), now.getMonth(), 0)
+      const anneePrecDebut = new Date(now.getFullYear()-1, 0, 1)
+      const anneePrecFin = new Date(now.getFullYear()-1, 11, 31)
+
+      const calcCA = (list: any[], start: Date, end: Date) => {
+        return list.filter((d:any) => {
+          if(['refuse','archive'].includes(d.statut||'')) return false
+          const date = new Date(d.dateDevis||d.date||'')
+          return !isNaN(date.getTime()) && date>=start && date<=end
+        }).reduce((s:number, d:any) => {
+          return s + (d.lignes||[]).reduce((ls:number, l:any) => {
+            if(!['materiau','mo','ouvrage'].includes(l.type)) return ls
+            return ls + (l.qte||0)*(l.pu||0)
+          }, 0)
+        }, 0)
+      }
+
+      const caMois = calcCA(devisList, moisDebut, moisFin)
+      const caMoisPrec = calcCA(devisList, moisPrecDebut, moisPrecFin)
+      const caAnnee = calcCA(devisList, anneeDebut, new Date())
+      const caAnneePrec = calcCA(devisList, anneePrecDebut, anneePrecFin)
+
+      // Devis en attente (envoyés/brouillons actifs)
+      const devisAttente = devisList.filter((d:any) => ['brouillon','en_attente'].includes(d.statut||'brouillon'))
+      const caAttente = devisAttente.reduce((s:number, d:any) => {
+        return s + (d.lignes||[]).reduce((ls:number, l:any) => {
+          if(!['materiau','mo','ouvrage'].includes(l.type)) return ls
+          return ls + (l.qte||0)*(l.pu||0)
+        }, 0)
+      }, 0)
+
+      const fmt = (n:number) => n>=1000 ? Math.round(n).toLocaleString('fr-FR')+' € HT' : Math.round(n)+' € HT'
+      const pct = (a:number, b:number) => b>0 ? Math.round((a-b)/b*100) : 0
+
+      const moisLabel = now.toLocaleString('fr-FR',{month:'long'})
+      const moisPrecLabel = new Date(now.getFullYear(), now.getMonth()-1, 1).toLocaleString('fr-FR',{month:'long'})
+
+      return {
+        caMois, caMoisStr: fmt(caMois),
+        caMoisChange: caMoisPrec>0 ? (pct(caMois,caMoisPrec)>=0?'↑ +':'↓ ')+Math.abs(pct(caMois,caMoisPrec))+'% vs '+moisPrecLabel : 'Premier mois',
+        caAnnee, caAnneeStr: fmt(caAnnee),
+        caAnneeChange: caAnneePrec>0 ? (pct(caAnnee,caAnneePrec)>=0?'↑ +':'↓ ')+Math.abs(pct(caAnnee,caAnneePrec))+'% vs '+(now.getFullYear()-1) : 'Première année',
+        devisAttente: devisAttente.length,
+        caAttenteStr: fmt(caAttente)+' en jeu',
+        facturesImpayees: 0,
+        facturesStr: '0 € HT',
+      }
+    } catch(e) {
+      return {caMoisStr:'—',caMoisChange:'',caAnneeStr:'—',caAnneeChange:'',devisAttente:0,caAttenteStr:'—',facturesImpayees:0,facturesStr:'—'}
+    }
+  }, [])
+
+
   const entreprise = user?.user_metadata?.entreprise || 'votre entreprise'
   const sw = collapsed ? 64 : 230
 
