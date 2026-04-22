@@ -87,6 +87,14 @@ const emptyOuvrage = ():Omit<Ouvrage,'id'> => ({nom:'',description:'',unite:'u',
 
 
 // Mini éditeur de texte riche
+const BtnTool=({onClick,active,title,children}:{onClick:()=>void,active?:boolean,title:string,children:any})=>(
+
+    <button type="button" onClick={onClick} title={title}
+      style={{padding:'4px 7px',border:`1px solid ${active?'#1D9E75':'#e5e7eb'}`,borderRadius:5,background:active?'#f0fdf4':'#fff',cursor:'pointer',fontSize:12,fontWeight:600,color:active?'#1D9E75':'#444',transition:'all 0.1s',minWidth:26,display:'flex',alignItems:'center',justifyContent:'center'}}>
+      {children}
+    </button>
+  )
+
 const RichEditor=({value,onChange,placeholder}:{value:string,onChange:(v:string)=>void,placeholder?:string})=>{
   const ref = React.useRef<HTMLDivElement>(null)
   const[showColorPicker,setShowColorPicker]=React.useState(false)
@@ -99,12 +107,6 @@ const RichEditor=({value,onChange,placeholder}:{value:string,onChange:(v:string)
     ref.current?.focus()
   }
 
-  const BtnTool=({onClick,active,title,children}:{onClick:()=>void,active?:boolean,title:string,children:any})=>(
-    <button type="button" onClick={onClick} title={title}
-      style={{padding:'4px 7px',border:`1px solid ${active?'#1D9E75':'#e5e7eb'}`,borderRadius:5,background:active?'#f0fdf4':'#fff',cursor:'pointer',fontSize:12,fontWeight:600,color:active?'#1D9E75':'#444',transition:'all 0.1s',minWidth:26,display:'flex',alignItems:'center',justifyContent:'center'}}>
-      {children}
-    </button>
-  )
 
   return(
     <div style={{border:'1px solid #e5e7eb',borderRadius:8,overflow:'visible',background:'#fff'}}
