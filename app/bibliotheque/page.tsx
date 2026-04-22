@@ -949,7 +949,7 @@ export default function BibliothequePage() {
 
           {/* Recherche + filtre */}
           <div style={{display:'flex',gap:8,marginBottom:20,alignItems:'center',width:'100%'}}>
-            <div style={{flex:1,minWidth:240,maxWidth:600,position:'relative'}}>
+            <div style={{flex:'1 1 auto',minWidth:240,maxWidth:600,position:'relative'}}>
               <svg style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)'}} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher par nom, description, catégorie..."
                 style={{width:'100%',padding:'9px 12px 9px 36px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const,color:'#111'}}/>
