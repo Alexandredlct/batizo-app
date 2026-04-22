@@ -40,6 +40,43 @@ export default function DashboardPage() {
     return localStorage.getItem('batizo_prenom')||''
   })
   const prenom = prenomLocal||''
+  const[margePeriode,setMargePeriode]=useState<string>(()=>{try{return localStorage.getItem('batizo_marge_periode')||'annee'}catch(e){return 'annee'}})
+  const[margeDebut,setMargeDebut]=useState('')
+  const[margeFin,setMargeFin]=useState('')
+  const[showMargePeriode,setShowMargePeriode]=useState(false)
+  const[showMargeCustom,setShowMargeCustom]=useState(false)
+  const margeStats = React.useMemo(()=>{
+    try {
+      const devisRaw = localStorage.getItem('batizo_devis')
+      if (!devisRaw) return {marge:0, nbDevis:0, caTotal:0}
+      const devisList: any[] = JSON.parse(devisRaw)
+      const now = new Date()
+      const getRange = (): [Date, Date] => {
+        if (margePeriode==='mois') return [new Date(now.getFullYear(),now.getMonth(),1),new Date(now.getFullYear(),now.getMonth()+1,0)]
+        if (margePeriode==='trimestre') { const q=Math.floor(now.getMonth()/3); return [new Date(now.getFullYear(),q*3,1),new Date(now.getFullYear(),q*3+3,0)] }
+        if (margePeriode==='12mois') { const d=new Date(now); d.setFullYear(d.getFullYear()-1); return [d,now] }
+        if (margePeriode==='custom'&&margeDebut&&margeFin) return [new Date(margeDebut),new Date(margeFin)]
+        return [new Date(now.getFullYear(),0,1),new Date(now.getFullYear(),11,31)]
+      }
+      const [start,end] = getRange()
+      const signed = devisList.filter((d:any)=>{
+        if(!['signe','facture','finalise'].includes(d.statut||'')) return false
+        const date = new Date(d.dateDevis||d.date||'')
+        return !isNaN(date.getTime()) ? date>=start&&date<=end : true
+      })
+      let caTotal=0, margeTotal=0
+      signed.forEach((devis:any)=>{
+        (devis.lignes||[]).forEach((l:any)=>{
+          if(!['materiau','mo','ouvrage'].includes(l.type)) return
+          const ca=(l.qte||0)*(l.pu||0)
+          const deb=(l.qte||0)*(l.debourse||l.pu*0.5||0)
+          caTotal+=ca; margeTotal+=ca-deb
+        })
+      })
+      return {marge:caTotal>0?Math.round((margeTotal/caTotal)*100):0, nbDevis:signed.length, caTotal:Math.round(caTotal)}
+    } catch(e) { return {marge:0,nbDevis:0,caTotal:0} }
+  },[margePeriode,margeDebut,margeFin])
+
   const entreprise = user?.user_metadata?.entreprise || 'votre entreprise'
   const sw = collapsed ? 64 : 230
 
