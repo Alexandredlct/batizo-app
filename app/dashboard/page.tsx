@@ -249,7 +249,7 @@ export default function DashboardPage() {
 
   return (
     <>
-    <div onClick={() => {setUserMenu(false);setOpenKpiDD(null)}} style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}}>
+    <div onClick={() => setUserMenu(false)} style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}}>
 
       <Sidebar activePage="dashboard"/>
 
