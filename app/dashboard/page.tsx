@@ -132,8 +132,44 @@ export default function DashboardPage() {
               {label:'CA cette année',value:'87 400 € HT',change:'↑ +18% vs 2025',cc:G},
               {label:'Devis en attente',value:'8',change:'42 300 € HT en jeu',cc:AM,vc:AM},
               {label:'Factures impayées',value:'3 400 € HT',change:'2 en retard',cc:RD,vc:RD},
-              {label:'Marge moyenne',value:'34%',change:'↑ +2pts vs mars',cc:G},
-            ].map(m => (
+              {label:'__MARGE__',value:'',change:'',cc:G},
+            ].map(m => m.label==='__MARGE__' ? (
+              <div key="marge" style={{background:'#fff',borderRadius:12,padding:16,border:`1px solid ${BD}`,position:'relative' as const}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                  <div style={{fontSize:12,color:'#444',fontWeight:500}}>Marge moyenne</div>
+                  <div style={{position:'relative' as const}}>
+                    <button onClick={()=>setShowMargePeriode(!showMargePeriode)}
+                      style={{fontSize:10,color:'#555',background:'#f3f4f6',border:'none',borderRadius:4,padding:'2px 6px',cursor:'pointer'}}>
+                      {margePeriode==='mois'?'Ce mois':margePeriode==='trimestre'?'Trimestre':margePeriode==='annee'?'Cette année':margePeriode==='12mois'?'12 mois':'Perso.'} ▾
+                    </button>
+                    {showMargePeriode&&(
+                      <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:100,minWidth:160,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
+                        {[['mois','Ce mois-ci'],['trimestre','Ce trimestre'],['annee','Cette année'],['12mois','12 derniers mois'],['custom','Personnalisée']].map(([v,l])=>(
+                          <div key={v} onClick={()=>{setMargePeriode(v);setShowMargePeriode(false);if(v==='custom')setShowMargeCustom(true)}}
+                            style={{padding:'8px 12px',fontSize:12,cursor:'pointer',background:margePeriode===v?'#f0fdf4':''}}
+                            onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                            onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=margePeriode===v?'#f0fdf4':''}>
+                            {l}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {showMargeCustom&&margePeriode==='custom'&&(
+                  <div style={{display:'flex',gap:4,marginBottom:6}}>
+                    <input type="date" value={margeDebut} onChange={e=>setMargeDebut(e.target.value)} style={{flex:1,padding:'3px 5px',border:`1px solid ${BD}`,borderRadius:4,fontSize:10,outline:'none'}}/>
+                    <input type="date" value={margeFin} onChange={e=>setMargeFin(e.target.value)} style={{flex:1,padding:'3px 5px',border:`1px solid ${BD}`,borderRadius:4,fontSize:10,outline:'none'}}/>
+                  </div>
+                )}
+                <div style={{fontSize:20,fontWeight:700,color:margeStats.marge>=50?'#059669':margeStats.marge>=30?'#D97706':'#DC2626',marginBottom:4}}>
+                  {margeStats.nbDevis>0?margeStats.marge+'%':'—'}
+                </div>
+                <div style={{fontSize:11,color:'#6B7280'}}>
+                  {margeStats.nbDevis>0?`Sur ${margeStats.nbDevis} devis signé${margeStats.nbDevis>1?'s':''}\u00A0(${margeStats.caTotal.toLocaleString('fr-FR')}\u00A0€ HT)`:'Aucun devis signé'}
+                </div>
+              </div>
+            ) : (
               <div key={m.label} style={{background:'#fff',borderRadius:12,padding:16,border:`1px solid ${BD}`}}>
                 <div style={{fontSize:12,color:'#444',fontWeight:500,marginBottom:6}}>{m.label}</div>
                 <div style={{fontSize:20,fontWeight:700,color:(m as any).vc||'#111',marginBottom:4}}>{m.value}</div>
