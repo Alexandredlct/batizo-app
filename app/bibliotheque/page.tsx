@@ -1,6 +1,6 @@
 'use client'
 import SearchBar from '../components/SearchBar'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import Sidebar from '../components/Sidebar'
 
