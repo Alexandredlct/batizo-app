@@ -1246,7 +1246,7 @@ export default function BibliothequePage() {
               {[
                 {label:'Total utilisations',val:statsUtilisation.reduce((s,i)=>s+i.utilisations,0),color:'#111'},
                 {label:'CA total généré',val:statsUtilisation.reduce((s,i)=>s+i.caGenere,0).toLocaleString('fr-FR')+' €',color:G},
-                {label:'Marge moyenne',val:Math.round(statsUtilisation.reduce((s,i)=>s+i.margeAvg,0)/statsUtilisation.length)+'%',color:G},
+                {label:'Marge moyenne',val:Math.round(margeMoyenne([...ouvrages,...materiaux,...mo]))+'%',color:G},
                 {label:'Éléments actifs',val:statsUtilisation.length,color:'#2563eb'},
               ].map(k=>(
                 <div key={k.label} style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:10,padding:'12px 14px'}}>
