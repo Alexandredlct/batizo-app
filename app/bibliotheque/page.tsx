@@ -789,7 +789,7 @@ export default function BibliothequePage() {
             </span>
           )}
         </div>
-        {item.description&&<div style={{fontSize:12,color:'#777',marginBottom:8,lineHeight:1.4}} dangerouslySetInnerHTML={{__html:item.description}}/>}
+        {item.description&&type==='ouvrage'&&<div style={{fontSize:12,color:'#777',marginBottom:8,lineHeight:1.4}} dangerouslySetInnerHTML={{__html:item.description}}/>}
         <div style={{fontSize:12,color:'#888',marginBottom:10}}>{item.unite} · TVA {item.tva}</div>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:8}}>
           <div>
