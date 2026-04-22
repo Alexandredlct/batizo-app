@@ -314,11 +314,13 @@ function PanelForm({panel,panelType,form,setForm,categories,closePanel,saveForm,
           </div>
         </div>
 
-        {/* Description */}
-        <div>
-          <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Description</label>
-          <RichEditor value={form.description||''} onChange={v=>setForm((p:any)=>({...p,description:v}))} placeholder="Détail de l'élément..."/>
-        </div>
+        {/* Description — ouvrage seulement */}
+        {panelType==='ouvrage'&&(
+          <div>
+            <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Description</label>
+            <RichEditor value={form.description||''} onChange={v=>setForm((p:any)=>({...p,description:v}))} placeholder="Détail de l'élément..."/>
+          </div>
+        )}
 
 
 
