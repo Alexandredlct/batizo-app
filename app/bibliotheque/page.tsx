@@ -247,7 +247,7 @@ function ActionMenu({itemId,onModifier,onDupliquer,onHistorique,onSupprimer,keba
 
 function PanelForm({panel,panelType,form,setForm,categories,closePanel,saveForm,ajouterLigne,updateLigne,removeLigne,marge,setShowBiblioMat,setShowBiblioMO}:{
   panel:string|null,panelType:string|null,form:any,setForm:any,categories:any[],
-  closePanel:()=>void,saveForm:()=>void,ajouterLigne:(type:string,item:any)=>void,
+  closePanel:()=>void,saveForm:()=>void,ajouterLigne:(type:'materiau'|'mo',item:any)=>void,
   updateLigne:(idx:number,field:string,val:any)=>void,removeLigne:(idx:number)=>void,
   marge:(d:number,p:number)=>number,
   setShowBiblioMat:(v:boolean)=>void,setShowBiblioMO:(v:boolean)=>void
