@@ -21,6 +21,42 @@ const NavIcon = ({ id }: { id: string }) => {
   return icons[id] || <span>•</span>
 }
 
+
+function KpiCard({label,value,change,changeColor,valueColor,period,setPeriod,openId,setOpenId,cardId}:{
+  label:string,value:string,change:string,changeColor:string,valueColor?:string,
+  period:string,setPeriod:(v:string)=>void,openId:string|null,setOpenId:(v:string|null)=>void,cardId:string
+}){
+  const isOpen=openId===cardId
+  const pLabel=(p:string)=>p==='mois'?'Ce mois-ci':p==='12mois'?'Mois dernier':p==='trimestre'?'Ce trimestre':p==='annee'?'Cette année':'Personnalisé'
+  return(
+    <div style={{background:'#fff',borderRadius:12,padding:16,border:'1px solid #e5e7eb',position:'relative' as const}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+        <div style={{fontSize:12,color:'#444',fontWeight:500}}>{label}</div>
+        <div style={{position:'relative' as const}}>
+          <button onClick={()=>setOpenId(isOpen?null:cardId)}
+            style={{fontSize:10,color:'#555',background:'#f3f4f6',border:'none',borderRadius:4,padding:'2px 6px',cursor:'pointer'}}>
+            {pLabel(period)} ▾
+          </button>
+          {isOpen&&(
+            <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:'1px solid #e5e7eb',borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:200,minWidth:160,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
+              {[['mois','Ce mois-ci'],['12mois','Mois dernier'],['trimestre','Ce trimestre'],['annee','Cette année'],['custom','Personnalisé']].map(([v,l])=>(
+                <div key={v} onClick={()=>{setPeriod(v);setOpenId(null)}}
+                  style={{padding:'8px 12px',fontSize:12,cursor:'pointer',background:period===v?'#f0fdf4':'',color:period===v?'#1D9E75':'#333'}}
+                  onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                  onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=period===v?'#f0fdf4':''}>
+                  {l}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      <div style={{fontSize:20,fontWeight:700,color:valueColor||'#111',marginBottom:4}}>{value}</div>
+      <div style={{fontSize:12,color:changeColor,fontWeight:500}}>{change}</div>
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const[showNouveauDevis,setShowNouveauDevis]=useState(false)
   const[ficheClient,setFicheClient]=useState<any>(null)
@@ -213,7 +249,7 @@ export default function DashboardPage() {
 
   return (
     <>
-    <div onClick={() => {setUserMenu(false);setShowCaMoisDD(false);setShowCaAnneeDD(false);setShowDevisDD(false);setShowFacturesDD(false);setShowMargePeriode(false)}} style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}}>
+    <div onClick={() => {setUserMenu(false);setOpenKpiDD(null)}} style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}}>
 
       <Sidebar activePage="dashboard"/>
 
@@ -237,91 +273,47 @@ export default function DashboardPage() {
           </div>
 
           <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:12,marginBottom:20}}>
-            {/* CA ce mois */}
-            {(()=>{
-              const pLabel=(p:string)=>p==='mois'?'Ce mois-ci':p==='trimestre'?'Ce trimestre':p==='annee'?'Cette année':p==='12mois'?'12 mois':p==='custom'?'Personnalisée':'Ce mois-ci'
-              const KpiCard=({label,value,change,color,period,setPeriod,showDD,setShowDD,valueColor}:{label:string,value:string,change:string,color:string,period:string,setPeriod:(v:string)=>void,showDD:boolean,setShowDD:(v:boolean)=>void,valueColor?:string})=>(
-                <div style={{background:'#fff',borderRadius:12,padding:16,border:`1px solid ${BD}`,position:'relative' as const}}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
-                    <div style={{fontSize:12,color:'#444',fontWeight:500}}>{label}</div>
-                    <div style={{position:'relative' as const}}>
-                      <button onClick={()=>setShowDD(!showDD)}
-                        style={{fontSize:10,color:'#555',background:'#f3f4f6',border:'none',borderRadius:4,padding:'2px 6px',cursor:'pointer'}}>
-                        {pLabel(period)} ▾
-                      </button>
-                      {showDD&&(
-                        <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:200,minWidth:150,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
-                          {[['mois','Ce mois-ci'],['trimestre','Ce trimestre'],['annee','Cette année'],['12mois','12 derniers mois'],['custom','Personnalisée']].map(([v,l])=>(
-                            <div key={v} onClick={()=>{setPeriod(v);setShowDD(false)}}
-                              style={{padding:'8px 12px',fontSize:12,cursor:'pointer',background:period===v?'#f0fdf4':'',color:period===v?G:'#333'}}
-                              onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
-                              onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=period===v?'#f0fdf4':''}>
-                              {l}
-                            </div>
-                          ))}
+            <KpiCard label="CA ce mois" value={dashboardStats.caMoisStr} change={dashboardStats.caMoisChange} changeColor={G} period={caMoisPeriode} setPeriod={setCaMoisPeriode} openId={openKpiDD} setOpenId={setOpenKpiDD} cardId="caMois"/>
+            <KpiCard label="CA cette année" value={dashboardStats.caAnneeStr} change={dashboardStats.caAnneeChange} changeColor={G} period={caAnneePeriode} setPeriod={setCaAnneePeriode} openId={openKpiDD} setOpenId={setOpenKpiDD} cardId="caAnnee"/>
+            <KpiCard label="Devis en attente" value={String(dashboardStats.devisAttente)} change={dashboardStats.caAttenteStr} changeColor={AM} valueColor={AM} period={devisPeriode} setPeriod={setDevisPeriode} openId={openKpiDD} setOpenId={setOpenKpiDD} cardId="devis"/>
+            <KpiCard label="Factures impayées" value={dashboardStats.facturesStr} change="À jour" changeColor={G} period={facturesPeriode} setPeriod={setFacturesPeriode} openId={openKpiDD} setOpenId={setOpenKpiDD} cardId="factures"/>
+            {/* Marge moyenne */}
+            <div style={{background:'#fff',borderRadius:12,padding:16,border:`1px solid ${BD}`,position:'relative' as const}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                <div style={{fontSize:12,color:'#444',fontWeight:500}}>Marge moyenne</div>
+                <div style={{position:'relative' as const}}>
+                  <button onClick={()=>setOpenKpiDD(openKpiDD==='marge'?null:'marge')}
+                    style={{fontSize:10,color:'#555',background:'#f3f4f6',border:'none',borderRadius:4,padding:'2px 6px',cursor:'pointer'}}>
+                    {margePeriode==='mois'?'Ce mois-ci':margePeriode==='trimestre'?'Ce trimestre':margePeriode==='annee'?'Cette année':margePeriode==='12mois'?'Mois dernier':'Ce mois-ci'} ▾
+                  </button>
+                  {openKpiDD==='marge'&&(
+                    <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:200,minWidth:160,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
+                      {[['mois','Ce mois-ci'],['12mois','Mois dernier'],['trimestre','Ce trimestre'],['annee','Cette année'],['custom','Personnalisé']].map(([v,l])=>(
+                        <div key={v} onClick={()=>{setMargePeriode(v);setOpenKpiDD(null);if(v==='custom')setShowMargeCustom(true)}}
+                          style={{padding:'8px 12px',fontSize:12,cursor:'pointer',background:margePeriode===v?'#f0fdf4':'',color:margePeriode===v?G:'#333'}}
+                          onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                          onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=margePeriode===v?'#f0fdf4':''}>
+                          {l}
                         </div>
-                      )}
+                      ))}
                     </div>
-                  </div>
-                  <div style={{fontSize:20,fontWeight:700,color:valueColor||'#111',marginBottom:4}}>{value}</div>
-                  <div style={{fontSize:12,color:color,fontWeight:500}}>{change}</div>
-                </div>
-              )
-              return(<>
-                <KpiCard label="CA ce mois" value={dashboardStats.caMoisStr} change={dashboardStats.caMoisChange} color={G} period={caMoisPeriode} setPeriod={setCaMoisPeriode} showDD={showCaMoisDD} setShowDD={setShowCaMoisDD}/>
-                <KpiCard label="CA cette année" value={dashboardStats.caAnneeStr} change={dashboardStats.caAnneeChange} color={G} period={caAnneePeriode} setPeriod={setCaAnneePeriode} showDD={showCaAnneeDD} setShowDD={setShowCaAnneeDD}/>
-                <KpiCard label="Devis en attente" value={String(dashboardStats.devisAttente)} change={dashboardStats.caAttenteStr} color={AM} valueColor={AM} period={devisPeriode} setPeriod={setDevisPeriode} showDD={showDevisDD} setShowDD={setShowDevisDD}/>
-                <KpiCard label="Factures impayées" value={dashboardStats.facturesStr} change="À jour" color={G} period={facturesPeriode} setPeriod={setFacturesPeriode} showDD={showFacturesDD} setShowDD={setShowFacturesDD}/>
-              </>)
-            })()}
-            {/* Marge */}
-            {[
-              {label:'__MARGE__',value:'',change:'',cc:G},
-            ].map(m => m.label==='__MARGE__' ? (
-              <div key="marge" style={{background:'#fff',borderRadius:12,padding:16,border:`1px solid ${BD}`,position:'relative' as const}}>
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
-                  <div style={{fontSize:12,color:'#444',fontWeight:500}}>Marge moyenne</div>
-                  <div style={{position:'relative' as const}}>
-                    <button onClick={()=>setShowMargePeriode(!showMargePeriode)}
-                      style={{fontSize:10,color:'#555',background:'#f3f4f6',border:'none',borderRadius:4,padding:'2px 6px',cursor:'pointer'}}>
-                      {margePeriode==='mois'?'Ce mois':margePeriode==='trimestre'?'Trimestre':margePeriode==='annee'?'Cette année':margePeriode==='12mois'?'12 mois':'Perso.'} ▾
-                    </button>
-                    {showMargePeriode&&(
-                      <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:100,minWidth:160,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
-                        {[['mois','Ce mois-ci'],['trimestre','Ce trimestre'],['annee','Cette année'],['12mois','12 derniers mois'],['custom','Personnalisée']].map(([v,l])=>(
-                          <div key={v} onClick={()=>{setMargePeriode(v);setShowMargePeriode(false);if(v==='custom')setShowMargeCustom(true)}}
-                            style={{padding:'8px 12px',fontSize:12,cursor:'pointer',background:margePeriode===v?'#f0fdf4':''}}
-                            onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
-                            onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=margePeriode===v?'#f0fdf4':''}>
-                            {l}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {showMargeCustom&&margePeriode==='custom'&&(
-                  <div style={{display:'flex',gap:4,marginBottom:6}}>
-                    <input type="date" value={margeDebut} onChange={e=>setMargeDebut(e.target.value)} style={{flex:1,padding:'3px 5px',border:`1px solid ${BD}`,borderRadius:4,fontSize:10,outline:'none'}}/>
-                    <input type="date" value={margeFin} onChange={e=>setMargeFin(e.target.value)} style={{flex:1,padding:'3px 5px',border:`1px solid ${BD}`,borderRadius:4,fontSize:10,outline:'none'}}/>
-                  </div>
-                )}
-                <div style={{fontSize:20,fontWeight:700,color:margeStats.marge>=50?'#059669':margeStats.marge>=30?'#D97706':'#DC2626',marginBottom:4}}>
-                  {margeStats.nbDevis>0?margeStats.marge+'%':'—'}
-                </div>
-                <div style={{fontSize:11,color:'#6B7280'}}>
-                  {margeStats.nbDevis>0?`Sur ${margeStats.nbDevis} devis signé${margeStats.nbDevis>1?'s':''}\u00A0(${margeStats.caTotal.toLocaleString('fr-FR')}\u00A0€ HT)`:'Aucun devis signé'}
+                  )}
                 </div>
               </div>
-            ) : (
-              <div key={m.label} style={{background:'#fff',borderRadius:12,padding:16,border:`1px solid ${BD}`}}>
-                <div style={{fontSize:12,color:'#444',fontWeight:500,marginBottom:6}}>{m.label}</div>
-                <div style={{fontSize:20,fontWeight:700,color:(m as any).vc||'#111',marginBottom:4}}>{m.value}</div>
-                <div style={{fontSize:12,color:m.cc,fontWeight:500}}>{m.change}</div>
+              {showMargeCustom&&margePeriode==='custom'&&(
+                <div style={{display:'flex',gap:4,marginBottom:6}}>
+                  <input type="date" value={margeDebut} onChange={e=>setMargeDebut(e.target.value)} style={{flex:1,padding:'3px 5px',border:`1px solid ${BD}`,borderRadius:4,fontSize:10,outline:'none'}}/>
+                  <input type="date" value={margeFin} onChange={e=>setMargeFin(e.target.value)} style={{flex:1,padding:'3px 5px',border:`1px solid ${BD}`,borderRadius:4,fontSize:10,outline:'none'}}/>
+                </div>
+              )}
+              <div style={{fontSize:20,fontWeight:700,color:margeStats.marge>=50?'#059669':margeStats.marge>=30?'#D97706':'#DC2626',marginBottom:4}}>
+                {margeStats.nbDevis>0?margeStats.marge+'%':'\u2014'}
               </div>
-            ))}
+              <div style={{fontSize:11,color:'#6B7280'}}>
+                {margeStats.nbDevis>0?`Sur ${margeStats.nbDevis} devis signé${margeStats.nbDevis>1?'s':''}\u00A0(${margeStats.caTotal.toLocaleString('fr-FR')}\u00A0€ HT)`:'Aucun devis signé'}
+              </div>
+            </div>
           </div>
-
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:20}}>
             <div style={{background:'#fff',borderRadius:12,border:`1px solid ${BD}`,overflow:'hidden'}}>
               <div style={{padding:'14px 16px',borderBottom:`1px solid ${BD}`,display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap' as const,gap:6}}>
