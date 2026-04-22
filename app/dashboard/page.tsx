@@ -86,6 +86,7 @@ export default function DashboardPage() {
   const[devisPeriode,setDevisPeriode]=useState('mois')
   const[facturesPeriode,setFacturesPeriode]=useState('mois')
   const[showCaMoisDD,setShowCaMoisDD]=useState(false)
+  const[openKpiDD,setOpenKpiDD]=useState<string|null>(null)
 
   const[showCaAnneeDD,setShowCaAnneeDD]=useState(false)
   const[showDevisDD,setShowDevisDD]=useState(false)
