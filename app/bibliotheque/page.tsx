@@ -497,6 +497,11 @@ function PanelForm({panel,panelType,form,setForm,categories,closePanel,saveForm,
 
 export default function BibliothequePage() {
   const[tab,setTab]=useState<Tab>('ouvrages')
+  const[margePeriode,setMargePeriode]=useState<string>(()=>{try{return localStorage.getItem('batizo_marge_periode')||'annee'}catch(e){return 'annee'}})
+  const[margeDebut,setMargeDebut]=useState('')
+  const[margeFin,setMargeFin]=useState('')
+  const[showMargePeriode,setShowMargePeriode]=useState(false)
+  const[showMargeCustom,setShowMargeCustom]=useState(false)
   const[search,setSearch]=useState('')
 
   const[catFiltre,setCatFiltre]=useState('')
@@ -685,6 +690,63 @@ export default function BibliothequePage() {
   const[tri,setTri]=useState<'nom'|'marge'|'prix'|'debourse'>('nom')
   const[triDir,setTriDir]=useState<'asc'|'desc'>('asc')
   const toggleTri=(t:typeof tri)=>{if(tri===t)setTriDir(d=>d==='asc'?'desc':'asc');else{setTri(t);setTriDir('asc')}}
+  // Calcul marge pondérée depuis devis signés/facturés
+  const margeStats = useMemo(()=>{
+    try {
+      const devisRaw = localStorage.getItem('batizo_devis')
+      if (!devisRaw) return {marge:0, nbDevis:0, caTotal:0}
+      const devisList: any[] = JSON.parse(devisRaw)
+      
+      const now = new Date()
+      const getRange = (): [Date, Date] => {
+        if (margePeriode === 'mois') {
+          return [new Date(now.getFullYear(), now.getMonth(), 1), new Date(now.getFullYear(), now.getMonth()+1, 0)]
+        } else if (margePeriode === 'trimestre') {
+          const q = Math.floor(now.getMonth()/3)
+          return [new Date(now.getFullYear(), q*3, 1), new Date(now.getFullYear(), q*3+3, 0)]
+        } else if (margePeriode === 'annee') {
+          return [new Date(now.getFullYear(), 0, 1), new Date(now.getFullYear(), 11, 31)]
+        } else if (margePeriode === '12mois') {
+          const d = new Date(now); d.setFullYear(d.getFullYear()-1)
+          return [d, now]
+        } else if (margePeriode === 'custom' && margeDebut && margeFin) {
+          return [new Date(margeDebut), new Date(margeFin)]
+        }
+        return [new Date(now.getFullYear(), 0, 1), new Date(now.getFullYear(), 11, 31)]
+      }
+      const [start, end] = getRange()
+      
+      const signedDevis = devisList.filter((d: any) => {
+        const statut = d.statut || ''
+        if (!['signe','facture','finalise'].includes(statut)) return false
+        const dateStr = d.dateDevis || d.date || ''
+        if (!dateStr) return true
+        const date = new Date(dateStr)
+        return date >= start && date <= end
+      })
+      
+      let caTotal = 0, margeTotal = 0
+      signedDevis.forEach((devis: any) => {
+        const lignes: any[] = devis.lignes || []
+        lignes.forEach((ligne: any) => {
+          if (!['materiau','mo','ouvrage'].includes(ligne.type)) return
+          const ca = (ligne.qte||0) * (ligne.pu||0)
+          const debourse = (ligne.qte||0) * (ligne.debourse||ligne.pu*0.5||0)
+          caTotal += ca
+          margeTotal += ca - debourse
+        })
+      })
+      
+      const marge = caTotal > 0 ? Math.round((margeTotal/caTotal)*100) : 0
+      return { marge, nbDevis: signedDevis.length, caTotal: Math.round(caTotal) }
+    } catch(e) { return {marge:0, nbDevis:0, caTotal:0} }
+  }, [ouvrages, materiaux, mo, margePeriode, margeDebut, margeFin])
+
+  // Persister période
+  useEffect(()=>{
+    try{localStorage.setItem('batizo_marge_periode', margePeriode)}catch(e){}
+  }, [margePeriode])
+
   // Calcul dynamique depuis les devis localStorage
   const statsUtilisation = useMemo(()=>{
     try {
@@ -966,16 +1028,55 @@ export default function BibliothequePage() {
           {/* Stats */}
           <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}}>
             {[
-              {label:'Ouvrages',val:ouvrages.length,color:'#111'},
-              {label:'Matériaux',val:materiaux.length,color:'#111'},
-              {label:'Main d\'oeuvre',val:mo.length,color:'#111'},
-              {label:'Marge moyenne',val:margeMoyenne([...ouvrages,...materiaux,...mo])+'%',color:G},
+              {label:'Ouvrages',val:String(ouvrages.length),color:'#111'},
+              {label:'Matériaux',val:String(materiaux.length),color:'#111'},
+              {label:"Main d'oeuvre",val:String(mo.length),color:'#111'},
             ].map(s=>(
               <div key={s.label} style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px'}}>
                 <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:4}}>{s.label}</div>
                 <div style={{fontSize:24,fontWeight:700,color:s.color}}>{s.val}</div>
               </div>
             ))}
+            {/* Carte Marge moyenne */}
+            <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px',position:'relative' as const}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+                <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.04em'}}>Marge moyenne</div>
+                <div style={{position:'relative' as const}}>
+                  <button onClick={()=>setShowMargePeriode(!showMargePeriode)}
+                    style={{fontSize:10,color:'#555',background:'#f3f4f6',border:'none',borderRadius:4,padding:'2px 6px',cursor:'pointer',display:'flex',alignItems:'center',gap:3}}>
+                    {margePeriode==='mois'?'Ce mois':margePeriode==='trimestre'?'Ce trimestre':margePeriode==='annee'?'Cette année':margePeriode==='12mois'?'12 mois':'Perso.'} ▾
+                  </button>
+                  {showMargePeriode&&(
+                    <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:100,minWidth:160,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
+                      {[['mois','Ce mois-ci'],['trimestre','Ce trimestre'],['annee','Cette année'],['12mois','12 derniers mois'],['custom','Personnalisée']].map(([v,l])=>(
+                        <div key={v} onClick={()=>{setMargePeriode(v);setShowMargePeriode(false);if(v==='custom')setShowMargeCustom(true)}}
+                          style={{padding:'8px 12px',fontSize:12,cursor:'pointer',background:margePeriode===v?'#f0fdf4':'',color:margePeriode===v?G:'#333'}}
+                          onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                          onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=margePeriode===v?'#f0fdf4':''}>
+                          {l}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {showMargeCustom&&margePeriode==='custom'&&(
+                <div style={{display:'flex',gap:4,marginBottom:6}}>
+                  <input type="date" value={margeDebut} onChange={e=>setMargeDebut(e.target.value)}
+                    style={{flex:1,padding:'4px 6px',border:`1px solid ${BD}`,borderRadius:5,fontSize:11,outline:'none'}}/>
+                  <input type="date" value={margeFin} onChange={e=>setMargeFin(e.target.value)}
+                    style={{flex:1,padding:'4px 6px',border:`1px solid ${BD}`,borderRadius:5,fontSize:11,outline:'none'}}/>
+                </div>
+              )}
+              <div style={{fontSize:24,fontWeight:700,color:margeStats.marge>=50?'#059669':margeStats.marge>=30?'#D97706':'#DC2626'}}>
+                {margeStats.nbDevis>0?margeStats.marge+'%':'—'}
+              </div>
+              <div style={{fontSize:11,color:'#6B7280',marginTop:3}}>
+                {margeStats.nbDevis>0
+                  ?<>Sur {margeStats.nbDevis} devis signé{margeStats.nbDevis>1?'s':''} ({margeStats.caTotal.toLocaleString('fr-FR')} € HT)</>
+                  :'Aucun devis signé sur cette période'}
+              </div>
+            </div>
           </div>
 
           {/* Onglets */}
