@@ -157,17 +157,16 @@ const RichEditor=({value,onChange,placeholder}:{value:string,onChange:(v:string)
 }
 
 
-function ActionMenu({itemId,onModifier,onDupliquer,onHistorique,onSupprimer,kebabMenu,setKebabMenu}:{
+function ActionMenu({itemId,onModifier,onDupliquer,onHistorique,onSupprimer,kebabMenu,setKebabMenu,kebabPos,setKebabPos}:{
   itemId:string,onModifier:()=>void,onDupliquer:()=>void,onHistorique:()=>void,onSupprimer:()=>void,
-  kebabMenu:string|null,setKebabMenu:(id:string|null)=>void
+  kebabMenu:string|null,setKebabMenu:(id:string|null)=>void,
+  kebabPos:{top:number,left:number},setKebabPos:(p:{top:number,left:number})=>void
 }){
   const btnRef=useRef<HTMLButtonElement>(null)
   const menuRef=useRef<HTMLDivElement>(null)
-  const[pos,setPos]=useState({top:0,left:0})
   const isOpen=kebabMenu===itemId
   const MENU_H=172
 
-  // Fermeture clic extérieur
   useEffect(()=>{
     if(!isOpen)return
     const handler=(e:MouseEvent)=>{
@@ -179,7 +178,6 @@ function ActionMenu({itemId,onModifier,onDupliquer,onHistorique,onSupprimer,keba
     return()=>document.removeEventListener('mousedown',handler)
   },[isOpen])
 
-  // Fermeture Escape + scroll
   useEffect(()=>{
     if(!isOpen)return
     const onKey=(e:KeyboardEvent)=>{if(e.key==='Escape')setKebabMenu(null)}
@@ -202,8 +200,8 @@ function ActionMenu({itemId,onModifier,onDupliquer,onHistorique,onSupprimer,keba
       const r=btnRef.current.getBoundingClientRect()
       const spaceBelow=window.innerHeight-r.bottom
       const top=spaceBelow<MENU_H?r.top-MENU_H:r.bottom
-      const left=r.right-180
-      setPos({top,left:Math.max(8,left)})
+      const left=Math.max(8,r.right-180)
+      setKebabPos({top,left})
     }
     setKebabMenu(itemId)
   }
@@ -217,7 +215,7 @@ function ActionMenu({itemId,onModifier,onDupliquer,onHistorique,onSupprimer,keba
         ⋮
       </button>
       {isOpen&&typeof window!=='undefined'&&createPortal(
-        <div ref={menuRef} style={{position:'fixed' as const,top:pos.top,left:pos.left,background:'#fff',border:'0.5px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.18)',zIndex:9999,minWidth:180,overflow:'hidden'}}>
+        <div ref={menuRef} style={{position:'fixed' as const,top:kebabPos.top,left:kebabPos.left,background:'#fff',border:'0.5px solid #e5e7eb',borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.18)',zIndex:9999,minWidth:180,overflow:'hidden'}}>
           {[
             {label:'Modifier',icon:'✏️',action:()=>{onModifier();setKebabMenu(null)}},
             {label:'Dupliquer',icon:'📋',action:()=>{onDupliquer();setKebabMenu(null)}},
@@ -410,6 +408,7 @@ export default function BibliothequePage() {
 
   const[showHistorique,setShowHistorique]=useState<{item:any,type:PanelType}|null>(null)
   const[kebabMenu,setKebabMenu]=useState<string|null>(null)
+  const[kebabPos,setKebabPos]=useState({top:0,left:0})
   const[showImport,setShowImport]=useState(false)
   const[showStats,setShowStats]=useState(false)
   const[deletedItems,setDeletedItems]=useState<{item:any,type:PanelType}[]>([])
@@ -555,7 +554,7 @@ export default function BibliothequePage() {
             onModifier={()=>openEdit(type,item)}
             onDupliquer={()=>dupliquer(type,item)}
             onHistorique={()=>setShowHistorique({item,type})}
-            onSupprimer={()=>setDeleteConfirm(item.id)}/>
+            onSupprimer={()=>setDeleteConfirm(item.id)} kebabPos={kebabPos} setKebabPos={setKebabPos}/>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:4,flexWrap:'wrap' as const}}>
           <div style={{fontSize:14,fontWeight:700,color:'#111',lineHeight:1.3}}>{item.nom}</div>
@@ -1053,7 +1052,7 @@ export default function BibliothequePage() {
                             onModifier={()=>openEdit('ouvrage',o)}
                             onDupliquer={()=>dupliquer('ouvrage',o)}
                             onHistorique={()=>setShowHistorique({item:o,type:'ouvrage'})}
-                            onSupprimer={()=>setDeleteConfirm(o.id)}/>
+                            onSupprimer={()=>setDeleteConfirm(o.id)} kebabPos={kebabPos} setKebabPos={setKebabPos}/>
                         </div></td>
                       </tr>
                     )})}</tbody>
@@ -1092,7 +1091,7 @@ export default function BibliothequePage() {
                             onModifier={()=>openEdit('materiau',mat)}
                             onDupliquer={()=>dupliquer('materiau',mat)}
                             onHistorique={()=>setShowHistorique({item:mat,type:'materiau'})}
-                            onSupprimer={()=>setDeleteConfirm(mat.id)}/>
+                            onSupprimer={()=>setDeleteConfirm(mat.id)} kebabPos={kebabPos} setKebabPos={setKebabPos}/>
                         </div></td>
                       </tr>
                     )})}</tbody>
@@ -1131,7 +1130,7 @@ export default function BibliothequePage() {
                             onModifier={()=>openEdit('mo',moItem)}
                             onDupliquer={()=>dupliquer('mo',moItem)}
                             onHistorique={()=>setShowHistorique({item:moItem,type:'mo'})}
-                            onSupprimer={()=>setDeleteConfirm(moItem.id)}/>
+                            onSupprimer={()=>setDeleteConfirm(moItem.id)} kebabPos={kebabPos} setKebabPos={setKebabPos}/>
                         </div></td>
                       </tr>
                     )})}</tbody>
