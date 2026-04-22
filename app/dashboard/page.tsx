@@ -40,7 +40,7 @@ export default function DashboardPage() {
     return localStorage.getItem('batizo_prenom')||''
   })
   const prenom = prenomLocal||''
-  const[margePeriode,setMargePeriode]=useState<string>(()=>{try{return localStorage.getItem('batizo_marge_periode')||'mois'}catch(e){return 'mois'}})
+  const[margePeriode,setMargePeriode]=useState<string>(()=>{try{return 'mois'}catch(e){return 'mois'}})
   const[margeDebut,setMargeDebut]=useState('')
   const[margeFin,setMargeFin]=useState('')
   const[showMargePeriode,setShowMargePeriode]=useState(false)
