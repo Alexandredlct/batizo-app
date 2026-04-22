@@ -1278,7 +1278,7 @@ export default function BibliothequePage() {
                         <span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:10,
                           background:(s as any).type==='ouvrage'?'#f0fdf4':(s as any).type==='materiau'?'#eff6ff':'#fffbeb',
                           color:(s as any).type==='ouvrage'?G:(s as any).type==='materiau'?'#2563eb':AM}}>
-                          {s.type==='ouvrage'?'Ouvrage':s.type==='materiau'?'Matériau':'MO'}
+                          {(s as any).type==='ouvrage'?'Ouvrage':(s as any).type==='materiau'?'Matériau':'MO'}
                         </span>
                       </td>
                       <td style={{padding:'10px 12px',fontSize:12,color:'#555'}}>{s.categorie}</td>
