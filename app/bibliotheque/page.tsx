@@ -685,16 +685,31 @@ export default function BibliothequePage() {
   const[tri,setTri]=useState<'nom'|'marge'|'prix'|'debourse'>('nom')
   const[triDir,setTriDir]=useState<'asc'|'desc'>('asc')
   const toggleTri=(t:typeof tri)=>{if(tri===t)setTriDir(d=>d==='asc'?'desc':'asc');else{setTri(t);setTriDir('asc')}}
-  const statsUtilisation = [
-    {nom:'Pose parquet complet 45m²',type:'ouvrage',categorie:'Parquet',utilisations:24,caGenere:12480,margeAvg:58},
-    {nom:'Installation tableau électrique',type:'ouvrage',categorie:'Électricité',utilisations:18,caGenere:15300,margeAvg:62},
-    {nom:'Parquet chêne massif 12mm',type:'materiau',categorie:'Parquet',utilisations:31,caGenere:9520,margeAvg:59},
-    {nom:'Électricien qualifié',type:'mo',categorie:'Électricité',utilisations:42,caGenere:8190,margeAvg:54},
-    {nom:'Peinture murale mate',type:'materiau',categorie:'Peinture',utilisations:28,caGenere:4620,margeAvg:82},
-    {nom:'Carrelage 60x60 grès cérame',type:'materiau',categorie:'Carrelage',utilisations:15,caGenere:7225,margeAvg:62},
-    {nom:'Plombier qualifié',type:'mo',categorie:'Plomberie',utilisations:19,caGenere:4760,margeAvg:46},
-    {nom:'Robinetterie mitigeur',type:'materiau',categorie:'Plomberie',utilisations:11,caGenere:3080,margeAvg:57},
-  ]
+  // Calcul dynamique depuis les devis localStorage
+  const statsUtilisation = useMemo(()=>{
+    try {
+      const devisRaw = localStorage.getItem('batizo_devis')
+      if (!devisRaw) return []
+      const devisList: any[] = JSON.parse(devisRaw)
+      const counts: Record<string, {nom:string, utilisations:number, caGenere:number}> = {}
+      
+      devisList.forEach((devis: any) => {
+        const lignes: any[] = devis.lignes || []
+        lignes.forEach((ligne: any) => {
+          // Ouvrage : compter l'ouvrage lui-même (pas ses composants)
+          if (['materiau','mo','ouvrage'].includes(ligne.type)) {
+            const nom = ligne.designation || ligne.nom || ''
+            if (!nom) return
+            const ht = (ligne.qte || 0) * (ligne.pu || 0)
+            if (!counts[nom]) counts[nom] = { nom, utilisations: 0, caGenere: 0 }
+            counts[nom].utilisations += 1
+            counts[nom].caGenere += ht
+          }
+        })
+      })
+      return Object.values(counts)
+    } catch(e) { return [] }
+  }, [ouvrages, materiaux, mo])
   const[importPreview,setImportPreview]=useState<any[]>([])
   const[importType,setImportType]=useState<Tab>('materiaux')
   const[importErrors,setImportErrors]=useState<string[]>([])
