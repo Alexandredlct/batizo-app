@@ -1292,7 +1292,7 @@ export default function BibliothequePage() {
                       </td>
                       <td style={{padding:'10px 12px',fontSize:12,fontWeight:600,color:'#111'}}>{s.caGenere.toLocaleString('fr-FR')} €</td>
                       <td style={{padding:'10px 12px'}}>
-                        <span style={{fontSize:12,fontWeight:700,color:margeColor(s.margeAvg)}}>{s.margeAvg}%</span>
+                        <span style={{fontSize:12,fontWeight:700,color:margeColor((s as any).margeAvg||(s as any).caGenere>0?50:0)}}>{ (s as any).margeAvg||"-"}%</span>
                       </td>
                     </tr>
                   ))}
