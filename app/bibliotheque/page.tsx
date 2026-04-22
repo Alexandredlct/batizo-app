@@ -957,13 +957,13 @@ export default function BibliothequePage() {
             </div>
 <div style={{display:'flex',alignItems:'center',gap:8,marginLeft:'auto'}}>
 <select value={catFiltre} onChange={e=>setCatFiltre(e.target.value)}
-              style={{padding:'9px 18px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111',width:'auto',height:40,flexShrink:0}}>
+              style={{padding:'9px 36px 9px 12px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',color:'#111',width:'auto',height:40,flexShrink:0,appearance:'none' as const,WebkitAppearance:'none' as const,backgroundImage:decodeURIComponent('url(%22data:image/svg+xml%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M3 4.5L6 7.5L9 4.5%27 stroke=%27%236B7280%27 stroke-width=%271.5%27 fill=%27none%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E%22)'),backgroundRepeat:'no-repeat',backgroundPosition:'right 12px center',backgroundSize:'12px',backgroundColor:'#fff'}}>
               <option value="">Toutes catégories</option>
               {categories.map(cat=><option key={cat.nom}>{cat.nom}</option>)}
             </select>
             {/* Tri */}
             <select value={tri} onChange={e=>{setTri(e.target.value as typeof tri);setTriDir('asc')}}
-              style={{padding:'9px 18px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111',width:'auto',height:40,flexShrink:0}}>
+              style={{padding:'9px 36px 9px 12px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',color:'#111',width:'auto',height:40,flexShrink:0,appearance:'none' as const,WebkitAppearance:'none' as const,backgroundImage:decodeURIComponent('url(%22data:image/svg+xml%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M3 4.5L6 7.5L9 4.5%27 stroke=%27%236B7280%27 stroke-width=%271.5%27 fill=%27none%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E%22)'),backgroundRepeat:'no-repeat',backgroundPosition:'right 12px center',backgroundSize:'12px',backgroundColor:'#fff'}}>
               <option value="nom">Trier : Nom</option>
               <option value="marge">Trier : Marge</option>
               <option value="prix">Trier : Prix facturé</option>
