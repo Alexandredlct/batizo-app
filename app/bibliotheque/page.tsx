@@ -472,10 +472,6 @@ export default function BibliothequePage() {
   const[tab,setTab]=useState<Tab>('ouvrages')
   const[search,setSearch]=useState('')
 
-  // Persister dans localStorage à chaque changement
-  useEffect(()=>{
-    try{localStorage.setItem('batizo_biblio_v2',JSON.stringify({materiaux,mo,ouvrages}))}catch(e){}
-  },[materiaux,mo,ouvrages])
   const[catFiltre,setCatFiltre]=useState('')
   const[materiaux,setMateriaux]=useState<Materiau[]>(()=>{
     try{const s=localStorage.getItem('batizo_biblio_v2');if(s){const d=JSON.parse(s);if(d.materiaux)return d.materiaux}}catch(e){}
@@ -489,6 +485,11 @@ export default function BibliothequePage() {
     try{const s=localStorage.getItem('batizo_biblio_v2');if(s){const d=JSON.parse(s);if(d.ouvrages)return d.ouvrages}}catch(e){}
     return initOuvrages
   })
+
+  // Persister dans localStorage à chaque changement
+  useEffect(()=>{
+    try{localStorage.setItem('batizo_biblio_v2',JSON.stringify({materiaux,mo,ouvrages}))}catch(e){}
+  },[materiaux,mo,ouvrages])
   const[panel,setPanel]=useState<PanelMode>(null)
   const[panelType,setPanelType]=useState<PanelType>('ouvrage')
   const[editId,setEditId]=useState<string|null>(null)
