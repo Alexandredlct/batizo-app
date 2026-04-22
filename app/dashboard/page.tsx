@@ -165,10 +165,10 @@ export default function DashboardPage() {
 
           <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:12,marginBottom:20}}>
             {[
-              {label:'CA ce mois',value:'24 850 € HT',change:'↑ +12% vs mars',cc:G},
-              {label:'CA cette année',value:'87 400 € HT',change:'↑ +18% vs 2025',cc:G},
-              {label:'Devis en attente',value:'8',change:'42 300 € HT en jeu',cc:AM,vc:AM},
-              {label:'Factures impayées',value:'3 400 € HT',change:'2 en retard',cc:RD,vc:RD},
+              {label:'CA ce mois',value:dashboardStats.caMoisStr,change:dashboardStats.caMoisChange,cc:G},
+              {label:'CA cette année',value:dashboardStats.caAnneeStr,change:dashboardStats.caAnneeChange,cc:G},
+              {label:'Devis en attente',value:String(dashboardStats.devisAttente),change:dashboardStats.caAttenteStr,cc:AM,vc:AM},
+              {label:'Factures impayées',value:dashboardStats.facturesStr,change:'À jour',cc:G,vc:'#111'},
               {label:'__MARGE__',value:'',change:'',cc:G},
             ].map(m => m.label==='__MARGE__' ? (
               <div key="marge" style={{background:'#fff',borderRadius:12,padding:16,border:`1px solid ${BD}`,position:'relative' as const}}>
