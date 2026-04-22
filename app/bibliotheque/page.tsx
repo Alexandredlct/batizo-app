@@ -75,7 +75,34 @@ const initOuvrages:Ouvrage[] = [
 
 const fmt = (n:number) => n.toLocaleString('fr-FR',{minimumFractionDigits:0,maximumFractionDigits:2}) + ' €'
 const marge = (d:number, p:number) => p>0 ? Math.round((p-d)/p*100) : 0
-const margeColor = (m:number) => m>=60?G:m>=40?AM:RD
+
+const MARGIN_THRESHOLDS = {
+  mo:       { red: 0.20, green: 0.35 },
+  materiau: { red: 0.25, green: 0.45 },
+  ouvrage:  { red: 0.30, green: 0.50 },
+}
+
+const margeColor = (m:number, type:string='ouvrage') => {
+  const t = MARGIN_THRESHOLDS[type as keyof typeof MARGIN_THRESHOLDS] || MARGIN_THRESHOLDS.ouvrage
+  const pct = m / 100
+  if (pct >= t.green) return '#059669'
+  if (pct >= t.red) return '#D97706'
+  return '#DC2626'
+}
+
+const margeBg = (m:number, type:string='ouvrage') => {
+  const t = MARGIN_THRESHOLDS[type as keyof typeof MARGIN_THRESHOLDS] || MARGIN_THRESHOLDS.ouvrage
+  const pct = m / 100
+  if (pct >= t.green) return '#D1FAE5'
+  if (pct >= t.red) return '#FEF3C7'
+  return '#FEE2E2'
+}
+
+const margeBarWidth = (m:number, type:string='ouvrage') => {
+  const t = MARGIN_THRESHOLDS[type as keyof typeof MARGIN_THRESHOLDS] || MARGIN_THRESHOLDS.ouvrage
+  if (m <= 0) return 0
+  return Math.min((m / 100) / t.green * 100, 100)
+}
 
 type Tab = 'ouvrages'|'materiaux'|'mo'
 type PanelMode = 'add'|'edit'|null
@@ -458,7 +485,7 @@ function PanelForm({panel,panelType,form,setForm,categories,closePanel,saveForm,
             <span style={{fontSize:13,color:'#555'}}>Marge calculée</span>
             <div style={{display:'flex',alignItems:'center',gap:10}}>
               <span style={{fontSize:14,fontWeight:700,color:margeColor(margeVal)}}>{fmt((form.prixFacture||0)-(panelType==='ouvrage'&&(form.lignes||[]).length>0?debourseAuto:(form.debourse||0)))}</span>
-              <span style={{fontSize:12,fontWeight:700,padding:'3px 10px',borderRadius:20,background:`${margeColor(margeVal)}18`,color:margeColor(margeVal)}}>{margeVal}%</span>
+              <span style={{fontSize:12,fontWeight:700,padding:'3px 10px',borderRadius:20,background:margeBg(margeVal,panelType||'ouvrage'),color:margeColor(margeVal,panelType||'ouvrage')}}>{margeVal}%</span>
             </div>
           </div>
         </div>
@@ -820,10 +847,10 @@ export default function BibliothequePage() {
         <div style={{marginTop:4}}>
           <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
             <span style={{fontSize:11,color:'#888'}}>Marge</span>
-            <span style={{fontSize:12,fontWeight:700,color:margeColor(m)}}>{m}%</span>
+            <span style={{fontSize:12,fontWeight:700,color:margeColor(m,type)}}>{m}%</span>
           </div>
           <div style={{height:4,background:'#f3f4f6',borderRadius:4,overflow:'hidden'}}>
-            <div style={{height:'100%',width:`${Math.min(m,100)}%`,background:margeColor(m),borderRadius:4,transition:'width 0.3s'}}></div>
+            <div style={{height:'100%',width:`${margeBarWidth(m,type)}%`,background:margeColor(m,type),borderRadius:4,transition:'width 0.3s'}}></div>
           </div>
         </div>
         {/* Badge non utilisé — inline sous le titre */}
@@ -1015,7 +1042,7 @@ export default function BibliothequePage() {
                         <td style={{padding:'10px 16px',fontSize:12,color:'#555'}}>{o.unite}</td>
                         <td style={{padding:'10px 16px',fontSize:13,color:'#555'}}>{fmt(o.debourse)}</td>
                         <td style={{padding:'10px 16px',fontSize:13,fontWeight:700,color:'#111'}}>{fmt(o.prixFacture)}</td>
-                        <td style={{padding:'10px 16px'}}><span style={{fontSize:12,fontWeight:700,color:margeColor(m)}}>{m}%</span></td>
+                        <td style={{padding:'10px 16px'}}><span style={{fontSize:12,fontWeight:700,color:margeColor(m,'ouvrage')}}>{m}%</span></td>
                         <td style={{padding:'10px 16px'}}><div style={{display:'flex',gap:4}}>
                           <ActionMenu itemId={o.id} kebabMenu={kebabMenu} setKebabMenu={setKebabMenu}
                             onModifier={()=>openEdit('ouvrage',o)}
@@ -1054,7 +1081,7 @@ export default function BibliothequePage() {
                         <td style={{padding:'10px 16px',fontSize:12,color:'#555'}}>{mat.unite}</td>
                         <td style={{padding:'10px 16px',fontSize:13,color:'#555'}}>{fmt(mat.debourse)}</td>
                         <td style={{padding:'10px 16px',fontSize:13,fontWeight:700,color:'#111'}}>{fmt(mat.prixFacture)}</td>
-                        <td style={{padding:'10px 16px'}}><span style={{fontSize:12,fontWeight:700,color:margeColor(m)}}>{m}%</span></td>
+                        <td style={{padding:'10px 16px'}}><span style={{fontSize:12,fontWeight:700,color:margeColor(m,tab)}>{m}%</span></td>
                         <td style={{padding:'10px 16px'}}><div style={{display:'flex',gap:4}}>
                           <ActionMenu itemId={mat.id} kebabMenu={kebabMenu} setKebabMenu={setKebabMenu}
                             onModifier={()=>openEdit('materiau',mat)}
@@ -1093,7 +1120,7 @@ export default function BibliothequePage() {
                         <td style={{padding:'10px 16px',fontSize:12,color:'#555'}}>{moItem.unite}</td>
                         <td style={{padding:'10px 16px',fontSize:13,color:'#555'}}>{fmt(moItem.debourse)}</td>
                         <td style={{padding:'10px 16px',fontSize:13,fontWeight:700,color:'#111'}}>{fmt(moItem.prixFacture)}</td>
-                        <td style={{padding:'10px 16px'}}><span style={{fontSize:12,fontWeight:700,color:margeColor(m)}}>{m}%</span></td>
+                        <td style={{padding:'10px 16px'}}><span style={{fontSize:12,fontWeight:700,color:margeColor(m,tab)}>{m}%</span></td>
                         <td style={{padding:'10px 16px'}}><div style={{display:'flex',gap:4}}>
                           <ActionMenu itemId={moItem.id} kebabMenu={kebabMenu} setKebabMenu={setKebabMenu}
                             onModifier={()=>openEdit('mo',moItem)}
@@ -1336,7 +1363,7 @@ export default function BibliothequePage() {
                           <td style={{padding:'8px 10px',fontSize:12,color:'#555'}}>{item.debourse} €</td>
                           <td style={{padding:'8px 10px',fontSize:12,fontWeight:600,color:'#111'}}>{item.prixFacture} €</td>
                           <td style={{padding:'8px 10px'}}>
-                            <span style={{fontSize:11,fontWeight:700,color:margeColor(m)}}>{m}%</span>
+                            <span style={{fontSize:11,fontWeight:700,color:margeColor(m,tab)}>{m}%</span>
                           </td>
                         </tr>
                       )
