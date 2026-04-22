@@ -33,7 +33,7 @@ export default function DashboardPage() {
       if (!data.user) window.location.href = '/login'
       else setUser(data.user)
     })
-  }, [])
+  }, [caMoisPeriode,caAnneePeriode,devisPeriode])
 
   const[prenomLocal,setPrenomLocal]=useState<string>(()=>{
     if(typeof window==='undefined') return ''
@@ -45,6 +45,15 @@ export default function DashboardPage() {
   const[margeFin,setMargeFin]=useState('')
   const[showMargePeriode,setShowMargePeriode]=useState(false)
   const[showMargeCustom,setShowMargeCustom]=useState(false)
+  const[caMoisPeriode,setCaMoisPeriode]=useState('mois')
+  const[caAnneePeriode,setCaAnneePeriode]=useState('annee')
+  const[devisPeriode,setDevisPeriode]=useState('mois')
+  const[facturesPeriode,setFacturesPeriode]=useState('mois')
+  const[showCaMoisDD,setShowCaMoisDD]=useState(false)
+  const[showCaAnneeDD,setShowCaAnneeDD]=useState(false)
+  const[showDevisDD,setShowDevisDD]=useState(false)
+  const[showFacturesDD,setShowFacturesDD]=useState(false)
+
   const margeStats = React.useMemo(()=>{
     try {
       const devisRaw = localStorage.getItem('batizo_devis')
@@ -227,11 +236,45 @@ export default function DashboardPage() {
           </div>
 
           <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:12,marginBottom:20}}>
+            {/* CA ce mois */}
+            {(()=>{
+              const pLabel=(p:string)=>p==='mois'?'Ce mois-ci':p==='trimestre'?'Ce trimestre':p==='annee'?'Cette année':p==='12mois'?'12 mois':'Perso.'
+              const KpiCard=({label,value,change,color,period,setPeriod,showDD,setShowDD,valueColor}:{label:string,value:string,change:string,color:string,period:string,setPeriod:(v:string)=>void,showDD:boolean,setShowDD:(v:boolean)=>void,valueColor?:string})=>(
+                <div style={{background:'#fff',borderRadius:12,padding:16,border:`1px solid ${BD}`,position:'relative' as const}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                    <div style={{fontSize:12,color:'#444',fontWeight:500}}>{label}</div>
+                    <div style={{position:'relative' as const}}>
+                      <button onClick={()=>setShowDD(!showDD)}
+                        style={{fontSize:10,color:'#555',background:'#f3f4f6',border:'none',borderRadius:4,padding:'2px 6px',cursor:'pointer'}}>
+                        {pLabel(period)} ▾
+                      </button>
+                      {showDD&&(
+                        <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:200,minWidth:150,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
+                          {[['mois','Ce mois-ci'],['trimestre','Ce trimestre'],['annee','Cette année'],['12mois','12 derniers mois']].map(([v,l])=>(
+                            <div key={v} onClick={()=>{setPeriod(v);setShowDD(false)}}
+                              style={{padding:'8px 12px',fontSize:12,cursor:'pointer',background:period===v?'#f0fdf4':'',color:period===v?G:'#333'}}
+                              onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                              onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=period===v?'#f0fdf4':''}>
+                              {l}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div style={{fontSize:20,fontWeight:700,color:valueColor||'#111',marginBottom:4}}>{value}</div>
+                  <div style={{fontSize:12,color:color,fontWeight:500}}>{change}</div>
+                </div>
+              )
+              return(<>
+                <KpiCard label="CA ce mois" value={dashboardStats.caMoisStr} change={dashboardStats.caMoisChange} color={G} period={caMoisPeriode} setPeriod={setCaMoisPeriode} showDD={showCaMoisDD} setShowDD={setShowCaMoisDD}/>
+                <KpiCard label="CA cette année" value={dashboardStats.caAnneeStr} change={dashboardStats.caAnneeChange} color={G} period={caAnneePeriode} setPeriod={setCaAnneePeriode} showDD={showCaAnneeDD} setShowDD={setShowCaAnneeDD}/>
+                <KpiCard label="Devis en attente" value={String(dashboardStats.devisAttente)} change={dashboardStats.caAttenteStr} color={AM} valueColor={AM} period={devisPeriode} setPeriod={setDevisPeriode} showDD={showDevisDD} setShowDD={setShowDevisDD}/>
+                <KpiCard label="Factures impayées" value={dashboardStats.facturesStr} change="À jour" color={G} period={facturesPeriode} setPeriod={setFacturesPeriode} showDD={showFacturesDD} setShowDD={setShowFacturesDD}/>
+              </>)
+            })()}
+            {/* Marge */}
             {[
-              {label:'CA ce mois',value:dashboardStats.caMoisStr,change:dashboardStats.caMoisChange,cc:G},
-              {label:'CA cette année',value:dashboardStats.caAnneeStr,change:dashboardStats.caAnneeChange,cc:G},
-              {label:'Devis en attente',value:String(dashboardStats.devisAttente),change:dashboardStats.caAttenteStr,cc:AM,vc:AM},
-              {label:'Factures impayées',value:dashboardStats.facturesStr,change:'À jour',cc:G,vc:'#111'},
               {label:'__MARGE__',value:'',change:'',cc:G},
             ].map(m => m.label==='__MARGE__' ? (
               <div key="marge" style={{background:'#fff',borderRadius:12,padding:16,border:`1px solid ${BD}`,position:'relative' as const}}>
