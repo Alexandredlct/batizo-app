@@ -513,7 +513,7 @@ export default function ClientsPage(){
 
         <div style={{flex:1,overflowY:'auto',padding:24}}>
           {/* Stats */}
-          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}} onClick={()=>setKpiDD(null)}>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}}>
             <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px'}}>
               <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:4}}>Total clients</div>
               <div style={{fontSize:22,fontWeight:700,color:'#111'}}>{clients.length}</div>
