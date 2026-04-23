@@ -133,6 +133,39 @@ function FicheInfos({client,BD,G}:{client:any,BD:string,G:string}){
   )
 }
 
+function KpiWithPeriod({id,label,kpiStats,kpiPeriode,setKpiPeriode,kpiDD,setKpiDD,BD,G}:{id:string,label:string,kpiStats:any,kpiPeriode:any,setKpiPeriode:any,kpiDD:string|null,setKpiDD:(v:string|null)=>void,BD:string,G:string}){
+  const stat=kpiStats[id]||{val:'—',change:'',changeColor:G}
+  const p=kpiPeriode[id]||'mois'
+  const pLabel=(v:string)=>v==='mois'?'Ce mois-ci':v==='mois_prec'?'Mois dernier':v==='trimestre'?'Ce trimestre':v==='annee'?'Cette année':'Personnalisé'
+  return(
+    <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px',position:'relative' as const}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+        <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.04em'}}>{label}</div>
+        <div style={{position:'relative' as const}}>
+          <button onClick={()=>setKpiDD(kpiDD===id?null:id)}
+            style={{fontSize:10,color:'#555',background:'#f3f4f6',border:'none',borderRadius:4,padding:'2px 6px',cursor:'pointer'}}>
+            {pLabel(p)} ▾
+          </button>
+          {kpiDD===id&&(
+            <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:200,minWidth:150,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
+              {[['mois','Ce mois-ci'],['mois_prec','Mois dernier'],['trimestre','Ce trimestre'],['annee','Cette année']].map(([v,l])=>(
+                <div key={v} onClick={()=>{setKpiPeriode(p=>({...p,[id]:v}));setKpiDD(null)}}
+                  style={{padding:'8px 12px',fontSize:12,cursor:'pointer',background:p===v?'#f0fdf4':'',color:p===v?G:'#333'}}
+                  onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                  onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=p===v?'#f0fdf4':''}>
+                  {l}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      <div style={{fontSize:22,fontWeight:700,color:'#111',marginBottom:3}}>{stat.val}</div>
+      {stat.change&&<div style={{fontSize:11,color:stat.changeColor,fontWeight:500}}>{stat.change}</div>}
+    </div>
+  )
+}
+
 export default function ClientsPage(){
   const[clients,setClients]=useState<Client[]>(initClients)
   const[filtre,setFiltre]=useState<'tous'|'particulier'|'professionnel'>('tous')
@@ -453,38 +486,7 @@ export default function ClientsPage(){
     }catch(e){return{}}
   },[clients,kpiPeriode])
 
-  const KpiWithPeriod=({id,label}:{id:string,label:string})=>{
-    const stat=kpiStats[id]||{val:'—',change:'',changeColor:G}
-    const p=kpiPeriode[id]||'mois'
-    const pLabel=(v:string)=>v==='mois'?'Ce mois-ci':v==='mois_prec'?'Mois dernier':v==='trimestre'?'Ce trimestre':v==='annee'?'Cette année':'Personnalisé'
-    return(
-      <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px',position:'relative' as const}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
-          <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.04em'}}>{label}</div>
-          <div style={{position:'relative' as const}}>
-            <button onClick={()=>setKpiDD(kpiDD===id?null:id)}
-              style={{fontSize:10,color:'#555',background:'#f3f4f6',border:'none',borderRadius:4,padding:'2px 6px',cursor:'pointer'}}>
-              {pLabel(p)} ▾
-            </button>
-            {kpiDD===id&&(
-              <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:200,minWidth:150,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
-                {[['mois','Ce mois-ci'],['mois_prec','Mois dernier'],['trimestre','Ce trimestre'],['annee','Cette année']].map(([v,l])=>(
-                  <div key={v} onClick={()=>{setKpiPeriode(p=>({...p,[id]:v}));setKpiDD(null)}}
-                    style={{padding:'8px 12px',fontSize:12,cursor:'pointer',background:p===v?'#f0fdf4':'',color:p===v?G:'#333'}}
-                    onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
-                    onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=p===v?'#f0fdf4':''}>
-                    {l}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-        <div style={{fontSize:22,fontWeight:700,color:'#111',marginBottom:3}}>{stat.val}</div>
-        {stat.change&&<div style={{fontSize:11,color:stat.changeColor,fontWeight:500}}>{stat.change}</div>}
-      </div>
-    )
-  }
+
 
   return(<>
     <div style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}} onClick={()=>setEnChargeMenu(null)}>
@@ -516,9 +518,9 @@ export default function ClientsPage(){
               <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:4}}>Total clients</div>
               <div style={{fontSize:22,fontWeight:700,color:'#111'}}>{clients.length}</div>
             </div>
-            <KpiWithPeriod id="nouveaux" label="Nouveaux clients"/>
-            <KpiWithPeriod id="panier" label="Panier moyen HT"/>
-            <KpiWithPeriod id="ca" label="CA HT"/>
+            <KpiWithPeriod id="nouveaux" label="Nouveaux clients" kpiStats={kpiStats} kpiPeriode={kpiPeriode} setKpiPeriode={setKpiPeriode} kpiDD={kpiDD} setKpiDD={setKpiDD} BD={BD} G={G}/>
+            <KpiWithPeriod id="panier" label="Panier moyen HT" kpiStats={kpiStats} kpiPeriode={kpiPeriode} setKpiPeriode={setKpiPeriode} kpiDD={kpiDD} setKpiDD={setKpiDD} BD={BD} G={G}/>
+            <KpiWithPeriod id="ca" label="CA HT" kpiStats={kpiStats} kpiPeriode={kpiPeriode} setKpiPeriode={setKpiPeriode} kpiDD={kpiDD} setKpiDD={setKpiDD} BD={BD} G={G}/>
           </div>
 
           {/* Onglets pilules */}
