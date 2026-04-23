@@ -471,9 +471,32 @@ export default function ClientsPage(){
                     {/* 1. Client */}
                     <td style={{padding:'11px 14px'}}>
                       <div style={{fontSize:13,fontWeight:600,color:'#111'}}>
-                        {client.civilite?client.civilite+' ':''}{client.prenom&&(client as any).nomFamille?client.prenom+' '+(client as any).nomFamille:client.nom}
+                        {(()=>{
+  const isPro=client.type==='professionnel'
+  const prenom=(client as any).prenom||''
+  const nomF=(client as any).nomFamille||''
+  const civ=(client as any).civilite||''
+  if(isPro){
+    return client.raisonSociale||client.nom
+  }
+  if(prenom&&nomF) return prenom+' '+nomF
+  if(!prenom&&nomF) return civ?(civ+' '+nomF):nomF
+  if(prenom&&!nomF) return civ?(civ+' '+prenom):prenom
+  return client.nom
+})()}
                       </div>
-                      {client.raisonSociale&&<div style={{fontSize:11,color:'#888'}}>{client.raisonSociale}</div>}
+                      {(()=>{
+  const isPro=client.type==='professionnel'
+  const prenom=(client as any).prenom||''
+  const nomF=(client as any).nomFamille||''
+  const civ=(client as any).civilite||''
+  if(!isPro) return null
+  let contact=''
+  if(prenom&&nomF) contact=prenom+' '+nomF
+  else if(prenom) contact=civ?(civ+' '+prenom):prenom
+  else if(nomF) contact=civ?(civ+' '+nomF):nomF
+  return contact?<div style={{fontSize:11,color:'#888',marginTop:1}}>{contact}</div>:null
+})()}
 
                     </td>
 
