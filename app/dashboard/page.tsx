@@ -2,6 +2,7 @@
 import NouveauDevisModal from '../components/NouveauDevisModal'
 import FicheClientPanel from '../components/FicheClientPanel'
 import NotifBell from '../components/NotifBell'
+import NouveauClientDrawer from '../components/NouveauClientDrawer'
 import { getClients } from '../lib/clientsStore'
 import SearchBar from '../components/SearchBar'
 import Sidebar from '../components/Sidebar'
@@ -87,6 +88,7 @@ export default function DashboardPage() {
   const[facturesPeriode,setFacturesPeriode]=useState('mois')
   const[showCaMoisDD,setShowCaMoisDD]=useState(false)
   const[openKpiDD,setOpenKpiDD]=useState<string|null>(null)
+  const[showNouveauClient,setShowNouveauClient]=useState(false)
 
   const[showCaAnneeDD,setShowCaAnneeDD]=useState(false)
   const[showDevisDD,setShowDevisDD]=useState(false)
@@ -258,12 +260,10 @@ export default function DashboardPage() {
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
         <div style={{height:60,background:'#fff',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 24px',flexShrink:0}}>
           <div style={{fontSize:16,fontWeight:700,color:'#111',flexShrink:0}}>Tableau de bord</div><SearchBar/>
-          <div style={{display:'flex',gap:10}}>
-            <button style={{padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer'}}>+ Nouveau client</button>
-            <div style={{display:'flex',alignItems:'center',gap:8}}>
-              <NotifBell/>
-              <button onClick={()=>setShowNouveauDevis(true)} style={{padding:'8px 16px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>+ Nouveau devis</button>
-            </div>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <button onClick={()=>setShowNouveauClient(true)} style={{padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer'}}>+ Nouveau client</button>
+            <button onClick={()=>setShowNouveauDevis(true)} style={{padding:'8px 16px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>+ Nouveau devis</button>
+            <div style={{marginLeft:20}}><NotifBell/></div>
           </div>
         </div>
 
