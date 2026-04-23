@@ -391,9 +391,8 @@ export default function ClientsPage(){
                     {label:'Ville',key:''},
                     {label:'Devis',key:'nbDevis'},
                     {label:'CA total HT',key:'caTotal'},
-                    {label:'Dernière activité',key:'derniereActivite'},
                     {label:'En charge',key:''},
-                    {label:'',key:''},
+                    {label:'Dernière activité',key:'derniereActivite'},
                   ].map(({label,key})=>(
                     <th key={label} onClick={()=>key&&toggleTri(key as typeof tri)}
                       style={{padding:'10px 14px',textAlign:'left' as const,fontSize:12,color:tri===key&&key?G:'#888',fontWeight:600,borderBottom:`1px solid ${BD}`,cursor:key?'pointer':'default',userSelect:'none' as const,whiteSpace:'nowrap' as const}}>
@@ -404,7 +403,7 @@ export default function ClientsPage(){
               </thead>
               <tbody>
                 {filtered.length===0?(
-                  <tr><td colSpan={10} style={{padding:'3rem',textAlign:'center' as const,color:'#888',fontSize:13}}>Aucun client{search?' pour cette recherche':''}</td></tr>
+                  <tr><td colSpan={7} style={{padding:'3rem',textAlign:'center' as const,color:'#888',fontSize:13}}>Aucun client{search?' pour cette recherche':''}</td></tr>
                 ):sorted(filtered).map(client=>(
                   <tr key={client.id} style={{borderBottom:`1px solid ${BD}`,cursor:'pointer'}}
                     onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
@@ -460,9 +459,6 @@ export default function ClientsPage(){
                     {/* 8. CA total HT */}
                     <td style={{padding:'11px 14px',fontSize:13,fontWeight:600,color:'#111'}}>{fmt(client.caTotal)}</td>
 
-                    {/* 9. Dernière activité */}
-                    <td style={{padding:'11px 14px',fontSize:12,color:'#888',whiteSpace:'nowrap' as const}}>{client.derniereActivite}</td>
-
                     {/* 10. En charge */}
                     <td style={{padding:'11px 14px',overflow:'visible'}} onClick={e=>e.stopPropagation()}>
                       <div style={{position:'relative'}}>
@@ -502,24 +498,8 @@ export default function ClientsPage(){
                       </div>
                     </td>
 
-                    {/* 11. Communications */}
-                    <td style={{padding:'11px 14px'}}>
-                      {(historiqueCommunications[client.id]||[]).length>0?(
-                        <span style={{fontSize:11,color:'#2563eb',fontWeight:600}}>{(historiqueCommunications[client.id]||[]).length} email{(historiqueCommunications[client.id]||[]).length>1?'s':''}</span>
-                      ):<span style={{fontSize:11,color:'#888'}}>—</span>}
-                    </td>
-
-                    {/* 12. Actions */}
-                    <td style={{padding:'11px 14px'}} onClick={e=>e.stopPropagation()}>
-                      <div style={{display:'flex',gap:4}}>
-                        <button onClick={()=>openEdit(client)} style={{background:'none',border:'none',cursor:'pointer',fontSize:14,padding:3,color:'#aaa'}}
-                          onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=G}
-                          onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>✏️</button>
-                        <button onClick={()=>setDeleteConfirm(client.id)} style={{background:'none',border:'none',cursor:'pointer',fontSize:14,padding:3,color:'#aaa'}}
-                          onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.color=RD}
-                          onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.color='#aaa'}>🗑</button>
-                      </div>
-                    </td>
+                    {/* 9. Dernière activité */}
+                    <td style={{padding:'11px 14px',fontSize:12,color:'#888',whiteSpace:'nowrap' as const}}>{client.derniereActivite}</td>
                   </tr>
                 ))}
               </tbody>
