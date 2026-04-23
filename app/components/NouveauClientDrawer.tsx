@@ -65,7 +65,6 @@ export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,o
     const errs:Record<string,string>={}
     if(type==='particulier'&&!nom.trim()) errs['Nom']='Champ obligatoire'
     if(type==='pro'&&!raisonSociale.trim()) errs['Raison sociale']='Champ obligatoire'
-    if(!email.trim()&&!tel.trim()) errs['Email']='Email ou téléphone obligatoire'
     if(email&&!emailRegex.test(email)) errs['Email']='Email invalide'
     setErrors(errs)
     if(Object.keys(errs).length>0) return
