@@ -233,9 +233,46 @@ export default function ClientsPage(){
         {/* Topbar */}
         <div style={{height:60,background:'#fff',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 24px',flexShrink:0}}>
           <div style={{fontSize:16,fontWeight:700,color:'#111',flexShrink:0}}>Clients</div><SearchBar/>
-          <div style={{display:'flex',gap:8}}>
-            <button onClick={exportCSV} style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>Exporter CSV</button>
-            <div style={{display:'flex',alignItems:'center',gap:8}}><NotifBell/><button onClick={openAdd} style={{padding:'8px 16px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>+ Nouveau client</button></div>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <button onClick={exportCSV} style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Exporter CSV
+            </button>
+            <label style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Importer CSV
+              <input type="file" accept=".csv" style={{display:'none'}} onChange={e=>{
+                const file=e.target.files?.[0]; if(!file)return
+                const reader=new FileReader()
+                reader.onload=ev=>{
+                  const text=ev.target?.result as string
+                  const lines=text.split('\n').filter(l=>l.trim())
+                  const headers=lines[0].split(',').map(h=>h.replace(/"/g,'').trim().toLowerCase())
+                  const newClients=lines.slice(1).map((line,idx)=>{
+                    const vals=line.split(',').map(v=>v.replace(/"/g,'').trim())
+                    const get=(k:string)=>vals[headers.indexOf(k)]||''
+                    return {
+                      id:'import_'+Date.now()+'_'+idx,
+                      type:(get('type')||'particulier') as 'particulier'|'professionnel',
+                      civilite:get('civilite')||'',prenom:get('prenom'),nom:get('nom'),
+                      email:get('email'),tel:get('tel'),
+                      raisonSociale:get('raison sociale')||get('raisonsociale')||'',
+                      adresseFactLine1:get('adresse'),adresseFactCp:get('code postal')||get('cp'),
+                      adresseFactVille:get('ville'),adresseFactPays:get('pays')||'France',
+                      statut:'actif' as const,enCharge:get('en charge')||'',
+                      nbDevis:0,caTotal:0,margeAvg:0,
+                      derniereActivite:new Date().toLocaleDateString('fr-FR')
+                    }
+                  }).filter(c=>c.nom||c.raisonSociale)
+                  setClients(p=>{const updated=[...p,...newClients];try{localStorage.setItem('batizo_clients',JSON.stringify(updated))}catch(e){}return updated})
+                  showToast(`${newClients.length} client(s) importé(s)`)
+                }
+                reader.readAsText(file)
+                e.target.value=''
+              }}/>
+            </label>
+            <button onClick={openAdd} style={{padding:'8px 16px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>+ Nouveau client</button>
+            <NotifBell/>
           </div>
         </div>
 
