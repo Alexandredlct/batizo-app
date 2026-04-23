@@ -225,7 +225,7 @@ export default function ClientsPage(){
   const caPrec=Math.round(caAnnee*0.82)
   const variation=Math.round((caAnnee-caPrec)/caPrec*100)
 
-  return(
+  return(<>
     <div style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}} onClick={()=>setEnChargeMenu(null)}>
       <Sidebar activePage="clients"/>
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
@@ -635,5 +635,5 @@ export default function ClientsPage(){
         </div>
       )}
     </div>
-  )
+  </>)
 }
