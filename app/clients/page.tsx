@@ -90,6 +90,9 @@ export default function ClientsPage(){
   const[noteText,setNoteText]=useState('')
   const[notes,setNotes]=useState<Record<string,{text:string,date:string}[]>>({})
   const[toast,setToast]=useState('')
+  const[showImportModal,setShowImportModal]=useState(false)
+  const[importErrors,setImportErrors]=useState<string[]>([])
+  const[importStats,setImportStats]=useState<{imported:number,dupes:number,errors:number}|null>(null)
   const[deleteConfirm,setDeleteConfirm]=useState<string|null>(null)
   const[enChargeMenu,setEnChargeMenu]=useState<string|null>(null)
   const[deletedClient,setDeletedClient]=useState<Client|null>(null)
@@ -186,6 +189,75 @@ export default function ClientsPage(){
     setNoteText('')
   }
 
+  const telechargerModeleClients=()=>{
+    const headers=['Type','Civilite','Prenom','Nom','Raison sociale','Forme juridique','Pays immatriculation','SIREN','SIRET','TVA intracommunautaire','Email','Telephone','Adresse','Code postal','Ville','En charge','Notes internes']
+    const ex=['Particulier','M.','Jean','Dupont','','','','','','','jean@exemple.fr','06 12 34 56 78','12 rue de la Paix','75001','Paris','Alexandre','']
+    const ex2=['Pro','','','','Dupont Immobilier SAS','SAS','France','123456789','12345678900012','FR12123456789','contact@dupont.fr','01 23 45 67 89','45 avenue des Champs','75008','Paris','Emma','Client VIP']
+    const csv=[headers,ex,ex2].map(r=>r.map(v=>'"'+v+'"').join(',')).join('\n')
+    const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='modele_clients.csv';a.click()
+  }
+
+  const parseImportClients=(e:React.ChangeEvent<HTMLInputElement>)=>{
+    const file=e.target.files?.[0];if(!file)return
+    const reader=new FileReader()
+    reader.onload=ev=>{
+      const text=ev.target?.result as string
+      const lines=text.split('\n').filter(l=>l.trim())
+      const headers=lines[0].split(',').map(h=>h.replace(/"/g,'').trim().toLowerCase())
+      const get=(vals:string[],k:string)=>vals[headers.indexOf(k)]?.replace(/"/g,'').trim()||''
+      const errors:string[]=[]
+      let imported=0,dupes=0
+      const newClients:any[]=[]
+      const existingEmails=new Set(clients.map(c=>c.email).filter(Boolean))
+      const existingSirets=new Set(clients.map(c=>c.siret).filter(Boolean))
+      lines.slice(1).forEach((line,idx)=>{
+        if(!line.trim())return
+        const vals=line.split(',')
+        const type=get(vals,'type').toLowerCase()
+        const nom=get(vals,'nom')
+        const raison=get(vals,'raison sociale')
+        const email=get(vals,'email')
+        const siret=get(vals,'siret')
+        const adresse=get(vals,'adresse')
+        const cp=get(vals,'code postal')
+        const ville=get(vals,'ville')
+        const enCharge=get(vals,'en charge')
+        if(type==='pro'&&!raison){errors.push('Ligne '+(idx+2)+': Raison sociale obligatoire pour un Pro');return}
+        if(type!=='pro'&&!nom){errors.push('Ligne '+(idx+2)+': Nom obligatoire pour un Particulier');return}
+        if(!adresse||!cp||!ville){errors.push('Ligne '+(idx+2)+': Adresse, code postal et ville obligatoires');return}
+        if(email&&existingEmails.has(email)){dupes++;return}
+        if(siret&&existingSirets.has(siret)){dupes++;return}
+        const civilite=get(vals,'civilite')
+        const prenom=get(vals,'prenom')
+        const nomComplet=type==='pro'?raison+(nom?(' — '+(civilite?civilite+' ':'')+prenom+' '+nom).trim():''):((civilite?civilite+' ':'')+prenom+' '+nom).trim()
+        newClients.push({
+          id:'import_'+Date.now()+'_'+idx,type:type==='pro'?'professionnel':'particulier',
+          civilite,prenom,nom,raisonSociale:raison,
+          formeJuridique:get(vals,'forme juridique'),paysImmat:get(vals,'pays immatriculation')||'France',
+          siren:get(vals,'siren'),siret,tvaIntra:get(vals,'tva intracommunautaire'),
+          email,tel:get(vals,'telephone'),
+          adresseFactLine1:adresse,adresseFactCp:cp,adresseFactVille:ville,adresseFactPays:'France',
+          enCharge,notes:get(vals,'notes internes'),
+          statut:'actif' as const,nbDevis:0,caTotal:0,margeAvg:0,
+          derniereActivite:new Date().toLocaleDateString('fr-FR'),
+          nom:nomComplet
+        })
+        imported++
+        if(email)existingEmails.add(email)
+        if(siret)existingSirets.add(siret)
+      })
+      if(newClients.length>0){
+        setClients(p=>{const updated=[...p,...newClients];try{localStorage.setItem('batizo_clients',JSON.stringify(updated))}catch(e){}return updated})
+      }
+      setImportErrors(errors)
+      setImportStats({imported,dupes,errors:errors.length})
+      if(errors.length===0)setShowImportModal(false)
+      showToast(imported>0?imported+' client(s) importé(s)':'Aucun client importé')
+    }
+    reader.readAsText(file)
+    e.target.value=''
+  }
+
   const exportCSV=()=>{
     const rows=filtered.map(c=>[c.type,c.civilite,c.prenom,c.nom,c.email,c.tel,c.statut,c.enCharge,c.raisonSociale||'',c.adresseFactVille||'',c.tags||''])
     const csv=[['Type','Civilite','Prenom','Nom','Email','Tel','Statut','En charge','Raison sociale','Ville','Tags'],...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n')
@@ -238,39 +310,11 @@ export default function ClientsPage(){
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               Exporter CSV
             </button>
-            <label style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>
+            <button onClick={()=>{setShowImportModal(true);setImportErrors([]);setImportStats(null)}}
+              style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',background:'#fff',color:'#333',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,cursor:'pointer',fontWeight:500}}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Importer CSV
-              <input type="file" accept=".csv" style={{display:'none'}} onChange={e=>{
-                const file=e.target.files?.[0]; if(!file)return
-                const reader=new FileReader()
-                reader.onload=ev=>{
-                  const text=ev.target?.result as string
-                  const lines=text.split('\n').filter(l=>l.trim())
-                  const headers=lines[0].split(',').map(h=>h.replace(/"/g,'').trim().toLowerCase())
-                  const newClients=lines.slice(1).map((line,idx)=>{
-                    const vals=line.split(',').map(v=>v.replace(/"/g,'').trim())
-                    const get=(k:string)=>vals[headers.indexOf(k)]||''
-                    return {
-                      id:'import_'+Date.now()+'_'+idx,
-                      type:(get('type')||'particulier') as 'particulier'|'professionnel',
-                      civilite:get('civilite')||'',prenom:get('prenom'),nom:get('nom'),
-                      email:get('email'),tel:get('tel'),
-                      raisonSociale:get('raison sociale')||get('raisonsociale')||'',
-                      adresseFactLine1:get('adresse'),adresseFactCp:get('code postal')||get('cp'),
-                      adresseFactVille:get('ville'),adresseFactPays:get('pays')||'France',
-                      statut:'actif' as const,enCharge:get('en charge')||'',
-                      nbDevis:0,caTotal:0,margeAvg:0,
-                      derniereActivite:new Date().toLocaleDateString('fr-FR')
-                    }
-                  }).filter(c=>c.nom||c.raisonSociale)
-                  setClients(p=>{const updated=[...p,...newClients];try{localStorage.setItem('batizo_clients',JSON.stringify(updated))}catch(e){}return updated})
-                  showToast(`${newClients.length} client(s) importé(s)`)
-                }
-                reader.readAsText(file)
-                e.target.value=''
-              }}/>
-            </label>
+            </button>
             <button onClick={openAdd} style={{padding:'8px 16px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>+ Nouveau client</button>
             <NotifBell/>
           </div>
@@ -660,6 +704,47 @@ export default function ClientsPage(){
         <div style={{position:'fixed',bottom:80,left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',color:'#fff',borderRadius:10,padding:'12px 20px',zIndex:9999,display:'flex',alignItems:'center',gap:12,boxShadow:'0 4px 20px rgba(0,0,0,0.3)'}}>
           <span style={{fontSize:13}}>Client supprimé</span>
           <button onClick={annulerSuppression} style={{padding:'5px 14px',background:G,color:'#fff',border:'none',borderRadius:6,fontSize:12,fontWeight:700,cursor:'pointer'}}>Annuler</button>
+        </div>
+      )}
+
+      {/* Modal Import CSV */}
+      {showImportModal&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowImportModal(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:560,width:'92%',display:'flex',flexDirection:'column' as const,gap:16}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Importer depuis CSV</div>
+              <button onClick={()=>setShowImportModal(false)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
+            </div>
+            <div style={{background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:10,padding:'14px 16px'}}>
+              <div style={{fontSize:13,fontWeight:600,color:'#111',marginBottom:8}}>Étape 1 — Télécharger le modèle</div>
+              <p style={{fontSize:12,color:'#555',marginBottom:10}}>Téléchargez le modèle CSV, remplissez-le et réimportez-le.</p>
+              <button onClick={telechargerModeleClients}
+                style={{padding:'6px 14px',background:'#fff',border:'1px solid #bbf7d0',borderRadius:7,fontSize:12,fontWeight:600,color:G,cursor:'pointer'}}>
+                ⬇ Modèle Clients
+              </button>
+            </div>
+            <div>
+              <div style={{fontSize:13,fontWeight:600,color:'#111',marginBottom:10}}>Étape 2 — Importer votre fichier</div>
+              <label style={{display:'inline-flex',alignItems:'center',gap:6,padding:'8px 16px',background:G,color:'#fff',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Choisir un fichier CSV
+                <input type="file" accept=".csv,.txt" onChange={parseImportClients} style={{display:'none'}}/>
+              </label>
+            </div>
+            {importErrors.length>0&&(
+              <div style={{background:'#fef2f2',border:'1px solid #fca5a5',borderRadius:8,padding:'10px 14px',maxHeight:160,overflowY:'auto' as const}}>
+                <div style={{fontSize:12,fontWeight:600,color:RD,marginBottom:4}}>⚠️ {importErrors.length} erreur(s)</div>
+                {importErrors.map((e,i)=><div key={i} style={{fontSize:11,color:'#555'}}>{e}</div>)}
+              </div>
+            )}
+            {importStats&&(
+              <div style={{background:'#f0fdf4',borderRadius:8,padding:'10px 14px',fontSize:13}}>
+                ✅ <strong>{importStats.imported}</strong> importé(s) · 
+                {importStats.dupes>0&&<span> 🔁 <strong>{importStats.dupes}</strong> doublon(s) ignoré(s) ·</span>}
+                {importStats.errors>0&&<span> ❌ <strong>{importStats.errors}</strong> erreur(s)</span>}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
