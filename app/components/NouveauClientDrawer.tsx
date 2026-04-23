@@ -12,10 +12,9 @@ function Field({label,value,onChange,placeholder,required=false,type:t='text',er
         {label}{required&&<span style={{color:'#DC2626'}}> *</span>}
       </label>
       <input type={t} value={value} onChange={e=>onChange(e.target.value)}
-        placeholder={placeholder} onBlur={onBlurValidate}
-        style={{width:'100%',padding:'9px 12px',border:`1px solid ${error?'#DC2626':BD}`,borderRadius:8,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const,caretColor:'#111'}}
+        placeholder={placeholder} style={{width:'100%',padding:'9px 12px',border:`1px solid ${error?'#DC2626':BD}`,borderRadius:8,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const,caretColor:'#111'}}
         onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
-        onBlur={e=>{(e.currentTarget as HTMLInputElement).style.borderColor=error?'#DC2626':BD;onBlurValidate?.()}}/>
+        onBlur={e=>{(e.currentTarget as HTMLInputElement).style.borderColor=error?'#DC2626':BD;if(onBlurValidate)onBlurValidate()}}/>
       {error&&<div style={{fontSize:11,color:'#DC2626',marginTop:3}}>{error}</div>}
     </div>
   )
