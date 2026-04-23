@@ -142,14 +142,24 @@ export default function ClientsPage(){
     if(doublonTel&&!doublonEmail){
       if(!confirm(`⚠️ Un client avec ce téléphone existe déjà : ${doublonTel.prenom} ${doublonTel.nom}\nVoulez-vous quand même continuer ?`)) return
     }
-    if(!form.nom?.trim()||!form.prenom?.trim()){showToast('Nom et prénom obligatoires');return}
+    // Validation champs obligatoires
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if(form.type==='professionnel'&&!form.raisonSociale?.trim()){showToast('Raison sociale obligatoire');return}
+    if(form.type!=='professionnel'&&!form.nom?.trim()){showToast('Nom obligatoire');return}
+    if(!form.adresseFactLine1?.trim()){showToast('Adresse obligatoire');return}
+    if(!form.adresseFactCp?.trim()){showToast('Code postal obligatoire');return}
+    if(!form.adresseFactVille?.trim()){showToast('Ville obligatoire');return}
+    if(!form.enCharge?.trim()){showToast('Champ « En charge » obligatoire');return}
+    if(form.email&&!emailRegex.test(form.email)){showToast('Format email invalide');return}
     const f={...form}
     if(adresseSame){f.adresseChantierLine1=f.adresseFactLine1;f.adresseChantierVille=f.adresseFactVille;f.adresseChantierCp=f.adresseFactCp}
+    // Persister dans localStorage
+    const saveToStorage=(list:any[])=>{try{localStorage.setItem('batizo_clients',JSON.stringify(list))}catch(e){}}
     if(panel==='edit'&&selectedId){
-      setClients(p=>p.map(c=>c.id===selectedId?{...f,id:selectedId}:c))
+      setClients(p=>{const updated=p.map(c=>c.id===selectedId?{...f,id:selectedId}:c);saveToStorage(updated);return updated})
       showToast('Client modifié')
     } else {
-      setClients(p=>[...p,{...f,id:genId(),nbDevis:0,caTotal:0,margeAvg:0,derniereActivite:new Date().toLocaleDateString('fr-FR')}])
+      setClients(p=>{const updated=[...p,{...f,id:genId(),nbDevis:0,caTotal:0,margeAvg:0,derniereActivite:new Date().toLocaleDateString('fr-FR')}];saveToStorage(updated);return updated})
       showToast('Client ajouté')
     }
     closePanel()
@@ -489,7 +499,7 @@ export default function ClientsPage(){
               {form.type==='professionnel'&&(
                 <>
                   <Sep title="Informations entreprise"/>
-                  <F label="Raison sociale" field="raisonSociale" placeholder="Ex: Dupont Immobilier SAS" required/>
+                  <F label="Raison sociale *" field="raisonSociale" placeholder="Ex: Dupont Immobilier SAS" required/>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
                     <S label="Forme juridique" field="formeJuridique" options={FORMES}/>
                     <F label="Pays immatriculation" field="paysImmat" placeholder="France"/>
@@ -513,7 +523,7 @@ export default function ClientsPage(){
                   <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:4}}>Civilité</label>
                   <select value={form.civilite||'M.'} onChange={e=>setForm((p:any)=>({...p,civilite:e.target.value}))}
                     style={{width:'100%',padding:'8px 8px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',background:'#fff'}}>
-                    {['M.','Mme','Dr','Me'].map(o=><option key={o}>{o}</option>)}
+                    {['','M.','Mme'].map(o=><option key={o} value={o}>{o||'—'}</option>)}
                   </select>
                 </div>
                 <F label="Prénom" field="prenom" placeholder="Jean" required/>
@@ -523,6 +533,7 @@ export default function ClientsPage(){
                 <div>
                 <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:4}}>Email</label>
                 <input type="email" value={form.email||''} onChange={e=>setForm((p:any)=>({...p,email:e.target.value}))} placeholder="jean@exemple.fr"
+                  onBlur={e=>{const v=e.target.value;if(v&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v))alert('Email invalide')}}
                   style={{width:'100%',padding:'8px 11px',border:`1px solid ${form.email&&clients.find(cl=>cl.email===form.email&&cl.id!==selectedId)?RD:BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}
                   onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=form.email&&clients.find(cl=>cl.email===form.email&&cl.id!==selectedId)?RD:G}
                   onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=form.email&&clients.find(cl=>cl.email===form.email&&cl.id!==selectedId)?RD:BD}/>
@@ -545,10 +556,10 @@ export default function ClientsPage(){
               </div>
 
               <Sep title="Adresse de facturation"/>
-              <F label="Adresse" field="adresseFactLine1" placeholder="12 rue de la Paix"/>
+              <F label="Adresse *" field="adresseFactLine1" placeholder="12 rue de la Paix"/>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
-                <F label="Code postal" field="adresseFactCp" placeholder="75001"/>
-                <F label="Ville" field="adresseFactVille" placeholder="Paris"/>
+                <F label="Code postal *" field="adresseFactCp" placeholder="75001"/>
+                <F label="Ville *" field="adresseFactVille" placeholder="Paris"/>
                 <F label="Pays" field="adresseFactPays" placeholder="France"/>
               </div>
 
