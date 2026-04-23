@@ -183,7 +183,7 @@ export default function NouveauClientDrawer({onClose,onSave,mode='create',client
               {(['particulier','pro'] as const).map(v=>(
                 <button key={v} onClick={()=>handleTypeChange(v)}
                   style={{flex:1,padding:'8px',border:`1px solid ${type===v?G:BD}`,borderRadius:8,background:type===v?`${G}10`:'#fff',fontSize:13,fontWeight:type===v?600:400,color:type===v?G:'#555',cursor:'pointer'}}>
-                  {v==='particulier'?'Particulier':'Pro'}
+                  {v==='particulier'?'Particulier':'Professionnel'}
                 </button>
               ))}
             </div>
@@ -264,7 +264,7 @@ export default function NouveauClientDrawer({onClose,onSave,mode='create',client
           <div style={{background:'#fff',borderRadius:14,padding:24,maxWidth:380,width:'90%'}}>
             <div style={{fontSize:15,fontWeight:700,color:'#111',marginBottom:8}}>⚠️ Changer le type de client</div>
             <div style={{fontSize:13,color:'#555',marginBottom:20,lineHeight:1.6}}>
-              Vous allez perdre les informations du mode <strong>{confirmChange==='pro'?'Particulier':'Pro'}</strong> déjà saisies. Cette action est irréversible.
+              Vous allez perdre les informations du mode <strong>{confirmChange==='pro'?'Particulier':'Professionnel'}</strong> déjà saisies. Cette action est irréversible.
             </div>
             <div style={{display:'flex',gap:10}}>
               <button onClick={()=>setConfirmChange(null)} style={{flex:1,padding:'10px',border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',fontWeight:500}}>Annuler</button>
