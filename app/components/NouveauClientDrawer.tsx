@@ -183,7 +183,7 @@ export default function NouveauClientDrawer({onClose,onSave,mode='create',client
               {(['particulier','pro'] as const).map(v=>(
                 <button key={v} onClick={()=>handleTypeChange(v)}
                   style={{flex:1,padding:'8px',border:`1px solid ${type===v?G:BD}`,borderRadius:8,background:type===v?`${G}10`:'#fff',fontSize:13,fontWeight:type===v?600:400,color:type===v?G:'#555',cursor:'pointer'}}>
-                  {v==='particulier'?'👤 Particulier':'🏢 Pro'}
+                  {v==='particulier'?'Particulier':'Pro'}
                 </button>
               ))}
             </div>
