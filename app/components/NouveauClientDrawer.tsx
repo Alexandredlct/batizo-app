@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 const G='#1D9E75', BD='#e5e7eb'
+const placeholderStyle = `input::placeholder, textarea::placeholder { color: #9ca3af !important; opacity: 1 !important; }`
 
 // Composants extraits hors du parent pour éviter la perte de focus
 function Field({label,value,onChange,placeholder,required=false,type:t='text',error,onBlurValidate}:{
@@ -132,6 +133,7 @@ export default function NouveauClientDrawer({onClose,onSave,mode='create',client
 
   return(
     <>
+      <style>{placeholderStyle}</style>
       <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.3)',zIndex:500}} onClick={onClose}/>
       <div style={{position:'fixed',top:0,right:0,width:480,height:'100vh',background:'#fff',boxShadow:'-4px 0 24px rgba(0,0,0,0.12)',zIndex:501,display:'flex',flexDirection:'column' as const}}>
 
