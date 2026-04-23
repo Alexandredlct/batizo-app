@@ -405,6 +405,7 @@ export default function DashboardPage() {
       setClientsData(getClients())
       setFicheClient(saved)
     }}/>
+    }
     {showNouveauClient&&(
       <NouveauClientDrawer onClose={()=>setShowNouveauClient(false)} onSave={(client:any)=>{
         try{const existing=JSON.parse(localStorage.getItem('batizo_clients')||'[]');localStorage.setItem('batizo_clients',JSON.stringify([...existing,{...client,id:Date.now().toString()}]))}catch(e){}
