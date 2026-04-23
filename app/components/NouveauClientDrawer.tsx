@@ -2,6 +2,46 @@
 import { useState, useEffect } from 'react'
 const G='#1D9E75', BD='#e5e7eb'
 
+// Composants extraits hors du parent pour éviter la perte de focus
+function Field({label,value,onChange,placeholder,required=false,type:t='text',error,onBlurValidate}:{
+  label:string,value:string,onChange:(v:string)=>void,placeholder?:string,
+  required?:boolean,type?:string,error?:string,onBlurValidate?:()=>void
+}){
+  return(
+    <div style={{marginBottom:14}}>
+      <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>
+        {label}{required&&<span style={{color:'#DC2626'}}> *</span>}
+      </label>
+      <input type={t} value={value} onChange={e=>onChange(e.target.value)}
+        placeholder={placeholder} onBlur={onBlurValidate}
+        style={{width:'100%',padding:'9px 12px',border:`1px solid ${error?'#DC2626':BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}
+        onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}/>
+      {error&&<div style={{fontSize:11,color:'#DC2626',marginTop:3}}>{error}</div>}
+    </div>
+  )
+}
+
+function SelectField({label,value,onChange,options,required=false,error}:{
+  label:string,value:string,onChange:(v:string)=>void,
+  options:{value:string,label:string}[],required?:boolean,error?:string
+}){
+  return(
+    <div style={{marginBottom:14}}>
+      <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>
+        {label}{required&&<span style={{color:'#DC2626'}}> *</span>}
+      </label>
+      <select value={value} onChange={e=>onChange(e.target.value)}
+        style={{width:'100%',padding:'9px 12px',border:`1px solid ${error?'#DC2626':BD}`,borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
+        <option value="">Choisir...</option>
+        {options.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+      {error&&<div style={{fontSize:11,color:'#DC2626',marginTop:3}}>{error}</div>}
+    </div>
+  )
+}
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,onSave:(client:any)=>void}){
   const[type,setType]=useState<'particulier'|'pro'>('particulier')
   const[civilite,setCivilite]=useState('')
@@ -24,9 +64,6 @@ export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,o
   const[saved,setSaved]=useState(false)
   const[utilisateurs,setUtilisateurs]=useState<{id:string,nom:string}[]>([])
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-  // Charger utilisateurs depuis localStorage (page /utilisateurs)
   useEffect(()=>{
     try {
       const raw = localStorage.getItem('batizo_utilisateurs')
@@ -34,24 +71,19 @@ export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,o
         const list = JSON.parse(raw)
         setUtilisateurs(list.filter((u:any)=>u.statut!=='revoque'&&u.statut!=='inactif'))
       } else {
-        // Fallback si pas encore de table utilisateurs
         const params = JSON.parse(localStorage.getItem('batizo_params')||'{}')
-        const nomEntreprise = params.nomEntreprise||''
-        setUtilisateurs([{id:'1',nom:nomEntreprise?`Propriétaire (${nomEntreprise})`:'Propriétaire'}])
+        setUtilisateurs([{id:'1',nom:params.nomEntreprise?`Propriétaire (${params.nomEntreprise})`:'Propriétaire'}])
       }
     } catch(e){}
   },[])
 
-  const Field=({label,value,onChange,placeholder,required=false,type:t='text',onBlurValidate}:{label:string,value:string,onChange:(v:string)=>void,placeholder?:string,required?:boolean,type?:string,onBlurValidate?:()=>void})=>(
-    <div style={{marginBottom:14}}>
-      <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>{label}{required&&<span style={{color:'#DC2626'}}> *</span>}</label>
-      <input type={t} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
-        onBlur={onBlurValidate}
-        style={{width:'100%',padding:'9px 12px',border:`1px solid ${errors[label]?'#DC2626':BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}
-        onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}/>
-      {errors[label]&&<div style={{fontSize:11,color:'#DC2626',marginTop:3}}>{errors[label]}</div>}
-    </div>
-  )
+  const validateField=(field:string,val:string)=>{
+    if(!val.trim()){
+      setErrors(p=>({...p,[field]:'Ce champ est obligatoire'}))
+    } else {
+      setErrors(p=>{const n={...p};delete n[field];return n})
+    }
+  }
 
   const validateEmail=()=>{
     if(email&&!emailRegex.test(email)){
@@ -63,8 +95,12 @@ export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,o
 
   const handleSave=()=>{
     const errs:Record<string,string>={}
-    if(type==='particulier'&&!nom.trim()) errs['Nom']='Champ obligatoire'
-    if(type==='pro'&&!raisonSociale.trim()) errs['Raison sociale']='Champ obligatoire'
+    if(type==='particulier'&&!nom.trim()) errs['Nom']='Ce champ est obligatoire'
+    if(type==='pro'&&!raisonSociale.trim()) errs['Raison sociale']='Ce champ est obligatoire'
+    if(!adresse.trim()) errs['Adresse']='Ce champ est obligatoire'
+    if(!cp.trim()) errs['Code postal']='Ce champ est obligatoire'
+    if(!ville.trim()) errs['Ville']='Ce champ est obligatoire'
+    if(!enCharge.trim()) errs['En charge']='Ce champ est obligatoire'
     if(email&&!emailRegex.test(email)) errs['Email']='Email invalide'
     setErrors(errs)
     if(Object.keys(errs).length>0) return
@@ -74,17 +110,14 @@ export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,o
       : `${civilite?civilite+' ':''}${prenom} ${nom}`.trim()
 
     const client = {
-      id: Date.now().toString(),
-      nom: nomComplet,
-      email, tel,
+      id:Date.now().toString(), nom:nomComplet, email, tel,
       adresse:`${adresse}${cp?' '+cp:''}${ville?' '+ville:''}`.trim(),
       siret, siren, tvaIntra, formeJuridique, paysImmat,
       notes, type, civilite, prenom, nomFamille:nom,
       raisonSociale, enCharge, statut:'actif',
-      dateCreation: new Date().toISOString()
+      dateCreation:new Date().toISOString()
     }
 
-    // Persister en localStorage (batizo_clients)
     try {
       const existing = JSON.parse(localStorage.getItem('batizo_clients')||'[]')
       localStorage.setItem('batizo_clients', JSON.stringify([...existing, client]))
@@ -112,7 +145,6 @@ export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,o
 
         <div style={{flex:1,overflowY:'auto' as const,padding:'20px 24px'}}>
 
-          {/* Type */}
           <div style={{marginBottom:16}}>
             <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:6}}>Type de client</label>
             <div style={{display:'flex',gap:8}}>
@@ -125,52 +157,22 @@ export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,o
             </div>
           </div>
 
-          {/* PRO */}
           {type==='pro'&&(<>
             <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Informations entreprise</div>
-            <div style={{marginBottom:14}}>
-              <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Raison sociale <span style={{color:'#DC2626'}}>*</span></label>
-              <input value={raisonSociale} onChange={e=>setRaisonSociale(e.target.value)} placeholder="Ex: Dupont Immobilier SAS"
-                style={{width:'100%',padding:'9px 12px',border:`1px solid ${errors['Raison sociale']?'#DC2626':BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
-              {errors['Raison sociale']&&<div style={{fontSize:11,color:'#DC2626',marginTop:3}}>{errors['Raison sociale']}</div>}
-            </div>
-            <div style={{marginBottom:14}}>
-              <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Forme juridique</label>
-              <select value={formeJuridique} onChange={e=>setFormeJuridique(e.target.value)}
-                style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',background:'#fff'}}>
-                <option value="">Choisir...</option>
-                {['SAS','SARL','SCI','SASU','EURL','SA','Auto-entrepreneur','EI','Autre'].map(f=><option key={f}>{f}</option>)}
-              </select>
-            </div>
-            <div style={{marginBottom:14}}>
-              <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Pays immatriculation</label>
-              <input value={paysImmat} onChange={e=>setPaysImmat(e.target.value)} placeholder="France"
-                style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
-            </div>
+            <Field label="Raison sociale" value={raisonSociale} onChange={setRaisonSociale} placeholder="Ex: Dupont Immobilier SAS" required error={errors['Raison sociale']} onBlurValidate={()=>validateField('Raison sociale',raisonSociale)}/>
+            <SelectField label="Forme juridique" value={formeJuridique} onChange={setFormeJuridique}
+              options={['SAS','SARL','SCI','SASU','EURL','SA','Auto-entrepreneur','EI','Autre'].map(v=>({value:v,label:v}))}/>
+            <Field label="Pays immatriculation" value={paysImmat} onChange={setPaysImmat} placeholder="France"/>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:0}}>
-              <div style={{marginBottom:14}}>
-                <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>SIREN</label>
-                <input value={siren} onChange={e=>setSiren(e.target.value)} placeholder="123456789"
-                  style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
-              </div>
-              <div style={{marginBottom:14}}>
-                <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>SIRET</label>
-                <input value={siret} onChange={e=>setSiret(e.target.value)} placeholder="12345678900001"
-                  style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
-              </div>
+              <Field label="SIREN" value={siren} onChange={setSiren} placeholder="123456789"/>
+              <Field label="SIRET" value={siret} onChange={setSiret} placeholder="12345678900001"/>
             </div>
-            <div style={{marginBottom:14}}>
-              <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>N° TVA intracommunautaire</label>
-              <input value={tvaIntra} onChange={e=>setTvaIntra(e.target.value)} placeholder="FR12345678901"
-                style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
-            </div>
+            <Field label="N° TVA intracommunautaire" value={tvaIntra} onChange={setTvaIntra} placeholder="FR12345678901"/>
             <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Contact principal</div>
           </>)}
 
-          {/* Infos perso */}
           {type==='particulier'&&<div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Informations personnelles</div>}
 
-          {/* Civilité : Non renseigné / M. / Mme */}
           <div style={{marginBottom:14}}>
             <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:6}}>Civilité</label>
             <div style={{display:'flex',gap:6}}>
@@ -185,38 +187,27 @@ export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,o
 
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
             <Field label="Prénom" value={prenom} onChange={setPrenom}/>
-            <Field label="Nom" value={nom} onChange={setNom} required={type==='particulier'}/>
+            <Field label="Nom" value={nom} onChange={setNom} required={type==='particulier'} error={errors['Nom']} onBlurValidate={()=>{if(type==='particulier')validateField('Nom',nom)}}/>
           </div>
-
-          <Field label="Email" value={email} onChange={setEmail} placeholder="email@exemple.fr" type="email" onBlurValidate={validateEmail}/>
+          <Field label="Email" value={email} onChange={setEmail} placeholder="email@exemple.fr" type="email" error={errors['Email']} onBlurValidate={validateEmail}/>
           <Field label="Téléphone" value={tel} onChange={setTel} placeholder="06 XX XX XX XX"/>
 
-          {/* Adresse */}
           <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Adresse</div>
-          <Field label="Adresse" value={adresse} onChange={setAdresse} placeholder="Rue, avenue..."/>
+          <Field label="Adresse" value={adresse} onChange={setAdresse} placeholder="Rue, avenue..." required error={errors['Adresse']} onBlurValidate={()=>validateField('Adresse',adresse)}/>
           <div style={{display:'grid',gridTemplateColumns:'1fr 2fr',gap:12}}>
-            <Field label="Code postal" value={cp} onChange={setCp}/>
-            <Field label="Ville" value={ville} onChange={setVille}/>
+            <Field label="Code postal" value={cp} onChange={setCp} required error={errors['Code postal']} onBlurValidate={()=>validateField('Code postal',cp)}/>
+            <Field label="Ville" value={ville} onChange={setVille} required error={errors['Ville']} onBlurValidate={()=>validateField('Ville',ville)}/>
           </div>
 
-          {/* En charge */}
           <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Suivi</div>
-          <div style={{marginBottom:14}}>
-            <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>En charge</label>
-            <select value={enCharge} onChange={e=>setEnCharge(e.target.value)}
-              style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',background:'#fff'}}>
-              <option value="">Choisir...</option>
-              {utilisateurs.map(u=><option key={u.id} value={u.nom}>{u.nom}</option>)}
-            </select>
-          </div>
+          <SelectField label="En charge" value={enCharge} onChange={setEnCharge} required error={errors['En charge']}
+            options={utilisateurs.map(u=>({value:u.nom,label:u.nom}))}/>
 
-          {/* Notes */}
           <div style={{marginBottom:14}}>
             <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Notes internes</label>
             <textarea value={notes} onChange={e=>setNotes(e.target.value)} rows={3} placeholder="Informations complémentaires..."
               style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',resize:'vertical' as const,fontFamily:'system-ui,sans-serif',boxSizing:'border-box' as const}}/>
           </div>
-
         </div>
       </div>
     </>
