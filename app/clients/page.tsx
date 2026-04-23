@@ -76,6 +76,63 @@ const emptyClient=():Omit<Client,'id'|'nbDevis'|'caTotal'|'margeAvg'|'derniereAc
   source:'',langue:'Français',tags:'',notes:''
 })
 
+
+function FicheRow({label,val}:{label:string,val:any}){
+  if(!val&&val!==0)return null
+  return(
+    <div style={{display:'flex',gap:8,fontSize:13,marginBottom:4}}>
+      <span style={{color:'#888',minWidth:120,flexShrink:0}}>{label}</span>
+      <span style={{color:'#111',fontWeight:500}}>{val}</span>
+    </div>
+  )
+}
+
+function FicheSection({title,children}:{title:string,children:any}){
+  const kids=Array.isArray(children)?children.filter(Boolean):[children].filter(Boolean)
+  if(kids.length===0)return null
+  return(
+    <div style={{marginBottom:14}}>
+      <div style={{fontSize:11,fontWeight:700,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:8}}>{title}</div>
+      {children}
+    </div>
+  )
+}
+
+function FicheInfos({client,BD,G}:{client:any,BD:string,G:string}){
+  const isPro=client.type==='professionnel'
+  return(
+    <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px'}}>
+      {isPro&&(
+        <FicheSection title="Informations entreprise">
+          <FicheRow label="Raison sociale" val={client.raisonSociale}/>
+          <FicheRow label="Forme juridique" val={client.formeJuridique}/>
+          <FicheRow label="Pays immat." val={client.paysImmat&&client.paysImmat!=='France'?client.paysImmat:null}/>
+          <FicheRow label="SIREN" val={client.siren}/>
+          <FicheRow label="SIRET" val={client.siret}/>
+          <FicheRow label="N° TVA intra" val={client.tvaIntra}/>
+        </FicheSection>
+      )}
+      <FicheSection title={isPro?'Contact principal':'Informations personnelles'}>
+        <FicheRow label="Civilité" val={client.civilite}/>
+        <FicheRow label="Prénom" val={client.prenom}/>
+        <FicheRow label="Nom" val={client.nomFamille||(!isPro?client.nom:null)}/>
+        <FicheRow label="Email" val={client.email?<a href={`mailto:${client.email}`} style={{color:'#2563eb',textDecoration:'none'}}>{client.email}</a>:null}/>
+        <FicheRow label="Téléphone" val={client.tel?<a href={`tel:${client.tel.replace(/\s/g,'')}`} style={{color:'#2563eb',textDecoration:'none'}}>{client.tel}</a>:null}/>
+      </FicheSection>
+      <FicheSection title="Adresse">
+        <FicheRow label="Adresse" val={client.adresseFactLine1}/>
+        <FicheRow label="Code postal" val={client.adresseFactCp}/>
+        <FicheRow label="Ville" val={client.adresseFactVille}/>
+      </FicheSection>
+      {client.enCharge&&(
+        <FicheSection title="Suivi">
+          <FicheRow label="En charge" val={client.enCharge}/>
+        </FicheSection>
+      )}
+    </div>
+  )
+}
+
 export default function ClientsPage(){
   const[clients,setClients]=useState<Client[]>(initClients)
   const[filtre,setFiltre]=useState<'tous'|'particulier'|'professionnel'>('tous')
@@ -560,55 +617,7 @@ export default function ClientsPage(){
               </div>
 
               {/* Informations */}
-              {(()=>{
-                const Row=({label,val}:{label:string,val:any})=>val?(
-                  <div style={{display:'flex',gap:8,fontSize:13,marginBottom:4}}>
-                    <span style={{color:'#888',minWidth:120,flexShrink:0}}>{label}</span>
-                    <span style={{color:'#111',fontWeight:500}}>{val}</span>
-                  </div>
-                ):null
-                const Sec=({title,children}:{title:string,children:any})=>{
-                  if(!children||!React.Children.toArray(children).some(Boolean))return null
-                  return(
-                    <div style={{marginBottom:14}}>
-                      <div style={{fontSize:11,fontWeight:700,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:8}}>{title}</div>
-                      {children}
-                    </div>
-                  )
-                }
-                const isPro=selectedClient.type==='professionnel'
-                return(
-                  <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px'}}>
-                    {isPro&&(
-                      <Sec title="Informations entreprise">
-                        <Row label="Raison sociale" val={selectedClient.raisonSociale}/>
-                        <Row label="Forme juridique" val={selectedClient.formeJuridique}/>
-                        <Row label="Pays immat." val={selectedClient.paysImmat!=='France'?selectedClient.paysImmat:null}/>
-                        <Row label="SIREN" val={selectedClient.siren}/>
-                        <Row label="SIRET" val={selectedClient.siret}/>
-                        <Row label="N° TVA intra" val={selectedClient.tvaIntra}/>
-                      </Sec>
-                    )}
-                    <Sec title={isPro?'Contact principal':'Informations personnelles'}>
-                      <Row label="Civilité" val={selectedClient.civilite}/>
-                      <Row label="Prénom" val={selectedClient.prenom}/>
-                      <Row label="Nom" val={(selectedClient as any).nomFamille||(!isPro?selectedClient.nom:null)}/>
-                      <Row label="Email" val={selectedClient.email?<a href={`mailto:${selectedClient.email}`} style={{color:'#2563eb',textDecoration:'none'}}>{selectedClient.email}</a>:null}/>
-                      <Row label="Téléphone" val={selectedClient.tel?<a href={`tel:${selectedClient.tel.replace(/\s/g,'')}`} style={{color:'#2563eb',textDecoration:'none'}}>{selectedClient.tel}</a>:null}/>
-                    </Sec>
-                    <Sec title="Adresse">
-                      <Row label="Adresse" val={selectedClient.adresseFactLine1}/>
-                      <Row label="Code postal" val={selectedClient.adresseFactCp}/>
-                      <Row label="Ville" val={selectedClient.adresseFactVille}/>
-                    </Sec>
-                    {selectedClient.enCharge&&(
-                      <Sec title="Suivi">
-                        <Row label="En charge" val={selectedClient.enCharge}/>
-                      </Sec>
-                    )}
-                  </div>
-                )
-              })()}
+              <FicheInfos client={selectedClient} BD={BD} G={G}/>
 
               {/* Historique devis */}
               <div>
