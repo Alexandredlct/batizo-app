@@ -265,6 +265,7 @@ export default function ClientsPage(){
           </div>
 
           {/* Filtres */}
+          <div style={{display:'flex',gap:8,marginBottom:16,flexWrap:'wrap' as const,alignItems:'center'}}>
             {(['tous','particulier','professionnel'] as const).map(f=>(
               <button key={f} onClick={()=>setFiltre(f)}
                 style={{padding:'5px 12px',borderRadius:20,border:`1px solid ${filtre===f?'#2563eb':BD}`,background:filtre===f?'#eff6ff':'#fff',color:filtre===f?'#2563eb':'#555',fontSize:12,fontWeight:filtre===f?600:400,cursor:'pointer'}}>
@@ -324,11 +325,7 @@ export default function ClientsPage(){
                         {client.civilite} {client.prenom} {client.nom}
                       </div>
                       {client.raisonSociale&&<div style={{fontSize:11,color:'#888'}}>{client.raisonSociale}</div>}
-                      {client.tags&&<div style={{display:'flex',gap:3,marginTop:2,flexWrap:'wrap' as const}}>
-                        {client.tags.split(',').filter(t=>t.trim()).map((t,i)=>(
-                          <span key={i} style={{fontSize:9,padding:'1px 5px',background:'#f3f4f6',color:'#555',borderRadius:6,fontWeight:600}}>{t.trim()}</span>
-                        ))}
-                      </div>}
+
                     </td>
 
                     {/* 2. Type */}
