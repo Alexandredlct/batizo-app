@@ -767,5 +767,7 @@ export default function ClientsPage(){
           <span style={{fontSize:13}}>{toast}</span>
         </div>
       )}
+    </div>
+      </div>
   </>)
 }
