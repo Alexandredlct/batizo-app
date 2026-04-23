@@ -2,17 +2,25 @@
 import { useState } from 'react'
 const G='#1D9E75', BD='#e5e7eb'
 
+const UTILISATEURS = ['Alexandre','Emma','Sophie','Thomas','Julie','Marc','Autre']
+
 export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,onSave:(client:any)=>void}){
   const[type,setType]=useState<'particulier'|'pro'>('particulier')
+  const[civilite,setCivilite]=useState('M.')
   const[nom,setNom]=useState('')
   const[prenom,setPrenom]=useState('')
   const[raisonSociale,setRaisonSociale]=useState('')
+  const[formeJuridique,setFormeJuridique]=useState('')
+  const[paysImmat,setPaysImmat]=useState('France')
+  const[siren,setSiren]=useState('')
+  const[siret,setSiret]=useState('')
+  const[tvaIntra,setTvaIntra]=useState('')
   const[email,setEmail]=useState('')
   const[tel,setTel]=useState('')
   const[adresse,setAdresse]=useState('')
   const[cp,setCp]=useState('')
   const[ville,setVille]=useState('')
-  const[siret,setSiret]=useState('')
+  const[enCharge,setEnCharge]=useState('')
   const[notes,setNotes]=useState('')
   const[errors,setErrors]=useState<Record<string,string>>({})
   const[saved,setSaved]=useState(false)
@@ -28,6 +36,17 @@ export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,o
     </div>
   )
 
+  const Select=({label,value,onChange,options,required=false}:{label:string,value:string,onChange:(v:string)=>void,options:{value:string,label:string}[],required?:boolean})=>(
+    <div style={{marginBottom:14}}>
+      <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>{label}{required&&<span style={{color:'#DC2626'}}> *</span>}</label>
+      <select value={value} onChange={e=>onChange(e.target.value)}
+        style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
+        <option value="">Choisir...</option>
+        {options.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    </div>
+  )
+
   const handleSave=()=>{
     const errs:Record<string,string>={}
     if(type==='particulier'&&!nom.trim()) errs['Nom']='Champ obligatoire'
@@ -37,10 +56,12 @@ export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,o
     if(Object.keys(errs).length>0) return
 
     const nomComplet = type==='pro'
-      ? raisonSociale+(nom?` — ${prenom} ${nom}`.trim():'')
-      : `${prenom} ${nom}`.trim()
+      ? raisonSociale+(nom?` — ${civilite} ${prenom} ${nom}`.trim():'')
+      : `${civilite} ${prenom} ${nom}`.trim()
 
-    onSave({nom:nomComplet,email,tel,adresse:`${adresse}${cp?' '+cp:''}${ville?' '+ville:''}`.trim(),siret,notes,type})
+    onSave({nom:nomComplet,email,tel,adresse:`${adresse}${cp?' '+cp:''}${ville?' '+ville:''}`.trim(),
+      siret,siren,tvaIntra,formeJuridique,paysImmat,notes,type,civilite,prenom,nomFamille:nom,
+      raisonSociale,enCharge,statut:'actif'})
     setSaved(true)
     setTimeout(()=>onClose(),800)
   }
@@ -49,6 +70,8 @@ export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,o
     <>
       <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.3)',zIndex:500}} onClick={onClose}/>
       <div style={{position:'fixed',top:0,right:0,width:480,height:'100vh',background:'#fff',boxShadow:'-4px 0 24px rgba(0,0,0,0.12)',zIndex:501,display:'flex',flexDirection:'column' as const}}>
+        
+        {/* Header */}
         <div style={{padding:'16px 20px',borderBottom:`1px solid ${BD}`,display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
           <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Nouveau client</div>
           <div style={{display:'flex',gap:8}}>
@@ -59,7 +82,9 @@ export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,o
           </div>
         </div>
 
+        {/* Body */}
         <div style={{flex:1,overflowY:'auto' as const,padding:'20px 24px'}}>
+
           {/* Type */}
           <div style={{marginBottom:16}}>
             <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:6}}>Type de client</label>
@@ -73,17 +98,39 @@ export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,o
             </div>
           </div>
 
-          {type==='pro'&&(
-            <>
-              <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Informations entreprise</div>
-              <Field label="Raison sociale" value={raisonSociale} onChange={setRaisonSociale} placeholder="Ex: Dupont Immobilier SAS" required/>
-              <Field label="SIRET" value={siret} onChange={setSiret} placeholder="Ex: 12345678900001"/>
-            </>
-          )}
+          {/* PRO */}
+          {type==='pro'&&(<>
+            <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Informations entreprise</div>
+            <Field label="Raison sociale" value={raisonSociale} onChange={setRaisonSociale} placeholder="Ex: Dupont Immobilier SAS" required/>
+            <Select label="Forme juridique" value={formeJuridique} onChange={setFormeJuridique}
+              options={['SAS','SARL','SCI','SASU','EURL','SA','Auto-entrepreneur','EI','Autre'].map(v=>({value:v,label:v}))}/>
+            <Field label="Pays immatriculation" value={paysImmat} onChange={setPaysImmat} placeholder="France"/>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+              <Field label="SIREN" value={siren} onChange={setSiren} placeholder="123456789"/>
+              <Field label="SIRET" value={siret} onChange={setSiret} placeholder="12345678900001"/>
+            </div>
+            <Field label="N° TVA intracommunautaire" value={tvaIntra} onChange={setTvaIntra} placeholder="FR12345678901"/>
+            <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Contact principal</div>
+          </>)}
 
-          <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>
-            {type==='pro'?'Contact principal':'Informations personnelles'}
+          {/* PARTICULIER + contact pro */}
+          <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:type==='particulier'?6:0,borderBottom:type==='particulier'?`1px solid ${BD}`:'none'}}>
+            {type==='particulier'?'Informations personnelles':''}
           </div>
+
+          {/* Civilité */}
+          <div style={{marginBottom:14}}>
+            <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:6}}>Civilité</label>
+            <div style={{display:'flex',gap:6}}>
+              {['M.','Mme','Dr','Me'].map(cv=>(
+                <button key={cv} onClick={()=>setCivilite(cv)}
+                  style={{padding:'6px 12px',border:`1px solid ${civilite===cv?G:BD}`,borderRadius:6,background:civilite===cv?`${G}10`:'#fff',fontSize:12,fontWeight:civilite===cv?600:400,color:civilite===cv?G:'#555',cursor:'pointer'}}>
+                  {cv}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
             <Field label="Prénom" value={prenom} onChange={setPrenom}/>
             <Field label="Nom" value={nom} onChange={setNom} required={type==='particulier'}/>
@@ -91,6 +138,7 @@ export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,o
           <Field label="Email" value={email} onChange={setEmail} placeholder="email@exemple.fr" type="email"/>
           <Field label="Téléphone" value={tel} onChange={setTel} placeholder="06 XX XX XX XX"/>
 
+          {/* Adresse */}
           <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Adresse</div>
           <Field label="Adresse" value={adresse} onChange={setAdresse} placeholder="Rue, avenue..."/>
           <div style={{display:'grid',gridTemplateColumns:'1fr 2fr',gap:12}}>
@@ -98,12 +146,18 @@ export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,o
             <Field label="Ville" value={ville} onChange={setVille}/>
           </div>
 
-          <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Notes</div>
+          {/* En charge */}
+          <div style={{fontSize:13,fontWeight:700,color:'#333',marginBottom:12,paddingBottom:6,borderBottom:`1px solid ${BD}`}}>Suivi</div>
+          <Select label="En charge" value={enCharge} onChange={setEnCharge}
+            options={UTILISATEURS.map(u=>({value:u,label:u}))}/>
+
+          {/* Notes */}
           <div style={{marginBottom:14}}>
             <label style={{fontSize:12,fontWeight:600,color:'#555',display:'block',marginBottom:4}}>Notes internes</label>
             <textarea value={notes} onChange={e=>setNotes(e.target.value)} rows={3} placeholder="Informations complémentaires..."
               style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',resize:'vertical' as const,fontFamily:'system-ui,sans-serif',boxSizing:'border-box' as const}}/>
           </div>
+
         </div>
       </div>
     </>
