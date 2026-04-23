@@ -239,8 +239,7 @@ export default function ClientsPage(){
           adresseFactLine1:adresse,adresseFactCp:cp,adresseFactVille:ville,adresseFactPays:'France',
           enCharge,notes:get(vals,'notes internes'),
           statut:'actif' as const,nbDevis:0,caTotal:0,margeAvg:0,
-          derniereActivite:new Date().toLocaleDateString('fr-FR'),
-          nom:nomComplet
+          derniereActivite:new Date().toLocaleDateString('fr-FR')
         })
         imported++
         if(email)existingEmails.add(email)
