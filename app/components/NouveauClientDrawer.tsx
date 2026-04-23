@@ -140,7 +140,7 @@ export default function NouveauClientDrawer({onClose,onSave,mode='create',client
     } else {
       client={id:clientInitial?.id||Date.now().toString(),type:'professionnel',
         nom:raisonSociale,raisonSociale,formeJuridique,paysImmat,siren,siret,tvaIntra,
-        civilite:civiliteContact,prenom:prenomContact,nomFamille:nomContact,nom:raisonSociale,
+        civilite:civiliteContact,prenom:prenomContact,nomFamille:nomContact,
         email:emailPro,tel:telPro,
         adresseFactLine1:adresse,adresseFactCp:cp,adresseFactVille:ville,
         adresse:`${adresse} ${cp} ${ville}`.trim(),
