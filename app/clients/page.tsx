@@ -530,14 +530,8 @@ export default function ClientsPage(){
           <div onClick={e=>e.stopPropagation()} style={{position:'fixed',top:0,right:0,width:580,height:'100vh',background:'#fff',boxShadow:'-4px 0 24px rgba(0,0,0,0.12)',zIndex:400,display:'flex',flexDirection:'column',overflow:'hidden'}}>
             <div style={{padding:'14px 20px',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
               <div>
-                <div style={{fontSize:15,fontWeight:700,color:'#111',display:'flex',alignItems:'center',gap:8}}>
+                <div style={{fontSize:15,fontWeight:700,color:'#111'}}>
                   {selectedClient.civilite} {selectedClient.prenom} {selectedClient.nom}
-                  <span style={{fontSize:11,fontWeight:700,padding:'2px 7px',borderRadius:8,
-                    background:selectedClient.statut==='actif'?'#f0fdf4':selectedClient.statut==='prospect'?'#fffbeb':'#f9fafb',
-                    color:selectedClient.statut==='actif'?G:selectedClient.statut==='prospect'?AM:'#888'}}>
-                    {selectedClient.statut==='actif'?'Actif':selectedClient.statut==='prospect'?'Prospect':'Inactif'}
-                  </span>
-                  {isNouveau(selectedClient.derniereActivite)&&<span style={{fontSize:9,fontWeight:700,padding:'2px 6px',borderRadius:6,background:'#eff6ff',color:'#2563eb',border:'1px solid #bfdbfe'}}>NOUVEAU</span>}
                 </div>
                 {selectedClient.raisonSociale&&<div style={{fontSize:12,color:'#888',marginTop:2}}>{selectedClient.raisonSociale}</div>}
               </div>
@@ -565,35 +559,56 @@ export default function ClientsPage(){
                 ))}
               </div>
 
-              {/* Coordonnées */}
-              <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px'}}>
-                <div style={{fontSize:11,fontWeight:700,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Coordonnées</div>
-                <div style={{display:'flex',flexDirection:'column',gap:6}}>
-                  {[
-                    {label:'Email',val:<a href={`mailto:${selectedClient.email}`} style={{color:'#2563eb',textDecoration:'none'}}>{selectedClient.email}</a>},
-                    {label:'Téléphone',val:<a href={`tel:${(selectedClient.tel||'').replace(/\s/g,'')}`} style={{color:'#2563eb',textDecoration:'none'}}>{selectedClient.tel}</a>},
-                    {label:'Adresse fact.',val:`${selectedClient.adresseFactLine1||''} ${selectedClient.adresseFactCp||''} ${selectedClient.adresseFactVille||''}`},
-                    {label:'Chantier',val:(
-                      <div style={{display:'flex',alignItems:'center',gap:8}}>
-                        <span>{selectedClient.adresseChantierLine1||''} {selectedClient.adresseChantierCp||''} {selectedClient.adresseChantierVille||''}</span>
-                        {selectedClient.adresseChantierVille&&(
-                          <a href={`https://maps.google.com/?q=${encodeURIComponent((selectedClient.adresseChantierLine1||'')+' '+(selectedClient.adresseChantierCp||'')+' '+(selectedClient.adresseChantierVille||''))}`}
-                            target="_blank" rel="noreferrer" style={{fontSize:11,color:'#2563eb',textDecoration:'none'}}>📍 Maps</a>
-                        )}
-                      </div>
-                    )},
-                    selectedClient.siret?{label:'SIRET',val:selectedClient.siret}:null,
-                    selectedClient.tvaIntra?{label:'TVA intra',val:selectedClient.tvaIntra}:null,
-                    selectedClient.enCharge?{label:'En charge',val:selectedClient.enCharge}:null,
-                    selectedClient.source?{label:'Source',val:selectedClient.source}:null,
-                  ].filter(Boolean).map((item:any,i)=>(
-                    <div key={i} style={{display:'flex',gap:8,fontSize:13}}>
-                      <span style={{color:'#888',minWidth:90,flexShrink:0}}>{item.label}</span>
-                      <span style={{color:'#111',fontWeight:500}}>{item.val}</span>
+              {/* Informations */}
+              {(()=>{
+                const Row=({label,val}:{label:string,val:any})=>val?(
+                  <div style={{display:'flex',gap:8,fontSize:13,marginBottom:4}}>
+                    <span style={{color:'#888',minWidth:120,flexShrink:0}}>{label}</span>
+                    <span style={{color:'#111',fontWeight:500}}>{val}</span>
+                  </div>
+                ):null
+                const Sec=({title,children}:{title:string,children:any})=>{
+                  if(!children||!React.Children.toArray(children).some(Boolean))return null
+                  return(
+                    <div style={{marginBottom:14}}>
+                      <div style={{fontSize:11,fontWeight:700,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:8}}>{title}</div>
+                      {children}
                     </div>
-                  ))}
-                </div>
-              </div>
+                  )
+                }
+                const isPro=selectedClient.type==='professionnel'
+                return(
+                  <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px'}}>
+                    {isPro&&(
+                      <Sec title="Informations entreprise">
+                        <Row label="Raison sociale" val={selectedClient.raisonSociale}/>
+                        <Row label="Forme juridique" val={selectedClient.formeJuridique}/>
+                        <Row label="Pays immat." val={selectedClient.paysImmat!=='France'?selectedClient.paysImmat:null}/>
+                        <Row label="SIREN" val={selectedClient.siren}/>
+                        <Row label="SIRET" val={selectedClient.siret}/>
+                        <Row label="N° TVA intra" val={selectedClient.tvaIntra}/>
+                      </Sec>
+                    )}
+                    <Sec title={isPro?'Contact principal':'Informations personnelles'}>
+                      <Row label="Civilité" val={selectedClient.civilite}/>
+                      <Row label="Prénom" val={selectedClient.prenom}/>
+                      <Row label="Nom" val={(selectedClient as any).nomFamille||(!isPro?selectedClient.nom:null)}/>
+                      <Row label="Email" val={selectedClient.email?<a href={`mailto:${selectedClient.email}`} style={{color:'#2563eb',textDecoration:'none'}}>{selectedClient.email}</a>:null}/>
+                      <Row label="Téléphone" val={selectedClient.tel?<a href={`tel:${selectedClient.tel.replace(/\s/g,'')}`} style={{color:'#2563eb',textDecoration:'none'}}>{selectedClient.tel}</a>:null}/>
+                    </Sec>
+                    <Sec title="Adresse">
+                      <Row label="Adresse" val={selectedClient.adresseFactLine1}/>
+                      <Row label="Code postal" val={selectedClient.adresseFactCp}/>
+                      <Row label="Ville" val={selectedClient.adresseFactVille}/>
+                    </Sec>
+                    {selectedClient.enCharge&&(
+                      <Sec title="Suivi">
+                        <Row label="En charge" val={selectedClient.enCharge}/>
+                      </Sec>
+                    )}
+                  </div>
+                )
+              })()}
 
               {/* Historique devis */}
               <div>
