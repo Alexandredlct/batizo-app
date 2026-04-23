@@ -2,7 +2,7 @@
 import NotifBell from '../components/NotifBell'
 import NouveauClientDrawer from '../components/NouveauClientDrawer'
 import SearchBar from '../components/SearchBar'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 
 const G='#1D9E75',AM='#BA7517',RD='#E24B4A',BD='#e5e7eb'
@@ -350,9 +350,141 @@ export default function ClientsPage(){
     <div style={{fontSize:11,fontWeight:700,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.05em',margin:'14px 0 8px',paddingBottom:5,borderBottom:`1px solid ${BD}`}}>{title}</div>
   )
 
-  const caAnnee=clients.reduce((s,c)=>s+c.caTotal,0)
-  const caPrec=Math.round(caAnnee*0.82)
-  const variation=Math.round((caAnnee-caPrec)/caPrec*100)
+  const[kpiPeriode,setKpiPeriode]=useState<Record<string,string>>({nouveaux:'mois',panier:'mois',ca:'mois'})
+  const[kpiDD,setKpiDD]=useState<string|null>(null)
+  const[kpiDebut,setKpiDebut]=useState<Record<string,string>>({})
+  const[kipFin,setKipFin]=useState<Record<string,string>>({})
+
+  const getRange=(p:string,id:string):{start:Date,end:Date,prevStart:Date,prevEnd:Date}=>{
+    const now=new Date()
+    let start=new Date(),end=new Date(),prevStart=new Date(),prevEnd=new Date()
+    if(p==='mois'){
+      start=new Date(now.getFullYear(),now.getMonth(),1)
+      end=new Date(now)
+      prevStart=new Date(now.getFullYear(),now.getMonth()-1,1)
+      prevEnd=new Date(now.getFullYear(),now.getMonth()-1,now.getDate())
+    } else if(p==='mois_prec'){
+      start=new Date(now.getFullYear(),now.getMonth()-1,1)
+      end=new Date(now.getFullYear(),now.getMonth(),0)
+      prevStart=new Date(now.getFullYear(),now.getMonth()-2,1)
+      prevEnd=new Date(now.getFullYear(),now.getMonth()-1,0)
+    } else if(p==='trimestre'){
+      const q=Math.floor(now.getMonth()/3)
+      start=new Date(now.getFullYear(),q*3,1)
+      end=new Date(now)
+      const dayOfQ=Math.floor((now.getTime()-start.getTime())/(1000*60*60*24))
+      prevStart=new Date(now.getFullYear(),(q-1)*3,1)
+      prevEnd=new Date(prevStart.getTime()+dayOfQ*1000*60*60*24)
+    } else if(p==='annee'){
+      start=new Date(now.getFullYear(),0,1)
+      end=new Date(now)
+      const dayOfY=Math.floor((now.getTime()-start.getTime())/(1000*60*60*24))
+      prevStart=new Date(now.getFullYear()-1,0,1)
+      prevEnd=new Date(prevStart.getTime()+dayOfY*1000*60*60*24)
+    }
+    return{start,end,prevStart,prevEnd}
+  }
+
+  const vsLabel=(p:string)=>p==='mois'?'vs mois dernier':p==='mois_prec'?'vs mois précédent':p==='trimestre'?'vs trimestre précédent':p==='annee'?'vs année dernière':'vs période précédente'
+
+  const kpiStats=React.useMemo(()=>{
+    try{
+      const devisRaw=localStorage.getItem('batizo_devis')
+      const devisList:any[]=devisRaw?JSON.parse(devisRaw):[]
+      const signed=devisList.filter((d:any)=>['signe','facture','finalise'].includes(d.statut||''))
+      
+      const calcCA=(list:any[],start:Date,end:Date)=>list.filter((d:any)=>{
+        const date=new Date(d.dateDevis||d.date||'')
+        return !isNaN(date.getTime())&&date>=start&&date<=end
+      }).reduce((s:number,d:any)=>{
+        return s+(d.lignes||[]).reduce((ls:number,l:any)=>{
+          if(!['materiau','mo','ouvrage'].includes(l.type))return ls
+          return ls+(l.qte||0)*(l.pu||0)
+        },0)
+      },0)
+
+      const calcNouveaux=(start:Date,end:Date)=>clients.filter(cl=>{
+        const date=new Date(cl.dateCreation||(cl as any).derniereActivite||'')
+        return !isNaN(date.getTime())&&date>=start&&date<=end
+      }).length
+
+      const res:Record<string,{val:string,change:string,changeColor:string}>={}
+      for(const id of['nouveaux','panier','ca']){
+        const p=kpiPeriode[id]||'mois'
+        const{start,end,prevStart,prevEnd}=getRange(p,id)
+        
+        if(id==='nouveaux'){
+          const cur=calcNouveaux(start,end)
+          const prev=calcNouveaux(prevStart,prevEnd)
+          const diff=cur-prev
+          const pct=prev>0?Math.round(diff/prev*100):null
+          res[id]={
+            val:String(cur),
+            change:prev===0&&cur===0?'':(pct!==null?(pct>=0?'+':'')+pct+'% '+vsLabel(p):diff>0?'+'+diff+' vs 0':''),
+            changeColor:diff>=0?G:'#6b7280'
+          }
+        } else if(id==='ca'){
+          const cur=calcCA(signed,start,end)
+          const prev=calcCA(signed,prevStart,prevEnd)
+          const pct=prev>0?Math.round((cur-prev)/prev*100):null
+          res[id]={
+            val:Math.round(cur).toLocaleString('fr-FR')+' €',
+            change:prev===0&&cur===0?'':(pct!==null?(pct>=0?'+':'')+pct+'% '+vsLabel(p):''),
+            changeColor:(cur-prev)>=0?G:'#6b7280'
+          }
+        } else if(id==='panier'){
+          const devisPeriode=signed.filter((d:any)=>{const date=new Date(d.dateDevis||d.date||'');return !isNaN(date.getTime())&&date>=start&&date<=end})
+          const devisPrev=signed.filter((d:any)=>{const date=new Date(d.dateDevis||d.date||'');return !isNaN(date.getTime())&&date>=prevStart&&date<=prevEnd})
+          const caP=devisPeriode.reduce((s:number,d:any)=>s+(d.lignes||[]).reduce((ls:number,l:any)=>ls+(l.qte||0)*(l.pu||0),0),0)
+          const caPrev=devisPrev.reduce((s:number,d:any)=>s+(d.lignes||[]).reduce((ls:number,l:any)=>ls+(l.qte||0)*(l.pu||0),0),0)
+          const clientsP=new Set(devisPeriode.map((d:any)=>d.clientId).filter(Boolean)).size||devisPeriode.length
+          const clientsPrev=new Set(devisPrev.map((d:any)=>d.clientId).filter(Boolean)).size||devisPrev.length
+          const panier=clientsP>0?Math.round(caP/clientsP):0
+          const panierPrev=clientsPrev>0?Math.round(caPrev/clientsPrev):0
+          const pct=panierPrev>0?Math.round((panier-panierPrev)/panierPrev*100):null
+          res[id]={
+            val:panier.toLocaleString('fr-FR')+' €',
+            change:panierPrev===0&&panier===0?'':(pct!==null?(pct>=0?'+':'')+pct+'% '+vsLabel(p):''),
+            changeColor:(panier-panierPrev)>=0?G:'#6b7280'
+          }
+        }
+      }
+      return res
+    }catch(e){return{}}
+  },[clients,kpiPeriode])
+
+  const KpiWithPeriod=({id,label}:{id:string,label:string})=>{
+    const stat=kpiStats[id]||{val:'—',change:'',changeColor:G}
+    const p=kpiPeriode[id]||'mois'
+    const pLabel=(v:string)=>v==='mois'?'Ce mois-ci':v==='mois_prec'?'Mois dernier':v==='trimestre'?'Ce trimestre':v==='annee'?'Cette année':'Personnalisé'
+    return(
+      <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px',position:'relative' as const}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+          <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.04em'}}>{label}</div>
+          <div style={{position:'relative' as const}}>
+            <button onClick={()=>setKpiDD(kpiDD===id?null:id)}
+              style={{fontSize:10,color:'#555',background:'#f3f4f6',border:'none',borderRadius:4,padding:'2px 6px',cursor:'pointer'}}>
+              {pLabel(p)} ▾
+            </button>
+            {kpiDD===id&&(
+              <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:200,minWidth:150,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
+                {[['mois','Ce mois-ci'],['mois_prec','Mois dernier'],['trimestre','Ce trimestre'],['annee','Cette année']].map(([v,l])=>(
+                  <div key={v} onClick={()=>{setKpiPeriode(p=>({...p,[id]:v}));setKpiDD(null)}}
+                    style={{padding:'8px 12px',fontSize:12,cursor:'pointer',background:p===v?'#f0fdf4':'',color:p===v?G:'#333'}}
+                    onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                    onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=p===v?'#f0fdf4':''}>
+                    {l}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <div style={{fontSize:22,fontWeight:700,color:'#111',marginBottom:3}}>{stat.val}</div>
+        {stat.change&&<div style={{fontSize:11,color:stat.changeColor,fontWeight:500}}>{stat.change}</div>}
+      </div>
+    )
+  }
 
   return(<>
     <div style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}} onClick={()=>setEnChargeMenu(null)}>
@@ -379,27 +511,14 @@ export default function ClientsPage(){
 
         <div style={{flex:1,overflowY:'auto',padding:24}}>
           {/* Stats */}
-          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}}>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}} onClick={()=>setKpiDD(null)}>
             <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px'}}>
               <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:4}}>Total clients</div>
               <div style={{fontSize:22,fontWeight:700,color:'#111'}}>{clients.length}</div>
             </div>
-            <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px'}}>
-              <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:4}}>Professionnels</div>
-              <div style={{fontSize:22,fontWeight:700,color:'#2563eb'}}>{clients.filter(c=>c.type==='professionnel').length}</div>
-            </div>
-            <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px'}}>
-              <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:4}}>Particuliers</div>
-              <div style={{fontSize:22,fontWeight:700,color:AM}}>{clients.filter(c=>c.type==='particulier').length}</div>
-            </div>
-            <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px'}}>
-              <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:4}}>CA cette année HT</div>
-              <div style={{fontSize:22,fontWeight:700,color:G}}>{caAnnee.toLocaleString('fr-FR')} €</div>
-              <div style={{display:'flex',alignItems:'center',gap:4,marginTop:3}}>
-                <span style={{fontSize:11,fontWeight:700,color:variation>=0?G:RD}}>{variation>=0?'+':''}{variation}% vs 2025</span>
-                <span style={{fontSize:11,color:'#888'}}>{caPrec.toLocaleString('fr-FR')} € en 2025</span>
-              </div>
-            </div>
+            <KpiWithPeriod id="nouveaux" label="Nouveaux clients"/>
+            <KpiWithPeriod id="panier" label="Panier moyen HT"/>
+            <KpiWithPeriod id="ca" label="CA HT"/>
           </div>
 
           {/* Onglets pilules */}
