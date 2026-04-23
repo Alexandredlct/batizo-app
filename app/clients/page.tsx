@@ -265,16 +265,6 @@ export default function ClientsPage(){
           </div>
 
           {/* Filtres */}
-          <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap' as const,alignItems:'center'}}>
-            <div style={{display:'flex',gap:6}}>
-              {(['tous','actif','prospect','inactif'] as const).map(f=>(
-                <button key={f} onClick={()=>setFiltreStatut(f)}
-                  style={{padding:'5px 12px',borderRadius:20,border:`1px solid ${filtreStatut===f?(f==='actif'?G:f==='prospect'?AM:'#888'):BD}`,background:filtreStatut===f?(f==='actif'?'#f0fdf4':f==='prospect'?'#fffbeb':'#f9fafb'):'#fff',color:filtreStatut===f?(f==='actif'?G:f==='prospect'?AM:'#555'):'#555',fontSize:12,fontWeight:filtreStatut===f?600:400,cursor:'pointer'}}>
-                  {f==='tous'?'Tous':f==='actif'?'Actif':f==='prospect'?'Prospect':'Inactif'}
-                </button>
-              ))}
-            </div>
-            <div style={{width:1,height:20,background:BD}}/>
             {(['tous','particulier','professionnel'] as const).map(f=>(
               <button key={f} onClick={()=>setFiltre(f)}
                 style={{padding:'5px 12px',borderRadius:20,border:`1px solid ${filtre===f?'#2563eb':BD}`,background:filtre===f?'#eff6ff':'#fff',color:filtre===f?'#2563eb':'#555',fontSize:12,fontWeight:filtre===f?600:400,cursor:'pointer'}}>
@@ -303,7 +293,6 @@ export default function ClientsPage(){
                   {[
                     {label:'Client',key:'nom'},
                     {label:'Type',key:''},
-                    {label:'Statut',key:''},
                     {label:'Email',key:''},
                     {label:'Téléphone',key:''},
                     {label:'Ville',key:''},
@@ -311,7 +300,6 @@ export default function ClientsPage(){
                     {label:'CA total HT',key:'caTotal'},
                     {label:'Dernière activité',key:'derniereActivite'},
                     {label:'En charge',key:''},
-                    {label:'Comms',key:''},
                     {label:'',key:''},
                   ].map(({label,key})=>(
                     <th key={label} onClick={()=>key&&toggleTri(key as typeof tri)}
@@ -323,7 +311,7 @@ export default function ClientsPage(){
               </thead>
               <tbody>
                 {filtered.length===0?(
-                  <tr><td colSpan={12} style={{padding:'3rem',textAlign:'center' as const,color:'#888',fontSize:13}}>Aucun client{search?' pour cette recherche':''}</td></tr>
+                  <tr><td colSpan={10} style={{padding:'3rem',textAlign:'center' as const,color:'#888',fontSize:13}}>Aucun client{search?' pour cette recherche':''}</td></tr>
                 ):sorted(filtered).map(client=>(
                   <tr key={client.id} style={{borderBottom:`1px solid ${BD}`,cursor:'pointer'}}
                     onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
@@ -334,7 +322,6 @@ export default function ClientsPage(){
                     <td style={{padding:'11px 14px'}}>
                       <div style={{fontSize:13,fontWeight:600,color:'#111'}}>
                         {client.civilite} {client.prenom} {client.nom}
-                        {isNouveau(client.derniereActivite)&&<span style={{marginLeft:6,fontSize:9,fontWeight:700,padding:'1px 5px',borderRadius:6,background:'#eff6ff',color:'#2563eb',border:'1px solid #bfdbfe'}}>NOUVEAU</span>}
                       </div>
                       {client.raisonSociale&&<div style={{fontSize:11,color:'#888'}}>{client.raisonSociale}</div>}
                       {client.tags&&<div style={{display:'flex',gap:3,marginTop:2,flexWrap:'wrap' as const}}>
@@ -353,14 +340,7 @@ export default function ClientsPage(){
                       </span>
                     </td>
 
-                    {/* 3. Statut */}
-                    <td style={{padding:'11px 14px'}}>
-                      <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:10,
-                        background:client.statut==='actif'?'#f0fdf4':client.statut==='prospect'?'#fffbeb':'#f9fafb',
-                        color:client.statut==='actif'?G:client.statut==='prospect'?AM:'#888'}}>
-                        {client.statut==='actif'?'Actif':client.statut==='prospect'?'Prospect':'Inactif'}
-                      </span>
-                    </td>
+
 
                     {/* 4. Email */}
                     <td style={{padding:'11px 14px',fontSize:13,color:'#333'}} onClick={e=>e.stopPropagation()}>
@@ -373,7 +353,7 @@ export default function ClientsPage(){
                         <a href={`tel:${client.tel.replace(/\s/g,'')}`} style={{fontSize:13,color:'#333',textDecoration:'none',display:'flex',alignItems:'center',gap:4}}
                           onMouseEnter={e=>(e.currentTarget as HTMLAnchorElement).style.color='#2563eb'}
                           onMouseLeave={e=>(e.currentTarget as HTMLAnchorElement).style.color='#333'}>
-                          📞 {client.tel}
+                          {client.tel}
                         </a>
                       ):'—'}
                     </td>
