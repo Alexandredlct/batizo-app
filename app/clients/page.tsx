@@ -81,7 +81,7 @@ export default function ClientsPage(){
   const[filtre,setFiltre]=useState<'tous'|'particulier'|'professionnel'>('tous')
   const[filtreStatut,setFiltreStatut]=useState<'tous'|'actif'|'inactif'|'prospect'>('tous')
   const[search,setSearch]=useState('')
-  const[tri,setTri]=useState<'nom'|'caTotal'|'nbDevis'|'derniereActivite'>('nom')
+  const[tri,setTri]=useState<'nom'|'caTotal'|'nbDevis'|'derniereActivite'|'adresseFactVille'>('nom')
   const[triDir,setTriDir]=useState<'asc'|'desc'>('asc')
   const[panel,setPanel]=useState<'add'|'edit'|'view'|null>(null)
   const[selectedId,setSelectedId]=useState<string|null>(null)
@@ -116,6 +116,7 @@ export default function ClientsPage(){
 
   const sorted=(items:Client[])=>[...items].sort((a,b)=>{
     if(tri==='nom') return triDir==='asc'?a.nom.localeCompare(b.nom):b.nom.localeCompare(a.nom)
+    if(tri==='adresseFactVille') return triDir==='asc'?(a.adresseFactVille||'').localeCompare(b.adresseFactVille||''):(b.adresseFactVille||'').localeCompare(a.adresseFactVille||'')
     if(tri==='caTotal') return triDir==='asc'?a.caTotal-b.caTotal:b.caTotal-a.caTotal
     if(tri==='nbDevis') return triDir==='asc'?a.nbDevis-b.nbDevis:b.nbDevis-a.nbDevis
     if(tri==='derniereActivite'){
@@ -388,7 +389,7 @@ export default function ClientsPage(){
                     {label:'Type',key:''},
                     {label:'Email',key:''},
                     {label:'Téléphone',key:''},
-                    {label:'Ville',key:''},
+                    {label:'Ville',key:'adresseFactVille'},
                     {label:'Devis',key:'nbDevis'},
                     {label:'CA total HT',key:'caTotal'},
                     {label:'En charge',key:''},
