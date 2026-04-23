@@ -344,25 +344,38 @@ export default function ClientsPage(){
             </div>
           </div>
 
-          {/* Filtres */}
-            {(['tous','particulier','professionnel'] as const).map(f=>(
-              <button key={f} onClick={()=>setFiltre(f)}
-                style={{padding:'5px 12px',borderRadius:20,border:`1px solid ${filtre===f?'#2563eb':BD}`,background:filtre===f?'#eff6ff':'#fff',color:filtre===f?'#2563eb':'#555',fontSize:12,fontWeight:filtre===f?600:400,cursor:'pointer'}}>
-                {f==='tous'?`Tous (${clients.length})`:f==='particulier'?`Particuliers (${clients.filter(c=>c.type==='particulier').length})`:`Pros (${clients.filter(c=>c.type==='professionnel').length})`}
+          {/* Onglets pilules */}
+          <div style={{display:'flex',gap:8,marginBottom:16}}>
+            {([
+              ['tous','Tous',clients.length],
+              ['particulier','Particuliers',clients.filter(c=>c.type==='particulier').length],
+              ['professionnel','Professionnels',clients.filter(c=>c.type==='professionnel').length],
+            ] as const).map(([val,label,count])=>(
+              <button key={val} onClick={()=>setFiltre(val as typeof filtre)}
+                style={{padding:'7px 16px',borderRadius:20,border:`1px solid ${filtre===val?G:BD}`,background:filtre===val?'#f0fdf4':'#fff',color:filtre===val?G:'#555',fontSize:13,fontWeight:filtre===val?600:400,cursor:'pointer',display:'flex',alignItems:'center',gap:6}}>
+                {label}
+                <span style={{background:filtre===val?G:'#e5e7eb',color:filtre===val?'#fff':'#888',fontSize:10,fontWeight:700,padding:'1px 6px',borderRadius:10}}>{count}</span>
               </button>
             ))}
+          </div>
+
+          {/* Barre recherche + filtre en charge */}
+          <div style={{display:'flex',gap:8,marginBottom:20,alignItems:'center'}}>
+            <div style={{flex:'1 1 auto',position:'relative'}}>
+              <svg style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)'}} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input value={search} onChange={e=>setSearch(e.target.value)}
+                placeholder="Rechercher par nom, email, téléphone, ville..."
+                style={{width:'100%',padding:'9px 12px 9px 36px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}
+                onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+                onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor='#999'}/>
+              {search&&<button onClick={()=>setSearch('')} style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:18}}>×</button>}
+            </div>
             <select value={filtreEnCharge} onChange={e=>setFiltreEnCharge(e.target.value)}
-              style={{padding:'6px 10px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
-              <option value="tous">Tous les responsables</option>
-              {MEMBRES.map(m=><option key={m}>{m}</option>)}
+              style={{padding:'9px 18px 9px 12px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111',width:'auto',height:40,flexShrink:0,appearance:'none' as const,WebkitAppearance:'none' as const,backgroundImage:"url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3e%3cpath d='M3 4.5L6 7.5L9 4.5' stroke='%236B7280' stroke-width='1.5' fill='none'/%3e%3c/svg%3e")",backgroundRepeat:'no-repeat',backgroundPosition:'right 10px center',backgroundSize:'12px',backgroundColor:'#fff'}}>
+              <option value="tous">En charge : Tous</option>
+              {MEMBRES.map(m=><option key={m} value={m}>{m}</option>)}
               <option value="">Non assigné</option>
             </select>
-            <div style={{flex:1,position:'relative',minWidth:200}}>
-              <svg style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)'}} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher..."
-                style={{width:'100%',padding:'7px 12px 7px 32px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
-              {search&&<button onClick={()=>setSearch('')} style={{position:'absolute',right:8,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:16}}>×</button>}
-            </div>
           </div>
 
           {/* Tableau */}
