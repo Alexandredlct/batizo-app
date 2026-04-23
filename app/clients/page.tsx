@@ -379,7 +379,7 @@ export default function ClientsPage(){
           </div>
 
           {/* Tableau */}
-          <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,overflow:'visible'}}>
+          <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,overflow:'hidden'}}>
             <table style={{width:'100%',borderCollapse:'collapse'}}>
               <thead>
                 <tr style={{background:'#f9fafb'}}>
@@ -416,11 +416,7 @@ export default function ClientsPage(){
                         {client.civilite} {client.prenom} {client.nom}
                       </div>
                       {client.raisonSociale&&<div style={{fontSize:11,color:'#888'}}>{client.raisonSociale}</div>}
-                      {client.tags&&<div style={{display:'flex',gap:3,marginTop:2,flexWrap:'wrap' as const}}>
-                        {client.tags.split(',').filter(t=>t.trim()).map((t,i)=>(
-                          <span key={i} style={{fontSize:9,padding:'1px 5px',background:'#f3f4f6',color:'#555',borderRadius:6,fontWeight:600}}>{t.trim()}</span>
-                        ))}
-                      </div>}
+
                     </td>
 
                     {/* 2. Type */}
