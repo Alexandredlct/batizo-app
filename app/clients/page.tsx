@@ -225,7 +225,7 @@ export default function ClientsPage(){
   const caPrec=Math.round(caAnnee*0.82)
   const variation=Math.round((caAnnee-caPrec)/caPrec*100)
 
-  return(
+  return(<>
     <div style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}} onClick={()=>setEnChargeMenu(null)}>
       <Sidebar activePage="clients"/>
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
@@ -435,7 +435,6 @@ export default function ClientsPage(){
           <div style={{marginTop:8,fontSize:12,color:'#888'}}>{filtered.length} client{filtered.length>1?'s':''} affiché{filtered.length>1?'s':''}</div>
         </div>
       </div>
-
       {/* Panneau Add/Edit */}
       {(panel==='add'||panel==='edit')&&(
         <NouveauClientDrawer
@@ -634,6 +633,5 @@ export default function ClientsPage(){
           <span style={{fontSize:13}}>{toast}</span>
         </div>
       )}
-    </div>
-  )
+  </>)
 }
