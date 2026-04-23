@@ -474,15 +474,24 @@ export default function ClientsPage(){
                         {(()=>{
   const isPro=client.type==='professionnel'
   const prenom=(client as any).prenom||''
-  const nomF=(client as any).nomFamille||''
+  const nom=(client as any).nomFamille||(client as any).nom||''
   const civ=(client as any).civilite||''
-  if(isPro){
-    return client.raisonSociale||client.nom
-  }
-  if(prenom&&nomF) return prenom+' '+nomF
-  if(!prenom&&nomF) return civ?(civ+' '+nomF):nomF
-  if(prenom&&!nomF) return civ?(civ+' '+prenom):prenom
+  if(isPro) return client.raisonSociale||client.nom
+  if(prenom&&nom) return prenom+' '+nom
+  if(!prenom&&nom) return civ?(civ+' '+nom):nom
+  if(prenom&&!nom) return civ?(civ+' '+prenom):prenom
   return client.nom
+})()}
+{(()=>{
+  const isPro=client.type==='professionnel'
+  if(!isPro) return null
+  const prenom=(client as any).prenom||''
+  const nom=(client as any).nom||''
+  const civ=(client as any).civilite||''
+  if(prenom&&nom) return <div style={{fontSize:11,color:'#888',marginTop:1}}>{prenom+' '+nom}</div>
+  if(!prenom&&nom) return <div style={{fontSize:11,color:'#888',marginTop:1}}>{civ?(civ+' '+nom):nom}</div>
+  if(prenom&&!nom) return <div style={{fontSize:11,color:'#888',marginTop:1}}>{civ?(civ+' '+prenom):prenom}</div>
+  return null
 })()}
                       </div>
                       {(()=>{
