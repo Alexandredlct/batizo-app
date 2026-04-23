@@ -15,7 +15,7 @@ function Field({label,value,onChange,placeholder,required=false,type:t='text',er
       </label>
       <input type={t} value={value} onChange={e=>onChange(e.target.value)}
         placeholder={placeholder} onBlur={onBlurValidate}
-        style={{width:'100%',padding:'9px 12px',border:`1px solid ${error?'#DC2626':BD}`,borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box' as const}}
+        style={{width:'100%',padding:'9px 12px',border:`1px solid ${error?'#DC2626':BD}`,borderRadius:8,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}
         onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}/>
       {error&&<div style={{fontSize:11,color:'#DC2626',marginTop:3}}>{error}</div>}
     </div>
