@@ -471,7 +471,7 @@ export default function ClientsPage(){
                     {/* 1. Client */}
                     <td style={{padding:'11px 14px'}}>
                       <div style={{fontSize:13,fontWeight:600,color:'#111'}}>
-                        {client.civilite} {client.prenom} {client.nom}
+                        {client.civilite?client.civilite+' ':''}{client.prenom&&(client as any).nomFamille?client.prenom+' '+(client as any).nomFamille:client.nom}
                       </div>
                       {client.raisonSociale&&<div style={{fontSize:11,color:'#888'}}>{client.raisonSociale}</div>}
 
