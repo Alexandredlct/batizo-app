@@ -533,7 +533,6 @@ export default function ClientsPage(){
                 <div>
                 <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:4}}>Email</label>
                 <input type="email" value={form.email||''} onChange={e=>setForm((p:any)=>({...p,email:e.target.value}))} placeholder="jean@exemple.fr"
-                  onBlur={e=>{const v=e.target.value;if(v&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v))alert('Email invalide')}}
                   style={{width:'100%',padding:'8px 11px',border:`1px solid ${form.email&&clients.find(cl=>cl.email===form.email&&cl.id!==selectedId)?RD:BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}
                   onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=form.email&&clients.find(cl=>cl.email===form.email&&cl.id!==selectedId)?RD:G}
                   onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=form.email&&clients.find(cl=>cl.email===form.email&&cl.id!==selectedId)?RD:BD}/>
