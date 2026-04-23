@@ -1,5 +1,6 @@
 'use client'
 import NotifBell from '../components/NotifBell'
+import NouveauClientDrawer from '../components/NouveauClientDrawer'
 import SearchBar from '../components/SearchBar'
 import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
