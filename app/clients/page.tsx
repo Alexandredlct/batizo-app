@@ -482,17 +482,7 @@ export default function ClientsPage(){
   if(prenom&&!nom) return civ?(civ+' '+prenom):prenom
   return client.nom
 })()}
-{(()=>{
-  const isPro=client.type==='professionnel'
-  if(!isPro) return null
-  const prenom=(client as any).prenom||''
-  const nom=(client as any).nom||''
-  const civ=(client as any).civilite||''
-  if(prenom&&nom) return <div style={{fontSize:11,color:'#888',marginTop:1}}>{prenom+' '+nom}</div>
-  if(!prenom&&nom) return <div style={{fontSize:11,color:'#888',marginTop:1}}>{civ?(civ+' '+nom):nom}</div>
-  if(prenom&&!nom) return <div style={{fontSize:11,color:'#888',marginTop:1}}>{civ?(civ+' '+prenom):prenom}</div>
-  return null
-})()}
+
                       </div>
                       {(()=>{
   const isPro=client.type==='professionnel'
