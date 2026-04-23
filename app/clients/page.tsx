@@ -149,7 +149,7 @@ function KpiWithPeriod({id,label,kpiStats,kpiPeriode,setKpiPeriode,kpiDD,setKpiD
           {kpiDD===id&&(
             <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:200,minWidth:150,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
               {[['mois','Ce mois-ci'],['mois_prec','Mois dernier'],['trimestre','Ce trimestre'],['annee','Cette année']].map(([v,l])=>(
-                <div key={v} onClick={()=>{setKpiPeriode(p=>({...p,[id]:v}));setKpiDD(null)}}
+                <div key={v} onClick={()=>{setKpiPeriode((p:Record<string,string>)=>({...p,[id]:v}));setKpiDD(null)}}
                   style={{padding:'8px 12px',fontSize:12,cursor:'pointer',background:p===v?'#f0fdf4':'',color:p===v?G:'#333'}}
                   onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
                   onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=p===v?'#f0fdf4':''}>
