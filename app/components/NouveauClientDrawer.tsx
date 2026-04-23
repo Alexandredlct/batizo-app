@@ -42,24 +42,26 @@ function SelectField({label,value,onChange,options,required=false,error}:{
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,onSave:(client:any)=>void}){
-  const[type,setType]=useState<'particulier'|'pro'>('particulier')
-  const[civilite,setCivilite]=useState('')
-  const[nom,setNom]=useState('')
-  const[prenom,setPrenom]=useState('')
-  const[raisonSociale,setRaisonSociale]=useState('')
-  const[formeJuridique,setFormeJuridique]=useState('')
+export default function NouveauClientDrawer({onClose,onSave,mode='create',clientInitial}:{
+  onClose:()=>void,onSave:(client:any)=>void,mode?:'add'|'edit'|'create',clientInitial?:any
+}){
+  const[type,setType]=useState<'particulier'|'pro'>(clientInitial?.type||clientInitial?.typeClient||'particulier')
+  const[civilite,setCivilite]=useState(clientInitial?.civilite||'')
+  const[nom,setNom]=useState(clientInitial?.nomFamille||clientInitial?.nom?.split(' ').pop()||'')
+  const[prenom,setPrenom]=useState(clientInitial?.prenom||'')
+  const[raisonSociale,setRaisonSociale]=useState(clientInitial?.raisonSociale||'')
+  const[formeJuridique,setFormeJuridique]=useState(clientInitial?.formeJuridique||'')
   const[paysImmat,setPaysImmat]=useState('France')
-  const[siren,setSiren]=useState('')
-  const[siret,setSiret]=useState('')
-  const[tvaIntra,setTvaIntra]=useState('')
-  const[email,setEmail]=useState('')
-  const[tel,setTel]=useState('')
-  const[adresse,setAdresse]=useState('')
-  const[cp,setCp]=useState('')
-  const[ville,setVille]=useState('')
-  const[enCharge,setEnCharge]=useState('')
-  const[notes,setNotes]=useState('')
+  const[siren,setSiren]=useState(clientInitial?.siren||'')
+  const[siret,setSiret]=useState(clientInitial?.siret||'')
+  const[tvaIntra,setTvaIntra]=useState(clientInitial?.tvaIntra||'')
+  const[email,setEmail]=useState(clientInitial?.email||'')
+  const[tel,setTel]=useState(clientInitial?.tel||'')
+  const[adresse,setAdresse]=useState(clientInitial?.adresseFactLine1||clientInitial?.adresse?.split(',')[0]||'')
+  const[cp,setCp]=useState(clientInitial?.adresseFactCp||'')
+  const[ville,setVille]=useState(clientInitial?.adresseFactVille||'')
+  const[enCharge,setEnCharge]=useState(clientInitial?.enCharge||'')
+  const[notes,setNotes]=useState(clientInitial?.notes||'')
   const[errors,setErrors]=useState<Record<string,string>>({})
   const[saved,setSaved]=useState(false)
   const[utilisateurs,setUtilisateurs]=useState<{id:string,nom:string}[]>([])
@@ -134,7 +136,7 @@ export default function NouveauClientDrawer({onClose,onSave}:{onClose:()=>void,o
       <div style={{position:'fixed',top:0,right:0,width:480,height:'100vh',background:'#fff',boxShadow:'-4px 0 24px rgba(0,0,0,0.12)',zIndex:501,display:'flex',flexDirection:'column' as const}}>
 
         <div style={{padding:'16px 20px',borderBottom:`1px solid ${BD}`,display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
-          <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Nouveau client</div>
+          <div style={{fontSize:15,fontWeight:700,color:'#111'}}>{mode==='edit'?'Modifier le client':'Nouveau client'}</div>
           <div style={{display:'flex',gap:8}}>
             <button onClick={onClose} style={{padding:'7px 14px',border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555'}}>Annuler</button>
             <button onClick={handleSave} style={{padding:'7px 16px',background:saved?'#059669':G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>

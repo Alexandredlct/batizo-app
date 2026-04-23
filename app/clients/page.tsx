@@ -457,151 +457,22 @@ export default function ClientsPage(){
 
       {/* Panneau Add/Edit */}
       {(panel==='add'||panel==='edit')&&(
-        <>
-          <div onClick={closePanel} style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.3)',zIndex:399}}/>
-          <div onClick={e=>e.stopPropagation()} style={{position:'fixed',top:0,right:0,width:540,height:'100vh',background:'#fff',boxShadow:'-4px 0 24px rgba(0,0,0,0.12)',zIndex:400,display:'flex',flexDirection:'column',overflow:'hidden'}}>
-            <div style={{padding:'14px 20px',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
-              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>{panel==='edit'?'Modifier le client':'Nouveau client'}</div>
-              <div style={{display:'flex',gap:8}}>
-                <button onClick={save} style={{padding:'8px 18px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>{panel==='edit'?'Enregistrer':'Ajouter'}</button>
-                <button onClick={closePanel} style={{width:32,height:32,borderRadius:'50%',border:`1px solid ${BD}`,background:'#f9fafb',cursor:'pointer',fontSize:16,color:'#888',display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
-              </div>
-            </div>
-            <div style={{flex:1,overflowY:'auto',padding:20,display:'flex',flexDirection:'column',gap:10}}>
-
-              {/* Type + Statut sur la même ligne */}
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-                <div>
-                  <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:6}}>Type de client</label>
-                  <div style={{display:'flex',gap:6}}>
-                    {(['particulier','professionnel'] as const).map(t=>(
-                      <button key={t} onClick={()=>setForm((p:any)=>({...p,type:t}))}
-                        style={{flex:1,padding:'8px 6px',border:`2px solid ${form.type===t?G:BD}`,borderRadius:7,background:form.type===t?'#f0fdf4':'#fff',color:form.type===t?G:'#555',fontSize:12,fontWeight:form.type===t?600:400,cursor:'pointer'}}>
-                        {t==='particulier'?'👤 Particulier':'🏢 Pro'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:6}}>Statut</label>
-                  <div style={{display:'flex',gap:6}}>
-                    {([['actif','✅ Actif',G],['prospect','🔍 Prospect',AM],['inactif','⏸ Inactif','#888']] as const).map(([s,label,col])=>(
-                      <button key={s} onClick={()=>setForm((p:any)=>({...p,statut:s}))}
-                        style={{flex:1,padding:'8px 4px',border:`2px solid ${form.statut===s?col:BD}`,borderRadius:7,background:form.statut===s?col+'18':'#fff',color:form.statut===s?col:'#555',fontSize:11,fontWeight:form.statut===s?600:400,cursor:'pointer'}}>
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Pro fields */}
-              {form.type==='professionnel'&&(
-                <>
-                  <Sep title="Informations entreprise"/>
-                  <F label="Raison sociale *" field="raisonSociale" placeholder="Ex: Dupont Immobilier SAS" required/>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                    <S label="Forme juridique" field="formeJuridique" options={FORMES}/>
-                    <F label="Pays immatriculation" field="paysImmat" placeholder="France"/>
-                  </div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                    <F label="SIREN" field="siren" placeholder="123456789"/>
-                    <F label="SIRET" field="siret" placeholder="12345678900012"/>
-                  </div>
-                  <F label="N° TVA intracommunautaire" field="tvaIntra" placeholder="FR12123456789"/>
-                  <Sep title="Contact principal"/>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                    <F label="Nom du contact" field="contactNom" placeholder="Jean Dupont"/>
-                    <F label="Poste" field="contactPoste" placeholder="Directeur"/>
-                  </div>
-                </>
-              )}
-
-              <Sep title="Informations personnelles"/>
-              <div style={{display:'grid',gridTemplateColumns:'80px 1fr 1fr',gap:10,alignItems:'end'}}>
-                <div>
-                  <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:4}}>Civilité</label>
-                  <select value={form.civilite||'M.'} onChange={e=>setForm((p:any)=>({...p,civilite:e.target.value}))}
-                    style={{width:'100%',padding:'8px 8px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',background:'#fff'}}>
-                    {['','M.','Mme'].map(o=><option key={o} value={o}>{o||'—'}</option>)}
-                  </select>
-                </div>
-                <F label="Prénom" field="prenom" placeholder="Jean" required/>
-                <F label="Nom" field="nom" placeholder="Dupont" required/>
-              </div>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                <div>
-                <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:4}}>Email</label>
-                <input type="email" value={form.email||''} onChange={e=>setForm((p:any)=>({...p,email:e.target.value}))} placeholder="jean@exemple.fr"
-                  style={{width:'100%',padding:'8px 11px',border:`1px solid ${form.email&&clients.find(cl=>cl.email===form.email&&cl.id!==selectedId)?RD:BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}
-                  onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=form.email&&clients.find(cl=>cl.email===form.email&&cl.id!==selectedId)?RD:G}
-                  onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=form.email&&clients.find(cl=>cl.email===form.email&&cl.id!==selectedId)?RD:BD}/>
-                {form.email&&(()=>{const d=clients.find(cl=>cl.email===form.email&&cl.id!==selectedId);return d?(
-                  <div style={{fontSize:11,color:RD,marginTop:3,display:'flex',alignItems:'center',gap:4}}>
-                    ⚠️ Email déjà utilisé par {d.prenom} {d.nom}
-                  </div>
-                ):null})()}
-              </div>
-                <div>
-                <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:4}}>Téléphone</label>
-                <input type="tel" value={form.tel||''} onChange={e=>setForm((p:any)=>({...p,tel:e.target.value}))} placeholder="06 12 34 56 78"
-                  style={{width:'100%',padding:'8px 11px',border:`1px solid ${form.tel&&clients.find(cl=>cl.tel===form.tel&&cl.id!==selectedId)?RD:BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
-                {form.tel&&(()=>{const d=clients.find(cl=>cl.tel===form.tel&&cl.id!==selectedId);return d?(
-                  <div style={{fontSize:11,color:RD,marginTop:3,display:'flex',alignItems:'center',gap:4}}>
-                    ⚠️ Téléphone déjà utilisé par {d.prenom} {d.nom}
-                  </div>
-                ):null})()}
-              </div>
-              </div>
-
-              <Sep title="Adresse de facturation"/>
-              <F label="Adresse *" field="adresseFactLine1" placeholder="12 rue de la Paix"/>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
-                <F label="Code postal *" field="adresseFactCp" placeholder="75001"/>
-                <F label="Ville *" field="adresseFactVille" placeholder="Paris"/>
-                <F label="Pays" field="adresseFactPays" placeholder="France"/>
-              </div>
-
-              <Sep title="Adresse chantier"/>
-              <label style={{display:'flex',alignItems:'center',gap:8,fontSize:13,color:'#555',cursor:'pointer'}}>
-                <input type="checkbox" checked={adresseSame} onChange={e=>setAdresseSame(e.target.checked)} style={{accentColor:G}}/>
-                Identique à l'adresse de facturation
-              </label>
-              {!adresseSame&&(
-                <>
-                  <F label="Adresse chantier" field="adresseChantierLine1" placeholder="5 rue Voltaire"/>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                    <F label="Code postal" field="adresseChantierCp" placeholder="92300"/>
-                    <F label="Ville chantier" field="adresseChantierVille" placeholder="Levallois-Perret"/>
-                  </div>
-                </>
-              )}
-
-              <Sep title="Autres"/>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                <div>
-                  <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:4}}>En charge</label>
-                  <select value={form.enCharge||''} onChange={e=>setForm((p:any)=>({...p,enCharge:e.target.value}))}
-                    style={{width:'100%',padding:'8px 11px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',background:'#fff'}}>
-                    <option value="">Non assigné</option>
-                    {MEMBRES.map(m=><option key={m}>{m}</option>)}
-                  </select>
-                </div>
-                <S label="Source" field="source" options={SOURCES}/>
-              </div>
-              <S label="Langue préférée" field="langue" options={LANGUES}/>
-              <F label="Tags (séparés par virgules)" field="tags" placeholder="VIP, gros chantier"/>
-              <div>
-                <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:4}}>Notes</label>
-                <textarea value={form.notes||''} onChange={e=>setForm((p:any)=>({...p,notes:e.target.value}))}
-                  rows={3} placeholder="Informations complémentaires..."
-                  style={{width:'100%',padding:'8px 11px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',resize:'vertical' as const,fontFamily:'system-ui,sans-serif',color:'#111',boxSizing:'border-box' as const}}/>
-              </div>
-            </div>
-          </div>
-        </>
+        <NouveauClientDrawer
+          mode={panel}
+          clientInitial={panel==='edit'?form:undefined}
+          onClose={closePanel}
+          onSave={(client:any)=>{
+            if(panel==='edit'&&selectedId){
+              setClients(p=>{const updated=p.map(c=>c.id===selectedId?{...client,id:selectedId}:c);try{localStorage.setItem('batizo_clients',JSON.stringify(updated))}catch(e){}return updated})
+              showToast('Client modifié')
+            } else {
+              setClients(p=>{const updated=[...p,{...client,nbDevis:0,caTotal:0,margeAvg:0,derniereActivite:new Date().toLocaleDateString('fr-FR')}];try{localStorage.setItem('batizo_clients',JSON.stringify(updated))}catch(e){}return updated})
+              showToast('Client ajouté')
+            }
+            closePanel()
+          }}
+        />
       )}
-
       {/* Panneau vue fiche */}
       {panel==='view'&&selectedClient&&(
         <>
