@@ -404,7 +404,7 @@ export default function ClientsPage(){
       },0)
 
       const calcNouveaux=(start:Date,end:Date)=>clients.filter(cl=>{
-        const date=new Date(cl.dateCreation||(cl as any).derniereActivite||'')
+        const date=new Date((cl as any).dateCreation||cl.derniereActivite||'')
         return !isNaN(date.getTime())&&date>=start&&date<=end
       }).length
 
