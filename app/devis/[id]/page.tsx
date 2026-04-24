@@ -203,8 +203,8 @@ function EditClientModal({client,onSave,onClose,G,BD}:{client:any,onSave:(c:any)
 export default function NouveauDevisPage(){
   const[params,setParams]=useState<any>({})
   const[logoPreview,setLogoPreview]=useState<string|null>(null)
-  const params = useParams()
-  const devisId = params?.id as string
+  const routeParams = useParams()
+  const devisId = routeParams?.id as string
 
   // Charger le devis depuis localStorage
   useEffect(()=>{
