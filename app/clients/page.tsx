@@ -625,7 +625,7 @@ export default function ClientsPage(){
                       <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:10,
                         background:client.type==='professionnel'?'#eff6ff':'#fff7ed',
                         color:client.type==='professionnel'?'#2563eb':'#ea580c'}}>
-                        {client.type==='professionnel'?'Pro':'Particulier'}
+                        {client.type==='professionnel'?'Professionnel':'Particulier'}
                       </span>
                     </td>
 
@@ -659,7 +659,7 @@ export default function ClientsPage(){
                     {/* 10. En charge */}
                     <td style={{padding:'11px 14px',overflow:'visible'}} onClick={e=>e.stopPropagation()}>
                       <div style={{position:'relative'}}>
-                        <div onClick={()=>setEnChargeMenu(enChargeMenu===client.id?null:client.id)}
+                        <div data-encharge={client.id} onClick={()=>setEnChargeMenu(enChargeMenu===client.id?null:client.id)}
                           style={{display:'inline-flex',alignItems:'center',gap:5,cursor:'pointer',padding:'3px 7px',borderRadius:7,transition:'background 0.1s'}}
                           onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f3f4f6'}
                           onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
@@ -671,8 +671,10 @@ export default function ClientsPage(){
                           </span>
                           <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
                         </div>
-                        {enChargeMenu===client.id&&(
-                          <div onClick={e=>e.stopPropagation()} style={{position:'absolute',top:'110%',left:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 8px 24px rgba(0,0,0,0.15)',zIndex:500,minWidth:190,overflow:'hidden'}}>
+                        {enChargeMenu===client.id&&typeof window!=='undefined'&&createPortal(
+                          <div onClick={e=>e.stopPropagation()} style={{position:'fixed',background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 8px 24px rgba(0,0,0,0.15)',zIndex:9999,minWidth:200,overflow:'hidden',
+                            top:(()=>{const el=document.querySelector(`[data-encharge="${client.id}"]`);if(!el)return 0;const r=el.getBoundingClientRect();return r.bottom+4})(),
+                            left:(()=>{const el=document.querySelector(`[data-encharge="${client.id}"]`);if(!el)return 0;const r=el.getBoundingClientRect();return r.left})()}}>
                             <div style={{padding:'8px 12px',fontSize:11,color:'#888',fontWeight:600,borderBottom:`1px solid #f3f4f6`}}>ASSIGNER À</div>
                             {['', ...MEMBRES].map(m=>(
                               <div key={m||'none'} onClick={()=>{setClients(p=>p.map(cl=>cl.id===client.id?{...cl,enCharge:m}:cl));setEnChargeMenu(null)}}
@@ -680,17 +682,19 @@ export default function ClientsPage(){
                                   background:client.enCharge===m?'#f0fdf4':'',color:client.enCharge===m?G:'#333',fontWeight:client.enCharge===m?600:400}}
                                 onMouseEnter={e=>{if(client.enCharge!==m)(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}}
                                 onMouseLeave={e=>{if(client.enCharge!==m)(e.currentTarget as HTMLDivElement).style.background=''}}>
-                                {m?(
-                                  <>
+                                <div style={{display:'flex',alignItems:'center',gap:8,flex:1}}>
+                                  {m?(<>
                                     <div style={{width:22,height:22,borderRadius:'50%',background:'#f0f4ff',color:'#2563eb',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:700,flexShrink:0}}>
                                       {m.split(' ').map((n:string)=>n[0]).join('').slice(0,2)}
                                     </div>
                                     {m}
-                                  </>
-                                ):<span style={{color:'#aaa'}}>Non assigné</span>}
+                                  </>):<span style={{color:'#aaa'}}>Non assigné</span>}
+                                </div>
+                                {client.enCharge===m&&<span style={{color:G,fontSize:12}}>✓</span>}
                               </div>
                             ))}
-                          </div>
+                          </div>,
+                          document.body
                         )}
                       </div>
                     </td>
