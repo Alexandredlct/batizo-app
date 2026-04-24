@@ -565,8 +565,11 @@ export default function DevisPage() {
                                   <td style={{padding:'10px 16px',fontSize:13,fontWeight:500}}>
                                     {/* Numéro cliquable → preview */}
                                     <button onClick={e => { e.stopPropagation(); window.location.href=`/devis/${c.id}` }}
-                                      style={{background:'none',border:'none',cursor:'pointer',color:G,fontWeight:600,fontSize:13,padding:0,textDecoration:'underline',textDecorationStyle:'dotted',textUnderlineOffset:2}}>
-                                      {d.ref}
+                                      style={{background:'none',border:'none',cursor:'pointer',color:d.ref&&d.ref.startsWith('DEV-')?G:'#888',fontWeight:600,fontSize:13,padding:0,display:'inline-flex',alignItems:'center',gap:6}}>
+                                      {d.ref&&d.ref.startsWith('DEV-')?d.ref:<>
+                                        <span style={{color:'#888',fontWeight:500}}>Devis sans numéro</span>
+                                        <span style={{fontSize:10,fontWeight:700,padding:'1px 6px',borderRadius:10,background:'#fff7ed',color:AM,border:`1px solid ${AM}44`}}>À attribuer</span>
+                                      </>}
                                     </button>
                                     {d.label && <span style={{fontSize:11,color:'#555',marginLeft:4,fontWeight:500}}>{d.label}</span>}
                                   </td>

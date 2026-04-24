@@ -91,7 +91,8 @@ export default function NouveauDevisModal({ onClose }:Props) {
 
   const valider=()=>{
     if(!selectedClient||!titre.trim()) return
-    const ref='DEV-'+new Date().getFullYear()+'-'+String(Math.floor(Math.random()*900)+100)
+    // Ref sera attribuée manuellement depuis la page d'édition
+    const ref=''
     const newDevis={
       id:'dev-'+Date.now(),ref,
       nom:getDisplayName(selectedClient)+' — '+titre.trim(),
