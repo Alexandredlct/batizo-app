@@ -156,7 +156,7 @@ export default function UtilisateursPage(){
           <div style={{fontSize:16,fontWeight:700,color:'#111',flexShrink:0}}>Utilisateurs</div><SearchBar/>
           <button onClick={()=>setShowForm(!showForm)} style={{padding:'8px 16px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>+ Ajouter un utilisateur</button>
         </div>
-        <div style={{flex:1,overflowY:'auto',padding:24,maxWidth:900}}>
+        <div style={{flex:1,overflowY:'auto',padding:24}}>
           <p style={{fontSize:14,color:'#555',marginBottom:20}}>Les personnes suivantes ont accès à l'entreprise <strong>« Batizo »</strong> :</p>
 
           {showForm&&(
