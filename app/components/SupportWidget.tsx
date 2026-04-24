@@ -8,36 +8,37 @@ export default function SupportWidget({ prenom = 'Mon compte', onNouveauDevis }:
   const [tab, setTab] = useState<'home' | 'messages' | 'aide'>('home')
   const [msg, setMsg] = useState('')
   const [sent, setSent] = useState(false)
-  const [showBubble, setShowBubble] = useState(true)
+  const hasNotif = false // À brancher sur vraies notifs plus tard
 
   return (
     <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 99000, fontFamily: 'system-ui,sans-serif' }}>
-      {showBubble && !open && (
-        <div style={{ position: 'absolute', bottom: 68, right: 0, background: '#222', color: '#fff', padding: '8px 14px', borderRadius: 20, fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', boxShadow: '0 2px 12px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}>
+
+      {/* Pilule "Besoin d'aide ?" */}
+      {!open && (
+        <button onClick={() => setOpen(true)}
+          style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', background: '#222', color: '#fff', border: 'none', borderRadius: 24, fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.25)', transition: 'all 0.2s', whiteSpace: 'nowrap' }}
+          onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = '#333'; b.style.transform = 'translateY(-2px)'; b.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)' }}
+          onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = '#222'; b.style.transform = 'translateY(0)'; b.style.boxShadow = '0 4px 16px rgba(0,0,0,0.25)' }}>
           Besoin d'aide ? 👋
-          <button onClick={() => setShowBubble(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: 16, padding: 0, lineHeight: 1 }}>×</button>
-        </div>
+          {hasNotif && (
+            <span style={{ position: 'absolute', top: -3, right: -3, width: 10, height: 10, background: '#E24B4A', borderRadius: '50%', border: '2px solid #fff' }}/>
+          )}
+        </button>
       )}
 
-      <button onClick={() => { setOpen(!open); setShowBubble(false) }}
-        style={{ width: 56, height: 56, borderRadius: '50%', background: G, border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(29,158,117,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s', position: 'relative' }}
-        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.08)'}
-        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'}>
-        {open
-          ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-          : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>}
-        {!open && <span style={{ position: 'absolute', top: -2, right: -2, width: 16, height: 16, background: '#E24B4A', borderRadius: '50%', border: '2px solid #fff', fontSize: 9, fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>1</span>}
-      </button>
-
+      {/* Panel support */}
       {open && (
-        <div style={{ position: 'absolute', bottom: 68, right: 0, width: 360, height: 540, background: '#fff', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.18)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ position: 'absolute', bottom: 0, right: 0, width: 360, height: 540, background: '#fff', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.18)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <div style={{ background: 'linear-gradient(135deg,#1D9E75,#16805f)', padding: '20px 20px 16px', color: '#fff', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-              <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: '#fff' }}>B</div>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700 }}>Batizo</div>
-                <div style={{ fontSize: 11, opacity: 0.8 }}>Support & Aide</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: '#fff' }}>B</div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700 }}>Batizo</div>
+                  <div style={{ fontSize: 11, opacity: 0.8 }}>Support & Aide</div>
+                </div>
               </div>
+              <button onClick={() => setOpen(false)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', cursor: 'pointer', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>×</button>
             </div>
             <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 2 }}>Bonjour {prenom} 👋</div>
             <div style={{ fontSize: 13, opacity: 0.85 }}>Comment pouvons-nous vous aider ?</div>
@@ -75,31 +76,17 @@ export default function SupportWidget({ prenom = 'Mon compte', onNouveauDevis }:
                   { icon: '📄', label: 'Créer un devis', href: '/devis', modal: true },
                   { icon: '👥', label: 'Gérer mes clients', href: '/clients' },
                   { icon: '📚', label: 'Ma bibliothèque', href: '/bibliotheque' },
-                  { icon: '💳', label: 'Mon abonnement', href: '/abonnement' },
                   { icon: '⚙️', label: 'Paramètres', href: '/parametres' },
                 ].map((link, i) => (
                   <a key={i} href={(link as any).modal?'#':link.href}
                     onClick={(link as any).modal?e=>{e.preventDefault();setOpen(false);onNouveauDevis&&onNouveauDevis()}:undefined}
-                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', fontSize: 13, border: '1px solid #e5e7eb', borderRadius: 8, marginBottom: 6, background: '#fff', textDecoration: 'none', color: '#333', transition: 'all 0.1s' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', fontSize: 13, border: '1px solid #e5e7eb', borderRadius: 8, marginBottom: 6, background: '#fff', textDecoration: 'none', color: '#333' }}
                     onMouseEnter={e => { const d = e.currentTarget as HTMLAnchorElement; d.style.borderColor = G; d.style.background = '#f0fdf4' }}
                     onMouseLeave={e => { const d = e.currentTarget as HTMLAnchorElement; d.style.borderColor = '#e5e7eb'; d.style.background = '#fff' }}>
                     <span>{link.icon}</span><span style={{ flex: 1 }}>{link.label}</span>
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
                   </a>
                 ))}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f8f9fa', borderRadius: 10, padding: '10px 12px', marginTop: 12 }}>
-                  <div style={{ display: 'flex' }}>
-                    {['#1D9E75', '#3B82F6', '#8B5CF6'].map((bg, i) => (
-                      <div key={i} style={{ width: 26, height: 26, borderRadius: '50%', background: bg, border: '2px solid #fff', marginLeft: i > 0 ? -8 : 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#fff' }}>
-                        {['M', 'S', 'A'][i]}
-                      </div>
-                    ))}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: '#111' }}>Équipe Batizo disponible</div>
-                    <div style={{ fontSize: 11, color: '#888' }}>⚡ Réponse ~5 min</div>
-                  </div>
-                </div>
               </div>
             )}
             {tab === 'messages' && (
@@ -133,8 +120,6 @@ export default function SupportWidget({ prenom = 'Mon compte', onNouveauDevis }:
                   { icon: '📚', titre: 'Utiliser la bibliothèque', desc: 'Ouvrages, matériaux, main d\'oeuvre' },
                   { icon: '👥', titre: 'Inviter des collaborateurs', desc: 'Rôles et permissions' },
                   { icon: '📊', titre: 'Comprendre les statistiques', desc: 'CA, marges, activité' },
-                  { icon: '🔒', titre: 'Sécurité et RGPD', desc: 'Protection de vos données' },
-                  { icon: '💳', titre: 'Changer de plan', desc: 'Upgrade ou downgrade' },
                 ].map((a, i) => (
                   <div key={i} style={{ display: 'flex', gap: 10, padding: '10px 0', borderBottom: '1px solid #f3f4f6', cursor: 'pointer' }}
                     onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.opacity = '0.7'}
