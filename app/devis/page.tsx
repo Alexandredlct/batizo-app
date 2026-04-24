@@ -238,7 +238,7 @@ export default function DevisPage() {
       encaisse:{val:Math.round(curEnc).toLocaleString('fr-FR')+' €',sub:curSigne>0?Math.round(curEnc/curSigne*100)+'% des devis signés':'—',change:fmtChange(curEnc,prevEnc,'%')},
       reste:{val:Math.round(curReste).toLocaleString('fr-FR')+' €',sub:'sur devis signés',change:null},
     }
-  },[chantiers,devisPeriode])
+    },[chantiers,devisPeriodes])
 
   const moisList = [...new Set(chantiers.map(c => c.mois))]
 
