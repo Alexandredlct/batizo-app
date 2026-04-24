@@ -564,7 +564,7 @@ export default function DevisPage() {
                                   </td>
                                   <td style={{padding:'10px 16px',fontSize:13,fontWeight:500}}>
                                     {/* Numéro cliquable → preview */}
-                                    <button onClick={e => { e.stopPropagation(); setPreviewDoc({doc:d,chantier:c}) }}
+                                    <button onClick={e => { e.stopPropagation(); window.location.href=`/devis/${c.id}` }}
                                       style={{background:'none',border:'none',cursor:'pointer',color:G,fontWeight:600,fontSize:13,padding:0,textDecoration:'underline',textDecorationStyle:'dotted',textUnderlineOffset:2}}>
                                       {d.ref}
                                     </button>
@@ -590,10 +590,8 @@ export default function DevisPage() {
                                       <div onClick={e => e.stopPropagation()} style={{position:'absolute',right:8,bottom:36,background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.12)',zIndex:400,minWidth:190,overflow:'hidden'}}>
                                         <div style={{position:'absolute',bottom:-6,right:16,width:12,height:12,background:'#fff',border:`1px solid ${BD}`,borderLeft:'none',borderTop:'none',transform:'rotate(45deg)'}}></div>
                                         {[
-                                          {icon:'👁',label:'Aperçu', action:() => setPreviewDoc({doc:d,chantier:c})},
-                                          {icon:'✏️',label:'Modifier', action:()=>{}},
-                                          {icon:'📋',label:'Dupliquer', action:() => dupliquer(c.id,d.ref)},
-                                          {icon:'📥',label:'Télécharger PDF', action:()=>{}},
+                                          {icon:'✏️',label:'Modifier', action:()=>window.location.href=`/devis/${c.id}`},
+                                          {icon:'📥',label:'Télécharger PDF', action:()=>showToast('Fonctionnalité bientôt disponible')},
                                           {icon:'📧',label:'Envoyer par email', action:()=>{}},
                                         ].map(item => (
                                           <div key={item.label} onClick={() => { item.action(); setActionMenu(null) }}
