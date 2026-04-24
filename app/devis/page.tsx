@@ -3,7 +3,7 @@ import NotifBell from '../components/NotifBell'
 import NouveauDevisModal from '../components/NouveauDevisModal'
 import SearchBar from '../components/SearchBar'
 import Sidebar from '../components/Sidebar'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 const G = '#1D9E75', AM = '#BA7517', RD = '#E24B4A', BD = '#e5e7eb'
 
@@ -11,14 +11,9 @@ const statutColors: Record<string,string> = { brouillon:'#888', attente:AM, fina
 const statutLabels: Record<string,string> = { brouillon:'Brouillon', attente:'En attente', finalise:'Finalisé', signe:'Signé', refuse:'Refusé', payee:'Payée', impayee:'Impayée' }
 
 type Doc = { ref:string; type:string; label?:string; montant:number; date:string; statut:string }
-type Chantier = { id:string; mois:string; client:string; titre:string; adresse:string; tel:string; vendeur:string; montantDevis:number; statut:string; archive:boolean; docs:Doc[]; note?:string }
+type Chantier = { id:string; mois:string; client:string; clientId?:string; clientNom?:string; titreProjet?:string; titre:string; adresse:string; tel:string; vendeur?:string; montantDevis:number; statut:string; archive:boolean; docs:Doc[]; note?:string }
 
-const initData: Chantier[] = [
-  { id:'c042', mois:'Avril 2026', client:'Martin Dupont', titre:'Rénovation salle de bain', adresse:'45 av. des Fleurs, Courbevoie 92400', tel:'06 12 34 56 78', vendeur:'Alexandre D.', montantDevis:4200, statut:'attente', archive:false,
-    docs:[
-      { ref:'DEV-2026-042', type:'devis', montant:4200, date:'05/04/2026', statut:'attente' },
-      { ref:'FAC-2026-042-A', type:'facture', label:'Acompte', montant:1260, date:'05/04/2026', statut:'impayee' },
-    ]
+const initData: Chantier[] = []
   },
   { id:'c041', mois:'Avril 2026', client:'SCI Les Pins', titre:'Réfection façade + peinture', adresse:'12 rue Victor Hugo, Paris 75017', tel:'01 45 67 89 10', vendeur:'Emma S.', montantDevis:12800, statut:'signe', archive:false,
     docs:[
@@ -65,7 +60,8 @@ export default function DevisPage() {
   const [search, setSearch] = useState('')
   const [expanded, setExpanded] = useState<Record<string,boolean>>({})
   const [showFiltre, setShowFiltre] = useState(false)
-  const [chantiers, setChantiers] = useState<Chantier[]>(initData)
+  const [chantiers, setChantiers] = useState<Chantier[]>([])
+  const [clients, setClients] = useState<any[]>([])
   const [toast, setToast] = useState<{visible:boolean,id:string|null}>({visible:false,id:null})
   const [tooltip, setTooltip] = useState<string|null>(null)
   const [docMenu, setDocMenu] = useState<string|null>(null)
@@ -124,6 +120,59 @@ export default function DevisPage() {
       return prev.map(c => c.id===chantierId ? {...c, docs:[...c.docs, newDoc]} : c)
     })
     setActionMenu(null)
+  }
+
+  useEffect(()=>{
+    const loadData=()=>{
+      try{
+        const raw=localStorage.getItem('batizo_devis')
+        if(raw){
+          const list=JSON.parse(raw)
+          // Convertir les devis du nouveau format vers Chantier
+          const converted=list.map((d:any)=>{
+            const moisMap=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
+            const date=new Date(d.dateDevis||d.createdAt||Date.now())
+            const mois=moisMap[date.getMonth()]+' '+date.getFullYear()
+            return{
+              id:d.id,
+              mois:d.mois||mois,
+              client:d.clientNom||d.nom||'Client inconnu',
+              clientId:d.clientId,
+              clientNom:d.clientNom,
+              titreProjet:d.titreProjet||d.nom||'',
+              titre:d.titreProjet||d.nom||'',
+              adresse:d.clientSnapshot?.adresseFactLine1||d.adresse||'',
+              tel:d.clientSnapshot?.tel||d.tel||'',
+              montantDevis:d.montant||0,
+              statut:d.statut||'brouillon',
+              archive:d.archive||false,
+              docs:d.docs||[{ref:d.ref||'DEV-'+d.id?.slice(-4),type:'devis',montant:d.montant||0,date:new Date(d.dateDevis||d.createdAt||Date.now()).toLocaleDateString('fr-FR'),statut:d.statut||'brouillon'}],
+              note:d.note
+            }
+          })
+          setChantiers(converted)
+        }
+        const rawC=localStorage.getItem('batizo_clients')
+        if(rawC) setClients(JSON.parse(rawC))
+      }catch(e){}
+    }
+    loadData()
+    window.addEventListener('storage',loadData)
+    return()=>window.removeEventListener('storage',loadData)
+  },[])
+
+  // Résoudre le nom client dynamiquement
+  const getClientName=(ch:Chantier)=>{
+    if(ch.clientId){
+      const cl=clients.find((c:any)=>c.id===ch.clientId)
+      if(cl){
+        if(cl.type==='professionnel') return cl.raisonSociale||cl.nom
+        const prenom=cl.prenom||''; const nom=cl.nomFamille||cl.nom||''
+        if(prenom&&nom) return prenom+' '+nom
+        return nom||prenom||cl.nom
+      }
+    }
+    return ch.clientNom||ch.client||'Client inconnu'
   }
 
   const getMontantFacture = (c:Chantier) => c.docs.filter(d => d.type==='facture' && d.statut==='payee').reduce((s,d) => s+d.montant, 0)
@@ -410,7 +459,7 @@ export default function DevisPage() {
                                   style={{fontSize:16,fontWeight:700,color:'#111',border:`1px solid ${G}`,borderRadius:6,padding:'2px 8px',outline:'none',minWidth:220,background:'#f0fdf4'}}/>
                               ) : (
                                 <>
-                                  <span style={{fontSize:16,fontWeight:700,color:'#111'}}>{c.client} — {c.titre}</span>
+                                  <span style={{fontSize:16,fontWeight:700,color:'#111'}}>{getClientName(c)} — {c.titreProjet||c.titre}</span>
                                   <button onClick={e => { e.stopPropagation(); setEditingTitre(c.id); setEditTitreVal(c.titre) }} title="Modifier le titre"
                                     style={{background:'none',border:'none',cursor:'pointer',color:'#bbb',padding:2,display:'flex',alignItems:'center',transition:'color 0.15s',flexShrink:0}}
                                     onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color=G}
