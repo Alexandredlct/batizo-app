@@ -1,7 +1,7 @@
 'use client'
 import SearchBar from '../components/SearchBar'
 import Sidebar from '../components/Sidebar'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { usePhoto } from '../context/PhotoContext'
 const G='#1D9E75',AM='#BA7517',RD='#E24B4A',BD='#e5e7eb'
 const NavIcon=({id}:{id:string})=>{
@@ -39,7 +39,44 @@ export default function MesInfosPage(){
   const[notifs,setNotifs]=useState({devisSigne:true,facturePaye:true,relance:false,impaye:true})
   const[showDeleteModal,setShowDeleteModal]=useState(false)
   const[deleteConfirm,setDeleteConfirm]=useState('')
+
+  // Historique connexions simulé depuis localStorage
+  const[sessions,setSessions]=React.useState<any[]>(()=>{
+    try{
+      const raw=localStorage.getItem('batizo_sessions')
+      if(raw) return JSON.parse(raw)
+    }catch(e){}
+    // Créer une session courante par défaut
+    const ua=typeof navigator!=='undefined'?navigator.userAgent:''
+    const device=ua.includes('iPhone')?'iPhone - Safari':ua.includes('Mac')?'MacBook - Chrome':'PC - Chrome'
+    const session={id:'s1',date:new Date().toLocaleDateString('fr-FR')+' '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}),device,location:'—',current:true}
+    localStorage.setItem('batizo_sessions',JSON.stringify([session]))
+    return [session]
+  })
+
   const sw=collapsed?64:230
+  // Enregistrer session courante
+  useEffect(()=>{
+    try{
+      const raw=localStorage.getItem('batizo_sessions')
+      const list=raw?JSON.parse(raw):[]
+      const ua=navigator.userAgent
+      const device=ua.includes('iPhone')?'iPhone - Safari':ua.includes('iPad')?'iPad - Safari':ua.includes('Mac')?'MacBook - Chrome':ua.includes('Windows')?'PC - Chrome':'Appareil inconnu'
+      const now=new Date()
+      const date=now.toLocaleDateString('fr-FR')+' '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})
+      // Marquer toutes les autres sessions comme terminées
+      const updated=list.map((s:any)=>({...s,current:false}))
+      // Ajouter session courante si pas déjà là
+      const already=updated.find((s:any)=>s.current)
+      if(!already){
+        updated.unshift({id:'s'+Date.now(),date,device,location:'—',current:true})
+      }
+      const trimmed=updated.slice(0,10)
+      localStorage.setItem('batizo_sessions',JSON.stringify(trimmed))
+      setSessions(trimmed)
+    }catch(e){}
+  },[])
+
   const save=()=>{setHasChanges(false);setToast(true);setTimeout(()=>setToast(false),3000)}
   const navItems=[
     {id:'dashboard',label:'Tableau de bord',href:'/dashboard'},
@@ -123,7 +160,7 @@ export default function MesInfosPage(){
           <div style={{fontSize:16,fontWeight:700,color:'#111',flexShrink:0}}>Mes informations</div><SearchBar/>
           <button onClick={save}style={{padding:'8px 18px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>{hasChanges && <span style={{position:'absolute',top:-4,right:-4,width:10,height:10,background:'#BA7517',borderRadius:'50%',border:'2px solid #fff'}}></span>}Enregistrer les modifications</button>
         </div>
-        <div style={{flex:1,overflowY:'auto',padding:24,maxWidth:900}}>
+        <div style={{flex:1,overflowY:'auto',padding:24}}>
 
           {/* Infos personnelles */}
           <div style={{marginBottom:24}}>
@@ -216,21 +253,15 @@ export default function MesInfosPage(){
                   ))}
                 </tr></thead>
                 <tbody>
-                  {[
-                    {date:'09/04/2026 08:32',appareil:'MacBook Air - Chrome',lieu:'Paris, France',actuel:true},
-                    {date:'08/04/2026 19:15',appareil:'iPhone 15 - Safari',lieu:'Paris, France',actuel:false},
-                    {date:'07/04/2026 14:03',appareil:'MacBook Air - Chrome',lieu:'Courbevoie',actuel:false},
-                    {date:'05/04/2026 09:44',appareil:'MacBook Air - Chrome',lieu:'Paris, France',actuel:false},
-                    {date:'03/04/2026 16:21',appareil:'iPad - Safari',lieu:'Lyon, France',actuel:false},
-                  ].map((conn,i)=>(
+                  {sessions.map((conn,i)=>(
                     <tr key={i} style={{borderBottom:i<4?'1px solid #e5e7eb':'none'}}
                       onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
                       onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
                       <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{conn.date}</td>
-                      <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{conn.appareil}</td>
-                      <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{conn.lieu}</td>
+                      <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{conn.device||conn.appareil||'—'}</td>
+                      <td style={{padding:'12px 16px',fontSize:13,color:'#333'}}>{conn.location||conn.lieu||'—'}</td>
                       <td style={{padding:'12px 16px'}}>
-                        {conn.actuel
+                        {conn.current||conn.actuel
                           ? <span style={{background:'#f0fdf4',color:'#1D9E75',fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20}}>Session actuelle</span>
                           : <span style={{background:'#f9fafb',color:'#888',fontSize:11,fontWeight:600,padding:'3px 10px',borderRadius:20}}>Terminee</span>}
                       </td>
