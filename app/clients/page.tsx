@@ -32,7 +32,7 @@ type Client={
 const FORMES=['SAS','SARL','SCI','SASU','EURL','SA','Auto-entrepreneur','EI','Autre']
 const SOURCES=['Bouche à oreille','Google','Recommandation','Réseaux sociaux','Chantier voisin','Autre']
 const LANGUES=['Français','Anglais','Espagnol','Arabe','Autre']
-const MEMBRES=['Alexandre Delcourt','Emma Strano','Ysaline Bernard','Xavier Concy','Thomas Giraud']
+
 
 const initClients:Client[]=[]
 
@@ -171,6 +171,16 @@ export default function ClientsPage(){
   const[toast,setToast]=useState('')
   const[historiqueDevis,setHistoriqueDevis]=useState<{clientId:string,num:string,titre:string,date:string,statut:string,montant:number,marge:number}[]>([])
   const[showImportModal,setShowImportModal]=useState(false)
+  const[MEMBRES,setMEMBRES]=useState<string[]>(()=>{
+    try{
+      const raw=localStorage.getItem('batizo_utilisateurs')
+      if(raw){
+        const list=JSON.parse(raw)
+        return list.filter((u:any)=>u.statut!=='revoque'&&u.statut!=='inactif').map((u:any)=>u.nom)
+      }
+    }catch(e){}
+    return []
+  })
   const[showNouveauDevisModal,setShowNouveauDevisModal]=useState(false)
   const[devisClientPreselect,setDevisClientPreselect]=useState<any>(null)
   const[importErrors,setImportErrors]=useState<string[]>([])
@@ -204,6 +214,14 @@ export default function ClientsPage(){
           statut:statMap[d.statut]||d.statut||'Brouillon',
           montant:d.montant||0,marge:d.marge||0,
         })))
+      }
+    }catch(e){}
+    // Charger membres depuis utilisateurs
+    try{
+      const raw=localStorage.getItem('batizo_utilisateurs')
+      if(raw){
+        const list=JSON.parse(raw)
+        setMEMBRES(list.filter((u:any)=>u.statut!=='revoque'&&u.statut!=='inactif').map((u:any)=>u.nom))
       }
     }catch(e){}
     // Gérer query params
@@ -801,7 +819,20 @@ export default function ClientsPage(){
                 ):(
                   <div style={{display:'flex',flexDirection:'column',gap:6}}>
                     {historiqueDevis.filter(d=>d.clientId===selectedClient.id).map((d,i)=>(
-                      <div key={i} style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:8,padding:'10px 12px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                      <div key={i} onClick={()=>{
+                          // Trouver l'id du devis depuis localStorage
+                          try{
+                            const raw=localStorage.getItem('batizo_devis')
+                            if(raw){
+                              const list=JSON.parse(raw)
+                              const devis=list.find((dv:any)=>dv.clientId===selectedClient.id&&(dv.ref===d.num||dv.titreProjet===d.titre))
+                              if(devis){closePanel();window.location.href='/devis/'+devis.id;return}
+                            }
+                          }catch(e){}
+                        }}
+                        style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:8,padding:'10px 12px',display:'flex',alignItems:'center',justifyContent:'space-between',cursor:'pointer'}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#fff'}>
                         <div>
                           <div style={{fontSize:11,color:'#888',marginBottom:1}}>{d.num} · {d.date}</div>
                           <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{d.titre}</div>
