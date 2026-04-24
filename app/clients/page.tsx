@@ -183,6 +183,27 @@ export default function ClientsPage(){
   const showToast=(msg:string)=>{setToast(msg);setTimeout(()=>setToast(''),3000)}
 
   useEffect(()=>{
+    // Charger clients depuis localStorage
+    try{
+      const raw=localStorage.getItem('batizo_clients')
+      if(raw){const parsed=JSON.parse(raw);if(parsed.length>0)setClients(parsed)}
+    }catch(e){}
+    // Charger historique devis
+    try{
+      const rawD=localStorage.getItem('batizo_devis')
+      if(rawD){
+        const devisList=JSON.parse(rawD)
+        const statMap:Record<string,string>={brouillon:'Brouillon',attente:'En attente',finalise:'Finalisé',signe:'Signé',refuse:'Refusé'}
+        setHistoriqueDevis(devisList.filter((d:any)=>d.clientId).map((d:any)=>({
+          clientId:d.clientId,num:d.ref||'DEV-???',
+          titre:d.titreProjet||d.nom||'',
+          date:new Date(d.dateDevis||d.createdAt||Date.now()).toLocaleDateString('fr-FR'),
+          statut:statMap[d.statut]||d.statut||'Brouillon',
+          montant:d.montant||0,marge:d.marge||0,
+        })))
+      }
+    }catch(e){}
+    // Gérer query params
     const params=new URLSearchParams(window.location.search)
     if(params.get('new')==='1') openAdd()
     const editId=params.get('edit')
