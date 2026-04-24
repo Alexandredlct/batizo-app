@@ -53,25 +53,6 @@ type Ouvrage = {
   historiquePrix?:{date:string;prix:number;note?:string}[]
 }
 
-const initMateriaux:Materiau[] = [
-  {id:'m1',nom:'Parquet chêne massif 12mm',description:'Parquet chêne massif, finition huilée, format 12mm',unite:'m²',tva:'20%',debourse:28,prixFacture:68,categorie:'Parquet'},
-  {id:'m2',nom:'Carrelage 60x60 grès cérame',description:'Carrelage grand format, rectifié, imitation béton',unite:'m²',tva:'20%',debourse:32,prixFacture:85,categorie:'Carrelage'},
-  {id:'m3',nom:'Peinture murale mate',description:'Peinture murale mate lessivable, 2 couches',unite:'m²',tva:'20%',debourse:4,prixFacture:22,categorie:'Peinture'},
-  {id:'m4',nom:'Tableau électrique 13 disjoncteurs',description:'Coffret complet 13 postes avec protection différentielle',unite:'u',tva:'20%',debourse:180,prixFacture:480,categorie:'Électricité'},
-  {id:'m5',nom:'Robinetterie mitigeur thermostatique',description:'Mitigeur thermostatique bain/douche, chromé',unite:'u',tva:'20%',debourse:120,prixFacture:280,categorie:'Plomberie'},
-]
-const initMO:MainOeuvre[] = [
-  {id:'mo1',nom:'Pose parquet',description:'Pose parquet collé ou flottant, préparation support',unite:'m²',tva:'10%',debourse:15,prixFacture:35,categorie:'Parquet'},
-  {id:'mo2',nom:'Électricien qualifié',description:'Intervention électricien, taux horaire chargé',unite:'h',tva:'20%',debourse:45,prixFacture:65,categorie:'Électricité'},
-  {id:'mo3',nom:'Plombier qualifié',description:'Intervention plombier, taux horaire chargé',unite:'h',tva:'20%',debourse:48,prixFacture:70,categorie:'Plomberie'},
-  {id:'mo4',nom:'Peintre qualifié',description:'Peintre en bâtiment, taux horaire chargé',unite:'h',tva:'10%',debourse:35,prixFacture:55,categorie:'Peinture'},
-]
-const initOuvrages:Ouvrage[] = [
-  {id:'o1',nom:'Pose parquet complet 45m²',description:'Fourniture et pose parquet chêne massif 12mm, préparation support',unite:'m²',tva:'10%',debourse:43,prixFacture:103,categorie:'Parquet',
-    lignes:[{type:'materiau',id:'m1',nom:'Parquet chêne massif 12mm',qte:1,pu:28},{type:'mo',id:'mo1',nom:'Pose parquet',qte:1,pu:15}]},
-  {id:'o2',nom:'Installation tableau électrique',description:'Fourniture et pose tableau électrique 13 disjoncteurs, raccordement',unite:'u',tva:'20%',debourse:360,prixFacture:850,categorie:'Électricité',
-    lignes:[{type:'materiau',id:'m4',nom:'Tableau électrique 13 disjoncteurs',qte:1,pu:180},{type:'mo',id:'mo2',nom:'Électricien qualifié',qte:4,pu:45}]},
-]
 
 const fmt = (n:number) => n.toLocaleString('fr-FR',{minimumFractionDigits:0,maximumFractionDigits:2}) + ' €'
 const marge = (d:number, p:number) => p>0 ? Math.round((p-d)/p*100) : 0
@@ -507,15 +488,15 @@ export default function BibliothequePage() {
   const[catFiltre,setCatFiltre]=useState('')
   const[materiaux,setMateriaux]=useState<Materiau[]>(()=>{
     try{const s=localStorage.getItem('batizo_biblio_v2');if(s){const d=JSON.parse(s);if(d.materiaux)return d.materiaux}}catch(e){}
-    return initMateriaux
+    return []
   })
   const[mo,setMO]=useState<MainOeuvre[]>(()=>{
     try{const s=localStorage.getItem('batizo_biblio_v2');if(s){const d=JSON.parse(s);if(d.mo)return d.mo}}catch(e){}
-    return initMO
+    return []
   })
   const[ouvrages,setOuvrages]=useState<Ouvrage[]>(()=>{
     try{const s=localStorage.getItem('batizo_biblio_v2');if(s){const d=JSON.parse(s);if(d.ouvrages)return d.ouvrages}}catch(e){}
-    return initOuvrages
+    return []
   })
 
   // Persister dans localStorage à chaque changement
