@@ -200,8 +200,8 @@ export default function DevisPage() {
   const pLabel=(p:string)=>p==='mois'?'Ce mois-ci':p==='mois_prec'?'Mois dernier':p==='trimestre'?'Ce trimestre':'Cette année'
 
   const devisKpis=React.useMemo(()=>{
-    const calc=(p:string)=>{
-    const{start,end,prevStart,prevEnd}=getDevisRange(p)
+    const calc=(periodArg:string)=>{
+    const{start,end,prevStart,prevEnd}=getDevisRange(periodArg)
     const inRange=(c:Chantier,s:Date,e:Date)=>{
       // Utiliser la date du premier doc ou mois string
       const moisMap:Record<string,number>={Janvier:0,Février:1,Mars:2,Avril:3,Mai:4,Juin:5,Juillet:6,Août:7,Septembre:8,Octobre:9,Novembre:10,Décembre:11}
@@ -229,7 +229,7 @@ export default function DevisPage() {
     const pct=(a:number,b:number)=>b>0?Math.round((a-b)/b*100):null
     const fmtChange=(cur:number,prev:number,suffix='%')=>{
       const p=pct(cur,prev);if(p===null)return null
-      return{val:(p>=0?'+':'')+p+suffix+' '+vsLabel(p),color:p>=0?G:'#6b7280'}
+      return{val:(p>=0?'+':'')+p+suffix+' '+vsLabel(periodArg),color:p>=0?G:'#6b7280'}
     }
     
     return{
@@ -238,7 +238,9 @@ export default function DevisPage() {
       encaisse:{val:Math.round(curEnc).toLocaleString('fr-FR')+' €',sub:curSigne>0?Math.round(curEnc/curSigne*100)+'% des devis signés':'—',change:fmtChange(curEnc,prevEnc,'%')},
       reste:{val:Math.round(curReste).toLocaleString('fr-FR')+' €',sub:'sur devis signés',change:null},
     }
-    },[chantiers,devisPeriodes])
+    }
+    return{signe:calc(devisPeriodes.signe),taux:calc(devisPeriodes.taux),encaisse:calc(devisPeriodes.encaisse),reste:calc('mois')}
+  },[chantiers,devisPeriodes])
 
   const moisList = [...new Set(chantiers.map(c => c.mois))]
 
