@@ -239,7 +239,7 @@ export default function DevisPage() {
       reste:{val:Math.round(curReste).toLocaleString('fr-FR')+' €',sub:'sur devis signés',change:null},
     }
     }
-    return{signe:calc(devisPeriodes.signe),taux:calc(devisPeriodes.taux),encaisse:calc(devisPeriodes.encaisse),reste:calc('mois')}
+    return{signe:calc(devisPeriodes.signe).signe,taux:calc(devisPeriodes.taux).taux,encaisse:calc(devisPeriodes.encaisse).encaisse,reste:calc('mois').reste}
   },[chantiers,devisPeriodes])
 
   const moisList = [...new Set(chantiers.map(c => c.mois))]
