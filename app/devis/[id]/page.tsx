@@ -29,21 +29,7 @@ type Ligne={
 type Client={nom:string;adresse:string;email:string;tel:string;siret?:string}
 
 const clientsExistants:Client[]=[]
-const biblioMats=[
-  {id:'m1',nom:'Parquet chêne massif 12mm',unite:'m²',pu:28,tva:'10%'},
-  {id:'m2',nom:'Carrelage 60x60 grès cérame',unite:'m²',pu:32,tva:'20%'},
-  {id:'m3',nom:'Peinture murale mate',unite:'m²',pu:4,tva:'10%'},
-  {id:'m4',nom:'Tableau électrique 13 disjoncteurs',unite:'u',pu:180,tva:'20%'},
-]
-const biblioMO=[
-  {id:'mo1',nom:'Pose parquet',unite:'m²',pu:15,tva:'10%'},
-  {id:'mo2',nom:'Électricien qualifié',unite:'h',pu:45,tva:'20%'},
-  {id:'mo3',nom:'Plombier qualifié',unite:'h',pu:48,tva:'20%'},
-]
-const biblioOuvrages=[
-  {id:'o1',nom:'Pose parquet complet',pu:103,unite:'m²',tva:'10%',lignesInternes:[{id:'l1',nom:'Parquet chêne massif 12mm',qte:1,pu:28,unite:'m²',tva:'10%'},{id:'l2',nom:'Pose parquet',qte:1,pu:15,unite:'m²',tva:'10%'}]},
-  {id:'o2',nom:'Installation tableau électrique',pu:850,unite:'u',tva:'20%',lignesInternes:[{id:'l3',nom:'Tableau 13 disjoncteurs',qte:1,pu:180,unite:'u',tva:'20%'},{id:'l4',nom:'Électricien qualifié',qte:4,pu:45,unite:'h',tva:'20%'}]},
-]
+
 const genId=()=>Math.random().toString(36).slice(2,8)
 
 
