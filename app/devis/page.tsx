@@ -14,28 +14,6 @@ type Doc = { ref:string; type:string; label?:string; montant:number; date:string
 type Chantier = { id:string; mois:string; client:string; clientId?:string; clientNom?:string; titreProjet?:string; titre:string; adresse:string; tel:string; vendeur?:string; montantDevis:number; statut:string; archive:boolean; docs:Doc[]; note?:string }
 
 const initData: Chantier[] = []
-  },
-  { id:'c041', mois:'Avril 2026', client:'SCI Les Pins', titre:'Réfection façade + peinture', adresse:'12 rue Victor Hugo, Paris 75017', tel:'01 45 67 89 10', vendeur:'Emma S.', montantDevis:12800, statut:'signe', archive:false,
-    docs:[
-      { ref:'DEV-2026-041', type:'devis', montant:12800, date:'03/04/2026', statut:'signe' },
-      { ref:'FAC-2026-041-A', type:'facture', label:'Acompte 30%', montant:3840, date:'03/04/2026', statut:'payee' },
-      { ref:'FAC-2026-041-B', type:'facture', label:'Inter. 45%', montant:5760, date:'20/04/2026', statut:'finalise' },
-    ]
-  },
-  { id:'c040', mois:'Avril 2026', client:'Isabelle Renard', titre:'Pose parquet 45m²', adresse:'8 rue des Lilas, Levallois 92300', tel:'06 98 76 54 32', vendeur:'Alexandre D.', montantDevis:1950, statut:'attente', archive:false,
-    docs:[{ ref:'DEV-2026-040', type:'devis', montant:1950, date:'01/04/2026', statut:'attente' }]
-  },
-  { id:'c039', mois:'Mars 2026', client:'SARL Bâti Pro', titre:'Rénovation bureaux 180m²', adresse:'5 rue du Commerce, Boulogne 92100', tel:'01 46 05 12 34', vendeur:'Emma S.', montantDevis:8600, statut:'refuse', archive:false,
-    docs:[{ ref:'DEV-2026-039', type:'devis', montant:8600, date:'28/03/2026', statut:'refuse' }]
-  },
-  { id:'c038', mois:'Mars 2026', client:'M. Fontaine', titre:'Installation électrique complète', adresse:'22 bd Haussmann, Paris 75009', tel:'06 55 44 33 22', vendeur:'Alexandre D.', montantDevis:12800, statut:'signe', archive:false,
-    docs:[
-      { ref:'DEV-2026-038', type:'devis', montant:12800, date:'15/03/2026', statut:'signe' },
-      { ref:'FAC-2026-038-A', type:'facture', label:'Acompte 30%', montant:3840, date:'15/03/2026', statut:'payee' },
-      { ref:'FAC-2026-038-B', type:'facture', label:'Finale', montant:8960, date:'28/03/2026', statut:'payee' },
-    ]
-  },
-]
 
 const tabs = ['tous','brouillon','attente','finalise','signe','refuse','archive']
 const tabLabels: Record<string,string> = { tous:'Tous', brouillon:'Brouillon', attente:'En attente', finalise:'Finalisé', signe:'Signé', refuse:'Refusé', archive:'Archivés' }
