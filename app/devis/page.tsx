@@ -287,8 +287,8 @@ export default function DevisPage() {
               {id:'taux',label:'Taux de signature',data:devisKpis.taux,color:'#111',hasPeriod:true},
               {id:'encaisse',label:'Total encaissé',data:devisKpis.encaisse,color:G,hasPeriod:true},
               {id:'reste',label:'Reste à encaisser',data:devisKpis.reste,color:RD,hasPeriod:false},
-            ].map(({id,label,data,color,hasPeriod})=>{
-              const p=(devisPeriodes as any)[id]||'mois'
+            ].map(({id,label,data,color,hasPeriod}:{id:string,label:string,data:any,color:string,hasPeriod:boolean})=>{
+              const p=(devisPeriodes as any)[id]||"mois"
               return(
               <div key={id} style={{background:'#fff',borderRadius:10,padding:'14px 16px',border:`1px solid ${id==='reste'?'#fca5a544':BD}`}}>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
