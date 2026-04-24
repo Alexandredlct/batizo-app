@@ -55,6 +55,19 @@ export default function DevisPage() {
 
   const toggle = (id:string) => setExpanded(p => ({...p,[id]:!p[id]}))
 
+  const persistChantiers=(updated:Chantier[])=>{
+    try{
+      const raw=localStorage.getItem('batizo_devis')
+      const list=raw?JSON.parse(raw):[]
+      const newList=list.map((d:any)=>{
+        const ch=updated.find((c:Chantier)=>c.id===d.id)
+        if(ch) return{...d,statut:ch.statut,docs:ch.docs,archive:ch.archive,note:ch.note}
+        return d
+      })
+      localStorage.setItem('batizo_devis',JSON.stringify(newList))
+    }catch(e){}
+  }
+
   const archiver = (id:string, e:React.MouseEvent) => {
     e.stopPropagation()
     const updated = chantiers.map(c => c.id===id ? {...c,archive:true} : c)
