@@ -130,7 +130,7 @@ export default function DashboardPage() {
   const dashboardStats = React.useMemo(()=>{
     try {
       const devisRaw = localStorage.getItem('batizo_devis')
-      const devisList: any[] = devisRaw ? JSON.parse(devisRaw) : []
+      const devisList: any[] = devisRaw ? JSON.parse(devisRaw).filter((d:any)=>d.id?.startsWith('dev-')) : []
       const now = new Date()
       const moisDebut = new Date(now.getFullYear(), now.getMonth(), 1)
       const moisFin = new Date(now.getFullYear(), now.getMonth()+1, 0)
