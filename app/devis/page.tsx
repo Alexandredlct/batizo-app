@@ -172,8 +172,8 @@ export default function DevisPage() {
     return chantiers.filter(c => !c.archive && c.statut===tab && matchSearch(c)).length
   }
 
-  const[devisPeriode,setDevisPeriode]=useState('mois')
-  const[devisKpiDD,setDevisKpiDD]=useState(false)
+  const[devisPeriodes,setDevisPeriodes]=useState({signe:'mois',taux:'mois',encaisse:'mois'})
+  const[devisKpiDD,setDevisKpiDD]=useState<string|null>(null)
 
   const getDevisRange=(p:string):{start:Date,end:Date,prevStart:Date,prevEnd:Date}=>{
     const now=new Date()
@@ -200,7 +200,8 @@ export default function DevisPage() {
   const pLabel=(p:string)=>p==='mois'?'Ce mois-ci':p==='mois_prec'?'Mois dernier':p==='trimestre'?'Ce trimestre':'Cette année'
 
   const devisKpis=React.useMemo(()=>{
-    const{start,end,prevStart,prevEnd}=getDevisRange(devisPeriode)
+    const calc=(p:string)=>{
+    const{start,end,prevStart,prevEnd}=getDevisRange(p)
     const inRange=(c:Chantier,s:Date,e:Date)=>{
       // Utiliser la date du premier doc ou mois string
       const moisMap:Record<string,number>={Janvier:0,Février:1,Mars:2,Avril:3,Mai:4,Juin:5,Juillet:6,Août:7,Septembre:8,Octobre:9,Novembre:10,Décembre:11}
@@ -280,27 +281,29 @@ export default function DevisPage() {
           {/* KPI CARDS */}
           <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}}>
             {[
-              {id:'signe',label:'Total devis signés',data:devisKpis.signe,color:'#111'},
-              {id:'taux',label:'Taux de signature',data:devisKpis.taux,color:'#111'},
-              {id:'encaisse',label:'Total encaissé',data:devisKpis.encaisse,color:G},
-              {id:'reste',label:'Reste à encaisser',data:devisKpis.reste,color:RD},
-            ].map(({id,label,data,color})=>(
+              {id:'signe',label:'Total devis signés',data:devisKpis.signe,color:'#111',hasPeriod:true},
+              {id:'taux',label:'Taux de signature',data:devisKpis.taux,color:'#111',hasPeriod:true},
+              {id:'encaisse',label:'Total encaissé',data:devisKpis.encaisse,color:G,hasPeriod:true},
+              {id:'reste',label:'Reste à encaisser',data:devisKpis.reste,color:RD,hasPeriod:false},
+            ].map(({id,label,data,color,hasPeriod})=>{
+              const p=(devisPeriodes as any)[id]||'mois'
+              return(
               <div key={id} style={{background:'#fff',borderRadius:10,padding:'14px 16px',border:`1px solid ${id==='reste'?'#fca5a544':BD}`}}>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
                   <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.04em'}}>{label}</div>
-                  {id==='signe'&&(
+                  {hasPeriod&&(
                     <div style={{position:'relative' as const}}>
-                      <button onClick={()=>setDevisKpiDD(!devisKpiDD)}
+                      <button onClick={()=>setDevisKpiDD(devisKpiDD===id?null:id)}
                         style={{fontSize:10,color:'#555',background:'#f3f4f6',border:'none',borderRadius:4,padding:'2px 6px',cursor:'pointer'}}>
-                        {pLabel(devisPeriode)} ▾
+                        {pLabel(p)} ▾
                       </button>
-                      {devisKpiDD&&(
+                      {devisKpiDD===id&&(
                         <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:200,minWidth:150,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
                           {[['mois','Ce mois-ci'],['mois_prec','Mois dernier'],['trimestre','Ce trimestre'],['annee','Cette année']].map(([v,l])=>(
-                            <div key={v} onClick={()=>{setDevisPeriode(v);setDevisKpiDD(false)}}
-                              style={{padding:'8px 12px',fontSize:12,cursor:'pointer',background:devisPeriode===v?'#f0fdf4':'',color:devisPeriode===v?G:'#333'}}
+                            <div key={v} onClick={()=>{setDevisPeriodes((prev:any)=>({...prev,[id]:v}));setDevisKpiDD(null)}}
+                              style={{padding:'8px 12px',fontSize:12,cursor:'pointer',background:p===v?'#f0fdf4':'',color:p===v?G:'#333'}}
                               onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
-                              onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=devisPeriode===v?'#f0fdf4':''}>
+                              onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=p===v?'#f0fdf4':''}>
                               {l}
                             </div>
                           ))}
@@ -313,7 +316,7 @@ export default function DevisPage() {
                 <div style={{fontSize:11,color:'#888'}}>{data.sub}</div>
                 {data.change&&<div style={{fontSize:11,color:data.change.color,fontWeight:500,marginTop:2}}>{data.change.val}</div>}
               </div>
-            ))}
+            )})}
           </div>
           {/* Onglets */}
           <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
