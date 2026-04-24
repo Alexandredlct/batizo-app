@@ -18,19 +18,38 @@ export default function AbonnementPage(){
   const[modifierCarte,setModifierCarte]=useState(false)
   const[editFacturation,setEditFacturation]=useState(false)
   const[showModal,setShowModal]=useState(false)
-  const[emailsFacture,setEmailsFacture]=useState(['a.delcourt@batizo.fr'])
+  const[emailsFacture,setEmailsFacture]=useState<string[]>(()=>{
+    if(typeof window==='undefined') return []
+    try{
+      const raw=localStorage.getItem('batizo_emails_facture')
+      if(raw) return JSON.parse(raw)
+      const params=JSON.parse(localStorage.getItem('batizo_params')||'{}')
+      return [params.email||''].filter(Boolean)
+    }catch(e){return []}
+  })
   const[newEmailFacture,setNewEmailFacture]=useState('')
   const[showAddEmail,setShowAddEmail]=useState(false)
+  const persistEmails=(list:string[])=>{try{localStorage.setItem('batizo_emails_facture',JSON.stringify(list))}catch(e){}}
+
   const ajouterEmail=()=>{
     if(!newEmailFacture||emailsFacture.includes(newEmailFacture))return
-    setEmailsFacture(p=>[...p,newEmailFacture])
+    setEmailsFacture(p=>{const n=[...p,newEmailFacture];persistEmails(n);return n})
     setNewEmailFacture('')
     setShowAddEmail(false)
   }
   const supprimerEmail=(email:string)=>{
     if(emailsFacture.length<=1)return
-    setEmailsFacture(p=>p.filter(e=>e!==email))
+    setEmailsFacture(p=>{const n=p.filter(e=>e!==email);persistEmails(n);return n})
   }
+  const abonnement = (()=>{
+    if(typeof window==='undefined') return {plan:'Pro',prix:'19',renouvellement:'—',carte:'•••• •••• •••• ——'}
+    try{
+      const raw=localStorage.getItem('batizo_abonnement')
+      if(raw) return JSON.parse(raw)
+    }catch(e){}
+    return {plan:'Pro',prix:'19',renouvellement:'—',carte:'•••• •••• •••• ——'}
+  })()
+
   const sw=collapsed?64:230
   const navItems=[
     {id:'dashboard',label:'Tableau de bord',href:'/dashboard'},
@@ -110,7 +129,7 @@ export default function AbonnementPage(){
         <div style={{height:60,background:'#fff',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',padding:'0 24px',flexShrink:0}}>
           <div style={{fontSize:16,fontWeight:700,color:'#111',flexShrink:0}}>Abonnement</div><SearchBar/>
         </div>
-        <div style={{flex:1,overflowY:'auto',padding:24,maxWidth:900}}>
+        <div style={{flex:1,overflowY:'auto',padding:24}}>
 
           {/* Plan actuel */}
           <div style={{marginBottom:24}}>
@@ -122,7 +141,7 @@ export default function AbonnementPage(){
                     <span style={{fontSize:22,fontWeight:700,color:'#111'}}>Plan Pro</span>
                     <span style={{background:'#f0fdf4',color:G,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20}}>Actif</span>
                   </div>
-                  <div style={{fontSize:14,color:'#333',marginBottom:6}}>19 € HT / mois · Renouvellement le <strong>7 mai 2026</strong></div>
+                  <div style={{fontSize:14,color:'#333',marginBottom:6}}>{abonnement.prix||'19'} € HT / mois{abonnement.renouvellement&&abonnement.renouvellement!=='—'?' · Renouvellement le ':''}{abonnement.renouvellement&&abonnement.renouvellement!=='—'?<strong>{abonnement.renouvellement}</strong>:''}</div>
                   <div style={{fontSize:13,color:'#333',display:'flex',alignItems:'center',gap:10}}>
                     Utilisateurs : <strong>5 / 10</strong>
                     <div style={{width:100,height:6,background:'#e5e7eb',borderRadius:10,position:'relative',display:'inline-block'}}>
@@ -257,12 +276,11 @@ export default function AbonnementPage(){
                 </tr></thead>
                 <tbody>
                   {[
-                    ['07/04/2026','Plan Pro — Avril 2026','22,61 € TTC','payé'],
-                    ['07/03/2026','Plan Pro — Mars 2026','22,61 € TTC','payé'],
-                    ['07/02/2026','Plan Pro — Février 2026','22,61 € TTC','payé'],
-                    ['07/01/2026','Plan Pro — Janvier 2026','22,61 € TTC','payé'],
-                    ['07/12/2025','Plan Pro — Décembre 2025','22,61 € TTC','échoué'],
-                    ['07/11/2025','Plan Pro — Novembre 2025','22,61 € TTC','payé'],
+                    ...(()=>{
+                      if(typeof window==='undefined') return []
+                      try{const raw=localStorage.getItem('batizo_factures_abonnement');if(raw)return JSON.parse(raw)}catch(e){}
+                      return []
+                    })(),
                   ].map(([date,desc,montant,statut],i)=>(
                     <tr key={i} style={{borderBottom:`1px solid ${BD}`}} onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'} onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
                       <td style={{padding:'12px 16px',fontSize:13,color:'#555'}}>{date}</td>
@@ -333,7 +351,7 @@ export default function AbonnementPage(){
               <svg width="24"height="24"viewBox="0 0 24 24"fill="none"stroke={RD}strokeWidth="2"strokeLinecap="round"><circle cx="12"cy="12"r="10"/><line x1="12"y1="8"x2="12"y2="12"/><line x1="12"y1="16"x2="12.01"y2="16"/></svg>
             </div>
             <h3 style={{fontSize:18,fontWeight:700,marginBottom:8,color:'#111'}}>Annuler l'abonnement ?</h3>
-            <p style={{fontSize:14,color:'#333',marginBottom:24,lineHeight:1.6}}>Votre accès restera actif jusqu'au <strong>7 mai 2026</strong>. Après cette date, votre compte passera en mode lecture seule.</p>
+            <p style={{fontSize:14,color:'#333',marginBottom:24,lineHeight:1.6}}>Votre accès restera actif jusqu'au <strong>{abonnement.renouvellement||'—'}</strong>. Après cette date, votre compte passera en mode lecture seule.</p>
             <div style={{display:'flex',gap:10}}>
               <button onClick={()=>setShowModal(false)} style={{flex:1,padding:11,border:'1px solid #333',borderRadius:8,background:'#fff',fontSize:14,cursor:'pointer',color:'#111',fontWeight:500}}>Garder mon abonnement</button>
               <button onClick={()=>setShowModal(false)} style={{flex:1,padding:11,background:RD,color:'#fff',border:'none',borderRadius:8,fontSize:14,fontWeight:600,cursor:'pointer'}}>Confirmer l'annulation</button>
