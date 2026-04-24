@@ -231,7 +231,7 @@ export default function ParrainagePage(){
                   style={{flex:2,minWidth:200,padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',color:'#111'}}/>
                 <button onClick={envoyerInvitation} disabled={!emailInvit.trim()||!nomInvit.trim()||sendingInvit}
                   style={{padding:'9px 20px',background:emailInvit.trim()&&nomInvit.trim()?G:'#e5e7eb',color:emailInvit.trim()&&nomInvit.trim()?'#fff':'#aaa',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>
-                  {sendingInvit?'Envoi...':'Envoyer l'invitation'}
+                  {sendingInvit?'Envoi...':'Envoyer l’invitation'}
                 </button>
               </div>
               {invitToast&&<div style={{marginTop:10,fontSize:12,color:G,fontWeight:500}}>✓ {invitToast}</div>}
