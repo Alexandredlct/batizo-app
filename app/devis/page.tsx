@@ -57,13 +57,19 @@ export default function DevisPage() {
 
   const archiver = (id:string, e:React.MouseEvent) => {
     e.stopPropagation()
-    setChantiers(p => p.map(c => c.id===id ? {...c,archive:true} : c))
+    const updated = chantiers.map(c => c.id===id ? {...c,archive:true} : c)
+    setChantiers(updated)
+    persistChantiers(updated)
     setToast({visible:true,id})
     setTimeout(() => setToast({visible:false,id:null}), 5000)
   }
 
   const annulerArchivage = () => {
-    if (toast.id) setChantiers(p => p.map(c => c.id===toast.id ? {...c,archive:false} : c))
+    if (toast.id) {
+      const updated = chantiers.map(c => c.id===toast.id ? {...c,archive:false} : c)
+      setChantiers(updated)
+      persistChantiers(updated)
+    }
     setToast({visible:false,id:null})
   }
 
