@@ -16,14 +16,29 @@ function getDisplayName(c:Client):string {
   return nom||prenom||c.nom
 }
 
-interface Props { onClose:()=>void }
+interface Props { onClose:()=>void; clientPreselect?:any }
 
-export default function NouveauDevisModal({ onClose }:Props) {
+export default function NouveauDevisModal({ onClose, clientPreselect }:Props) {
   const[search,setSearch]=useState('')
   const[clients,setClients]=useState<Client[]>([])
   const[filtered,setFiltered]=useState<Client[]>([])
   const[showDropdown,setShowDropdown]=useState(false)
-  const[selectedClient,setSelectedClient]=useState<Client|null>(null)
+  const[selectedClient,setSelectedClient]=useState<Client|null>(()=>{
+    if(clientPreselect){
+      return{
+        id:clientPreselect.id,
+        type:clientPreselect.type||'particulier',
+        nom:clientPreselect.raisonSociale||clientPreselect.nom||'',
+        prenom:clientPreselect.prenom||'',
+        nomFamille:clientPreselect.nomFamille||'',
+        raisonSociale:clientPreselect.raisonSociale||'',
+        email:clientPreselect.email||'',
+        tel:clientPreselect.tel||'',
+        civilite:clientPreselect.civilite||''
+      }
+    }
+    return null
+  })
   const[titre,setTitre]=useState('')
   const[showCreateClient,setShowCreateClient]=useState(false)
   const searchRef=useRef<HTMLInputElement>(null)
@@ -152,7 +167,7 @@ export default function NouveauDevisModal({ onClose }:Props) {
               <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',background:'#f0fdf4',border:`1px solid ${G}`,borderRadius:8}}>
                 <span style={{flex:1,fontSize:13,fontWeight:600,color:'#111'}}>{getDisplayName(selectedClient)}</span>
                 {typeBadge(selectedClient.type)}
-                <button onClick={()=>setSelectedClient(null)} style={{background:'none',border:'none',cursor:'pointer',color:'#888',fontSize:16,lineHeight:1,padding:0}}>×</button>
+                {!clientPreselect&&<button onClick={()=>setSelectedClient(null)} style={{background:'none',border:'none',cursor:'pointer',color:'#888',fontSize:16,lineHeight:1,padding:0}}>×</button>}
               </div>
             ):(
               <div style={{position:'relative'}}>
