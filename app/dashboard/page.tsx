@@ -98,7 +98,7 @@ export default function DashboardPage() {
     try {
       const devisRaw = localStorage.getItem('batizo_devis')
       if (!devisRaw) return {marge:0, nbDevis:0, caTotal:0}
-      const devisList: any[] = JSON.parse(devisRaw)
+      const devisList: any[] = JSON.parse(devisRaw).filter((d:any)=>d.id?.startsWith('dev-'))
       const now = new Date()
       const getRange = (): [Date, Date] => {
         if (margePeriode==='mois') return [new Date(now.getFullYear(),now.getMonth(),1),new Date(now.getFullYear(),now.getMonth()+1,0)]
