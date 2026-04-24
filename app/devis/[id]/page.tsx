@@ -233,7 +233,7 @@ export default function NouveauDevisPage(){
           if(devis.remise) setRemise(devis.remise)
           if(devis.notes) setNotes(devis.notes)
           if(devis.condPaiement) setCondPaiement(devis.condPaiement)
-          if(devis.tva) setTvaDefaut(devis.tva+'%')
+          // if(devis.tva) setTvaDefaut(devis.tva+'%')
         }
       }
     }catch(e){}
