@@ -229,7 +229,7 @@ export default function DevisPage() {
     const pct=(a:number,b:number)=>b>0?Math.round((a-b)/b*100):null
     const fmtChange=(cur:number,prev:number,suffix='%')=>{
       const p=pct(cur,prev);if(p===null)return null
-      return{val:(p>=0?'+':'')+p+suffix+' '+vsLabel(devisPeriode),color:p>=0?G:'#6b7280'}
+      return{val:(p>=0?'+':'')+p+suffix+' '+vsLabel(p),color:p>=0?G:'#6b7280'}
     }
     
     return{
