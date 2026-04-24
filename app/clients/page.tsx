@@ -749,12 +749,12 @@ export default function ClientsPage(){
                 <div style={{fontSize:15,fontWeight:700,color:'#111'}}>
                   {selectedClient.type==='professionnel'
                     ? selectedClient.raisonSociale||selectedClient.nom
-                    : [selectedClient.civilite, selectedClient.prenom, selectedClient.nomFamille||selectedClient.nom].filter(Boolean).join(' ')
+                    : [selectedClient.civilite, selectedClient.prenom, (selectedClient as any).nomFamille||selectedClient.nom].filter(Boolean).join(' ')
                   }
                 </div>
-                {selectedClient.type==='professionnel'&&(selectedClient.prenom||selectedClient.nomFamille)&&(
+                {selectedClient.type==='professionnel'&&(selectedClient.prenom||(selectedClient as any).nomFamille)&&(
                   <div style={{fontSize:12,color:'#888',marginTop:2}}>
-                    {[selectedClient.prenom, selectedClient.nomFamille||selectedClient.nom].filter(Boolean).join(' ')}
+                    {[selectedClient.prenom, (selectedClient as any).nomFamille||selectedClient.nom].filter(Boolean).join(' ')}
                   </div>
                 )}
               </div>
