@@ -189,6 +189,13 @@ export default function DashboardPage() {
   }, [])
 
 
+  useEffect(()=>{
+    try{
+      const raw=localStorage.getItem('batizo_clients')
+      if(raw) setClientsData(JSON.parse(raw))
+    }catch(e){}
+  },[])
+
   const entreprise = user?.user_metadata?.entreprise || 'votre entreprise'
   const sw = collapsed ? 64 : 230
 
@@ -199,12 +206,27 @@ export default function DashboardPage() {
     {id:'bibliotheque', label:'Bibliothèque', href:'/bibliotheque'},
   ]
 
-  const devis = [
-    { client:'Martin Dupont', num:'DEV-2026-042', date:'05/04', montant:'4 200 € HT', statut:'Envoyé', sc:'#2563eb', mois:4, annee:2026 },
-    { client:'SCI Les Pins', num:'DEV-2026-041', date:'03/04', montant:'12 800 € HT', statut:'Signé', sc:G, mois:4, annee:2026 },
-    { client:'Isabelle Renard', num:'DEV-2026-040', date:'01/04', montant:'1 950 € HT', statut:'En attente', sc:AM },
-    { client:'SARL Bâti Pro', num:'DEV-2026-039', date:'28/03', montant:'8 600 € HT', statut:'Refusé', sc:RD },
-  ]
+  const devis = React.useMemo(()=>{
+    try{
+      const raw=localStorage.getItem('batizo_devis')
+      if(!raw) return []
+      const list=JSON.parse(raw)
+      const statMap:Record<string,string>={brouillon:'Brouillon',attente:'En attente',finalise:'Finalisé',signe:'Signé',refuse:'Refusé'}
+      return list.filter((d:any)=>!d.archive).map((d:any)=>{
+        const date=new Date(d.dateDevis||d.createdAt||Date.now())
+        return{
+          id:d.id,
+          client:d.clientNom||d.nom||'—',
+          num:d.ref||d.id?.slice(-6)||'—',
+          date:date.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}),
+          montant:(d.montant||0).toLocaleString('fr-FR')+' € HT',
+          statut:statMap[d.statut]||d.statut||'Brouillon',
+          mois:date.getMonth()+1,
+          annee:date.getFullYear(),
+        }
+      })
+    }catch(e){return []}
+  },[])
 
   const[periodeTop,setPeriodeTop]=useState<'mois'|'mois_prec'|'annee'|'annee_prec'>('annee')
   const[periodeDevis,setPeriodeDevis]=useState<'mois'|'mois_prec'|'annee'|'annee_prec'>('annee')
@@ -219,7 +241,10 @@ export default function DashboardPage() {
       return true
     })
   }
-  const [clientsData, setClientsData] = useState<any[]>(()=>getClients())
+  const [clientsData, setClientsData] = useState<any[]>(()=>{
+    try{const raw=localStorage.getItem('batizo_clients');if(raw)return JSON.parse(raw)}catch(e){}
+    return []
+  })
   const topClientsData=clientsData.map(cl=>({
     nom:cl.raisonSociale||cl.prenom+' '+cl.nom,
     n:cl.nbDevis||0,
