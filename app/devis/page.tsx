@@ -591,7 +591,7 @@ export default function DevisPage() {
                                         <div style={{position:'absolute',bottom:-6,right:16,width:12,height:12,background:'#fff',border:`1px solid ${BD}`,borderLeft:'none',borderTop:'none',transform:'rotate(45deg)'}}></div>
                                         {[
                                           {icon:'✏️',label:'Modifier', action:()=>window.location.href=`/devis/${c.id}`},
-                                          {icon:'📥',label:'Télécharger PDF', action:()=>showToast('Fonctionnalité bientôt disponible')},
+                                          {icon:'📥',label:'Télécharger PDF', action:()=>setToast({visible:true,id:'pdf'})},
                                           {icon:'📧',label:'Envoyer par email', action:()=>{}},
                                         ].map(item => (
                                           <div key={item.label} onClick={() => { item.action(); setActionMenu(null) }}
