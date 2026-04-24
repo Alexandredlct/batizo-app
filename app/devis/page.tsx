@@ -331,17 +331,16 @@ export default function DevisPage() {
                             </div>
                             
                             <div style={{display:"flex",alignItems:"center",gap:20,flexWrap:"wrap",marginBottom:4}}>
-                            <span style={{display:"flex",alignItems:"center",gap:4,fontSize:13}}><span>📍</span>
                               <a href={mapsUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
-                                style={{color:'#555',textDecoration:'none',borderBottom:'1px dashed #ccc',transition:'color 0.15s,borderColor 0.15s'}}
-                                onMouseEnter={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color=G; a.style.borderBottomColor=G }}
-                                onMouseLeave={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color='#555'; a.style.borderBottomColor='#ccc' }}>
+                                style={{color:'#555',textDecoration:'none',fontSize:13,transition:'color 0.15s'}}
+                                onMouseEnter={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color='#2563eb'; a.style.textDecoration='underline' }}
+                                onMouseLeave={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color='#555'; a.style.textDecoration='none' }}>
                                 {c.adresse}
-                              </a></span>
+                              </a>
                               <a href={`tel:${c.tel.replace(/\s/g,'')}`} onClick={e => e.stopPropagation()}
-                                style={{color:'#555',textDecoration:'none',borderBottom:'1px dashed #ccc',transition:'color 0.15s,borderColor 0.15s'}}
-                                onMouseEnter={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color=G; a.style.borderBottomColor=G }}
-                                onMouseLeave={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color='#555'; a.style.borderBottomColor='#ccc' }}>
+                                style={{color:'#555',textDecoration:'none',fontSize:13,transition:'color 0.15s'}}
+                                onMouseEnter={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color='#2563eb'; a.style.textDecoration='underline' }}
+                                onMouseLeave={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color='#555'; a.style.textDecoration='none' }}>
                                 {c.tel}
                               </a>
                             </div>
@@ -367,7 +366,7 @@ export default function DevisPage() {
                           </div>
                         </div>
                         <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0,marginLeft:16}} onClick={e => e.stopPropagation()}>
-                          <span style={{background:`${statutColors[c.statut]}18`,color:statutColors[c.statut],padding:'3px 10px',borderRadius:20,fontSize:11,fontWeight:700}}>{statutLabels[c.statut]}</span>
+                          <span style={{background:`${statutColors[c.statut]}18`,color:statutColors[c.statut],padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:700}}>{statutLabels[c.statut]}</span>
                           <div style={{display:'inline-flex',alignItems:'center',gap:4}}>
                             <button onClick={e => archiver(c.id,e)}
                               style={{display:'flex',alignItems:'center',gap:4,padding:'5px 10px',border:`1px solid ${BD}`,borderRadius:6,background:'#fff',fontSize:11,cursor:'pointer',color:'#666',transition:'all 0.15s'}}
