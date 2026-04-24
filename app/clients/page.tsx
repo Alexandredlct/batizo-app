@@ -185,6 +185,7 @@ export default function ClientsPage(){
   const[importStats,setImportStats]=useState<{imported:number,dupes:number,errors:number}|null>(null)
   const[deleteConfirm,setDeleteConfirm]=useState<string|null>(null)
   const[enChargeMenu,setEnChargeMenu]=useState<string|null>(null)
+  const[enChargePos,setEnChargePos]=useState({top:0,left:0})
   const[deletedClient,setDeletedClient]=useState<Client|null>(null)
   const[showUndoToast,setShowUndoToast]=useState(false)
   const[importPreview,setImportPreview]=useState<any[]>([])
@@ -659,7 +660,7 @@ export default function ClientsPage(){
                     {/* 10. En charge */}
                     <td style={{padding:'11px 14px',overflow:'visible'}} onClick={e=>e.stopPropagation()}>
                       <div style={{position:'relative'}}>
-                        <div data-encharge={client.id} onClick={()=>setEnChargeMenu(enChargeMenu===client.id?null:client.id)}
+                        <div data-encharge={client.id} onClick={e=>{const r=(e.currentTarget as HTMLDivElement).getBoundingClientRect();setEnChargePos({top:r.bottom+4,left:r.left});setEnChargeMenu(enChargeMenu===client.id?null:client.id)}}
                           style={{display:'inline-flex',alignItems:'center',gap:5,cursor:'pointer',padding:'3px 7px',borderRadius:7,transition:'background 0.1s'}}
                           onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f3f4f6'}
                           onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
@@ -672,9 +673,7 @@ export default function ClientsPage(){
                           <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
                         </div>
                         {enChargeMenu===client.id&&typeof window!=='undefined'&&createPortal(
-                          <div onClick={e=>e.stopPropagation()} style={{position:'fixed',background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 8px 24px rgba(0,0,0,0.15)',zIndex:9999,minWidth:200,overflow:'hidden',
-                            top:(()=>{const el=document.querySelector(`[data-encharge="${client.id}"]`);if(!el)return 0;const r=el.getBoundingClientRect();return r.bottom+4})(),
-                            left:(()=>{const el=document.querySelector(`[data-encharge="${client.id}"]`);if(!el)return 0;const r=el.getBoundingClientRect();return r.left})()}}>
+                          <div onClick={e=>e.stopPropagation()} style={{position:'fixed',background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 8px 24px rgba(0,0,0,0.15)',zIndex:9999,minWidth:200,overflow:'hidden',top:enChargePos.top,left:enChargePos.left}}>
                             <div style={{padding:'8px 12px',fontSize:11,color:'#888',fontWeight:600,borderBottom:`1px solid #f3f4f6`}}>ASSIGNER À</div>
                             {['', ...MEMBRES].map(m=>(
                               <div key={m||'none'} onClick={()=>{setClients(p=>p.map(cl=>cl.id===client.id?{...cl,enCharge:m}:cl));setEnChargeMenu(null)}}
