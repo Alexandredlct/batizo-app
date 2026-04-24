@@ -1,5 +1,6 @@
 'use client'
 import { createPortal } from 'react-dom'
+import NouveauDevisModal from '../components/NouveauDevisModal'
 import NotifBell from '../components/NotifBell'
 import NouveauClientDrawer from '../components/NouveauClientDrawer'
 import SearchBar from '../components/SearchBar'
@@ -170,6 +171,8 @@ export default function ClientsPage(){
   const[toast,setToast]=useState('')
   const[historiqueDevis,setHistoriqueDevis]=useState<{clientId:string,num:string,titre:string,date:string,statut:string,montant:number,marge:number}[]>([])
   const[showImportModal,setShowImportModal]=useState(false)
+  const[showNouveauDevisModal,setShowNouveauDevisModal]=useState(false)
+  const[devisClientPreselect,setDevisClientPreselect]=useState<any>(null)
   const[importErrors,setImportErrors]=useState<string[]>([])
   const[importStats,setImportStats]=useState<{imported:number,dupes:number,errors:number}|null>(null)
   const[deleteConfirm,setDeleteConfirm]=useState<string|null>(null)
@@ -744,14 +747,22 @@ export default function ClientsPage(){
             <div style={{padding:'14px 20px',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
               <div>
                 <div style={{fontSize:15,fontWeight:700,color:'#111'}}>
-                  {selectedClient.civilite} {selectedClient.prenom} {selectedClient.nom}
+                  {selectedClient.type==='professionnel'
+                    ? selectedClient.raisonSociale||selectedClient.nom
+                    : [selectedClient.civilite, selectedClient.prenom, selectedClient.nomFamille||selectedClient.nom].filter(Boolean).join(' ')
+                  }
                 </div>
-                {selectedClient.raisonSociale&&<div style={{fontSize:12,color:'#888',marginTop:2}}>{selectedClient.raisonSociale}</div>}
+                {selectedClient.type==='professionnel'&&(selectedClient.prenom||selectedClient.nomFamille)&&(
+                  <div style={{fontSize:12,color:'#888',marginTop:2}}>
+                    {[selectedClient.prenom, selectedClient.nomFamille||selectedClient.nom].filter(Boolean).join(' ')}
+                  </div>
+                )}
               </div>
               <div style={{display:'flex',gap:8}}>
-                <a href="/devis/nouveau" style={{padding:'7px 14px',background:G,color:'#fff',borderRadius:7,fontSize:13,fontWeight:600,textDecoration:'none',display:'inline-flex',alignItems:'center',gap:4}}>
-                  + Devis
-                </a>
+                <button onClick={()=>{setDevisClientPreselect(selectedClient);setShowNouveauDevisModal(true)}}
+                  style={{padding:'7px 14px',background:G,color:'#fff',borderRadius:7,fontSize:13,fontWeight:600,border:'none',cursor:'pointer',display:'inline-flex',alignItems:'center',gap:4}}>
+                  + Nouveau devis
+                </button>
                 <button onClick={()=>openEdit(selectedClient)} style={{padding:'7px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,cursor:'pointer',color:'#333',fontWeight:500}}>Modifier</button>
                 <button onClick={closePanel} style={{width:32,height:32,borderRadius:'50%',border:`1px solid ${BD}`,background:'#f9fafb',cursor:'pointer',fontSize:16,color:'#888',display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
               </div>
@@ -760,11 +771,18 @@ export default function ClientsPage(){
             <div style={{flex:1,overflowY:'auto',padding:20,display:'flex',flexDirection:'column',gap:14}}>
               {/* Stats */}
               <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10}}>
-                {[
-                  {label:'Devis',val:selectedClient.nbDevis,color:'#111'},
-                  {label:'CA total HT',val:fmt(selectedClient.caTotal),color:G},
-                  {label:'Marge moy.',val:selectedClient.margeAvg+'%',color:selectedClient.margeAvg>=60?G:selectedClient.margeAvg>=40?AM:RD},
-                ].map(s=>(
+                {(()=>{
+                  const devisClient=historiqueDevis.filter(d=>d.clientId===selectedClient.id)
+                  const nbDevis=devisClient.length
+                  const signes=devisClient.filter(d=>d.statut==='Signé')
+                  const caTotal=signes.reduce((s,d)=>s+d.montant,0)
+                  const margeAvg=signes.length>0?Math.round(signes.reduce((s,d)=>s+d.marge,0)/signes.length):0
+                  return[
+                    {label:'Devis',val:nbDevis,color:'#111'},
+                    {label:'CA total HT',val:fmt(caTotal),color:G},
+                    {label:'Marge moy.',val:margeAvg>0?margeAvg+'%':'—',color:margeAvg>=60?G:margeAvg>=40?AM:RD},
+                  ]
+                })().map(s=>(
                   <div key={s.label} style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:10,padding:'10px 14px',textAlign:'center' as const}}>
                     <div style={{fontSize:10,color:'#888',fontWeight:600,textTransform:'uppercase' as const,marginBottom:3}}>{s.label}</div>
                     <div style={{fontSize:17,fontWeight:700,color:s.color}}>{s.val}</div>
@@ -915,6 +933,14 @@ export default function ClientsPage(){
             )}
           </div>
         </div>
+      )}
+
+      {/* Modal Nouveau devis depuis fiche client */}
+      {showNouveauDevisModal&&devisClientPreselect&&(
+        <NouveauDevisModal
+          onClose={()=>{setShowNouveauDevisModal(false);setDevisClientPreselect(null)}}
+          clientPreselect={devisClientPreselect}
+        />
       )}
 
       {/* Toast */}
