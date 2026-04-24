@@ -1,4 +1,5 @@
 'use client'
+import { createPortal } from 'react-dom'
 import NotifBell from '../components/NotifBell'
 import NouveauClientDrawer from '../components/NouveauClientDrawer'
 import SearchBar from '../components/SearchBar'
