@@ -3,7 +3,7 @@ import NotifBell from '../components/NotifBell'
 import NouveauDevisModal from '../components/NouveauDevisModal'
 import SearchBar from '../components/SearchBar'
 import Sidebar from '../components/Sidebar'
-import { useState } from 'react'
+import React, { useState } from 'react'
 
 const G = '#1D9E75', AM = '#BA7517', RD = '#E24B4A', BD = '#e5e7eb'
 
@@ -172,6 +172,73 @@ export default function DevisPage() {
     return chantiers.filter(c => !c.archive && c.statut===tab && matchSearch(c)).length
   }
 
+  const[devisPeriode,setDevisPeriode]=useState('mois')
+  const[devisKpiDD,setDevisKpiDD]=useState(false)
+
+  const getDevisRange=(p:string):{start:Date,end:Date,prevStart:Date,prevEnd:Date}=>{
+    const now=new Date()
+    let start=new Date(),end=new Date(),prevStart=new Date(),prevEnd=new Date()
+    if(p==='mois'){
+      start=new Date(now.getFullYear(),now.getMonth(),1);end=new Date(now)
+      prevStart=new Date(now.getFullYear(),now.getMonth()-1,1);prevEnd=new Date(now.getFullYear(),now.getMonth()-1,now.getDate())
+    } else if(p==='mois_prec'){
+      start=new Date(now.getFullYear(),now.getMonth()-1,1);end=new Date(now.getFullYear(),now.getMonth(),0)
+      prevStart=new Date(now.getFullYear(),now.getMonth()-2,1);prevEnd=new Date(now.getFullYear(),now.getMonth()-1,0)
+    } else if(p==='trimestre'){
+      const q=Math.floor(now.getMonth()/3);start=new Date(now.getFullYear(),q*3,1);end=new Date(now)
+      const dayOfQ=Math.floor((now.getTime()-start.getTime())/(1000*60*60*24))
+      prevStart=new Date(now.getFullYear(),(q-1)*3,1);prevEnd=new Date(prevStart.getTime()+dayOfQ*86400000)
+    } else {
+      start=new Date(now.getFullYear(),0,1);end=new Date(now)
+      const dayOfY=Math.floor((now.getTime()-start.getTime())/(1000*60*60*24))
+      prevStart=new Date(now.getFullYear()-1,0,1);prevEnd=new Date(prevStart.getTime()+dayOfY*86400000)
+    }
+    return{start,end,prevStart,prevEnd}
+  }
+
+  const vsLabel=(p:string)=>p==='mois'?'vs mois dernier':p==='mois_prec'?'vs mois précédent':p==='trimestre'?'vs trimestre précédent':'vs année dernière'
+  const pLabel=(p:string)=>p==='mois'?'Ce mois-ci':p==='mois_prec'?'Mois dernier':p==='trimestre'?'Ce trimestre':'Cette année'
+
+  const devisKpis=React.useMemo(()=>{
+    const{start,end,prevStart,prevEnd}=getDevisRange(devisPeriode)
+    const inRange=(c:Chantier,s:Date,e:Date)=>{
+      // Utiliser la date du premier doc ou mois string
+      const moisMap:Record<string,number>={Janvier:0,Février:1,Mars:2,Avril:3,Mai:4,Juin:5,Juillet:6,Août:7,Septembre:8,Octobre:9,Novembre:10,Décembre:11}
+      const parts=c.mois.split(' ')
+      if(parts.length===2){const m=moisMap[parts[0]];const y=parseInt(parts[1]);if(!isNaN(m)&&!isNaN(y)){const d=new Date(y,m,15);return d>=s&&d<=e}}
+      return false
+    }
+    const cur=chantiers.filter(c=>!c.archive&&inRange(c,start,end))
+    const prev=chantiers.filter(c=>!c.archive&&inRange(c,prevStart,prevEnd))
+    
+    const signes=(list:Chantier[])=>list.filter(c=>c.statut==='signe')
+    const encaisse=(list:Chantier[])=>list.reduce((s,c)=>s+getMontantFacture(c),0)
+    
+    const totalSigne=(list:Chantier[])=>signes(list).reduce((s,c)=>s+c.montantDevis,0)
+    const curSigne=totalSigne(cur);const prevSigne=totalSigne(prev)
+    const curEnc=encaisse(signes(cur));const prevEnc=encaisse(signes(prev))
+    const curReste=curSigne-curEnc
+    
+    // Taux signature
+    const decisifsC=cur.filter(c=>['signe','refuse','finalise'].includes(c.statut))
+    const decisifsP=prev.filter(c=>['signe','refuse','finalise'].includes(c.statut))
+    const tauxC=decisifsC.length>0?Math.round(decisifsC.filter(c=>c.statut==='signe').length/decisifsC.length*100):null
+    const tauxP=decisifsP.length>0?Math.round(decisifsP.filter(c=>c.statut==='signe').length/decisifsP.length*100):null
+    
+    const pct=(a:number,b:number)=>b>0?Math.round((a-b)/b*100):null
+    const fmtChange=(cur:number,prev:number,suffix='%')=>{
+      const p=pct(cur,prev);if(p===null)return null
+      return{val:(p>=0?'+':'')+p+suffix+' '+vsLabel(devisPeriode),color:p>=0?G:'#6b7280'}
+    }
+    
+    return{
+      signe:{val:Math.round(curSigne).toLocaleString('fr-FR')+' €',sub:signes(cur).length+' devis signé'+(signes(cur).length>1?'s':''),change:fmtChange(curSigne,prevSigne,'%')},
+      taux:{val:tauxC!==null?tauxC+'%':'—',sub:tauxC===null?'Aucun devis présenté':decisifsC.length+' devis présentés',change:tauxC!==null&&tauxP!==null?fmtChange(tauxC,tauxP,'pts'):null},
+      encaisse:{val:Math.round(curEnc).toLocaleString('fr-FR')+' €',sub:curSigne>0?Math.round(curEnc/curSigne*100)+'% des devis signés':'—',change:fmtChange(curEnc,prevEnc,'%')},
+      reste:{val:Math.round(curReste).toLocaleString('fr-FR')+' €',sub:'sur devis signés',change:null},
+    }
+  },[chantiers,devisPeriode])
+
   const moisList = [...new Set(chantiers.map(c => c.mois))]
 
   const getMoisStats = (mois:string) => {
@@ -210,23 +277,43 @@ export default function DevisPage() {
         <div style={{flex:1,overflowY:'auto',padding:24}}>
 
 
-          {/* BANDEAU RÉCAPITULATIF */}
-          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:20}}>
-            <div style={{background:'#fff',borderRadius:10,padding:'14px 16px',border:'1px solid #e5e7eb'}}>
-              <div style={{fontSize:11,color:'#555',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.04em',marginBottom:4}}>Total devisé</div>
-              <div style={{fontSize:20,fontWeight:700,color:'#111'}}>{fmt(filtered.reduce((s,c)=>s+c.montantDevis,0))} HT</div>
-              <div style={{fontSize:12,color:'#555',marginTop:2}}>{filtered.length} chantiers affichés</div>
-            </div>
-            <div style={{background:'#fff',borderRadius:10,padding:'14px 16px',border:'1px solid #e5e7eb'}}>
-              <div style={{fontSize:11,color:'#555',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.04em',marginBottom:4}}>Total facturé encaissé</div>
-              <div style={{fontSize:20,fontWeight:700,color:'#1D9E75'}}>{fmt(filtered.reduce((s,c)=>s+getMontantFacture(c),0))} HT</div>
-              <div style={{fontSize:12,color:'#555',marginTop:2}}>{filtered.reduce((s,c)=>s+c.montantDevis,0) > 0 ? Math.round(filtered.reduce((s,c)=>s+getMontantFacture(c),0)/filtered.reduce((s,c)=>s+c.montantDevis,0)*100) : 0}% du CA devisé</div>
-            </div>
-            <div style={{background:'#fff',borderRadius:10,padding:'14px 16px',border:'1px solid #E24B4A22'}}>
-              <div style={{fontSize:11,color:'#555',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.04em',marginBottom:4}}>Reste à encaisser</div>
-              <div style={{fontSize:20,fontWeight:700,color:'#E24B4A'}}>{fmt(filtered.reduce((s,c)=>s+c.montantDevis,0) - filtered.reduce((s,c)=>s+getMontantFacture(c),0))} HT</div>
-              <div style={{fontSize:12,color:'#555',marginTop:2}}>Factures impayées incluses</div>
-            </div>
+          {/* KPI CARDS */}
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}}>
+            {[
+              {id:'signe',label:'Total devis signés',data:devisKpis.signe,color:'#111'},
+              {id:'taux',label:'Taux de signature',data:devisKpis.taux,color:'#111'},
+              {id:'encaisse',label:'Total encaissé',data:devisKpis.encaisse,color:G},
+              {id:'reste',label:'Reste à encaisser',data:devisKpis.reste,color:RD},
+            ].map(({id,label,data,color})=>(
+              <div key={id} style={{background:'#fff',borderRadius:10,padding:'14px 16px',border:`1px solid ${id==='reste'?'#fca5a544':BD}`}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+                  <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.04em'}}>{label}</div>
+                  {id==='signe'&&(
+                    <div style={{position:'relative' as const}}>
+                      <button onClick={()=>setDevisKpiDD(!devisKpiDD)}
+                        style={{fontSize:10,color:'#555',background:'#f3f4f6',border:'none',borderRadius:4,padding:'2px 6px',cursor:'pointer'}}>
+                        {pLabel(devisPeriode)} ▾
+                      </button>
+                      {devisKpiDD&&(
+                        <div style={{position:'absolute' as const,right:0,top:'100%',background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:200,minWidth:150,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
+                          {[['mois','Ce mois-ci'],['mois_prec','Mois dernier'],['trimestre','Ce trimestre'],['annee','Cette année']].map(([v,l])=>(
+                            <div key={v} onClick={()=>{setDevisPeriode(v);setDevisKpiDD(false)}}
+                              style={{padding:'8px 12px',fontSize:12,cursor:'pointer',background:devisPeriode===v?'#f0fdf4':'',color:devisPeriode===v?G:'#333'}}
+                              onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                              onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=devisPeriode===v?'#f0fdf4':''}>
+                              {l}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div style={{fontSize:20,fontWeight:700,color,marginBottom:2}}>{data.val}</div>
+                <div style={{fontSize:11,color:'#888'}}>{data.sub}</div>
+                {data.change&&<div style={{fontSize:11,color:data.change.color,fontWeight:500,marginTop:2}}>{data.change.val}</div>}
+              </div>
+            ))}
           </div>
           {/* Onglets */}
           <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
