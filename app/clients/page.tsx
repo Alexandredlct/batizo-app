@@ -33,13 +33,7 @@ const SOURCES=['Bouche à oreille','Google','Recommandation','Réseaux sociaux',
 const LANGUES=['Français','Anglais','Espagnol','Arabe','Autre']
 const MEMBRES=['Alexandre Delcourt','Emma Strano','Ysaline Bernard','Xavier Concy','Thomas Giraud']
 
-const initClients:Client[]=[
-  {id:'c1',type:'professionnel',civilite:'M.',prenom:'Jean',nom:'Dupont',email:'j.dupont@immobilier.fr',tel:'06 12 34 56 78',statut:'actif',enCharge:'Alexandre Delcourt',raisonSociale:'Dupont Immobilier SAS',formeJuridique:'SAS',siret:'85357201400012',siren:'853572014',tvaIntra:'FR12853572014',paysImmat:'France',contactNom:'Jean Dupont',contactPoste:'Directeur',adresseFactLine1:'45 avenue des Champs',adresseFactVille:'Paris',adresseFactCp:'75008',adresseFactPays:'France',adresseChantierLine1:'12 rue de la Paix',adresseChantierVille:'Paris',adresseChantierCp:'75001',source:'Recommandation',langue:'Français',tags:'VIP, gros chantier',notes:'',nbDevis:8,caTotal:124500,margeAvg:62,derniereActivite:'05/04/2026'},
-  {id:'c2',type:'particulier',civilite:'Mme',prenom:'Sophie',nom:'Martin',email:'s.martin@gmail.com',tel:'07 23 45 67 89',statut:'actif',enCharge:'Emma Strano',adresseFactLine1:'8 rue des Lilas',adresseFactVille:'Courbevoie',adresseFactCp:'92400',adresseFactPays:'France',adresseChantierLine1:'8 rue des Lilas',adresseChantierVille:'Courbevoie',adresseChantierCp:'92400',source:'Google',langue:'Français',tags:'',notes:'Rénovation complète appartement 80m²',nbDevis:3,caTotal:28400,margeAvg:58,derniereActivite:'08/04/2026'},
-  {id:'c3',type:'professionnel',civilite:'M.',prenom:'Karim',nom:'Mansouri',email:'k.mansouri@promoteur.fr',tel:'06 34 56 78 90',statut:'actif',enCharge:'Alexandre Delcourt',raisonSociale:'Mansouri Promotion SARL',formeJuridique:'SARL',siret:'72345678900034',siren:'723456789',tvaIntra:'FR34723456789',paysImmat:'France',contactNom:'Karim Mansouri',contactPoste:'Gérant',adresseFactLine1:'22 boulevard Haussmann',adresseFactVille:'Paris',adresseFactCp:'75009',adresseFactPays:'France',adresseChantierLine1:'5 rue Voltaire',adresseChantierVille:'Levallois-Perret',adresseChantierCp:'92300',source:'Bouche à oreille',langue:'Français',tags:'Promoteur, récurrent',notes:'',nbDevis:12,caTotal:287000,margeAvg:65,derniereActivite:'02/04/2026'},
-  {id:'c4',type:'particulier',civilite:'M.',prenom:'Pierre',nom:'Leblanc',email:'p.leblanc@outlook.fr',tel:'06 45 67 89 01',statut:'prospect',enCharge:'Emma Strano',adresseFactLine1:'3 allée des Roses',adresseFactVille:'Neuilly-sur-Seine',adresseFactCp:'92200',adresseFactPays:'France',adresseChantierLine1:'3 allée des Roses',adresseChantierVille:'Neuilly-sur-Seine',adresseChantierCp:'92200',source:'Chantier voisin',langue:'Français',tags:'',notes:'',nbDevis:1,caTotal:8900,margeAvg:54,derniereActivite:'01/03/2026'},
-  {id:'c5',type:'professionnel',civilite:'Mme',prenom:'Alice',nom:'Bernard',email:'a.bernard@sci-famille.fr',tel:'06 56 78 90 12',statut:'actif',enCharge:'Ysaline Bernard',raisonSociale:'SCI Famille Bernard',formeJuridique:'SCI',siret:'65432198700089',siren:'654321987',tvaIntra:'',paysImmat:'France',contactNom:'Alice Bernard',contactPoste:'Gérante',adresseFactLine1:'17 rue de la République',adresseFactVille:'Levallois-Perret',adresseFactCp:'92300',adresseFactPays:'France',adresseChantierLine1:'Résidence Les Pins, Bât A',adresseChantierVille:'Clichy',adresseChantierCp:'92110',source:'Recommandation',langue:'Français',tags:'SCI, immeuble',notes:'Gère plusieurs lots',nbDevis:5,caTotal:67200,margeAvg:60,derniereActivite:'28/03/2026'},
-]
+const initClients:Client[]=[]
 
 
 
@@ -161,7 +155,7 @@ function KpiWithPeriod({id,label,kpiStats,kpiPeriode,setKpiPeriode,kpiDD,setKpiD
 }
 
 export default function ClientsPage(){
-  const[clients,setClients]=useState<Client[]>(initClients)
+  const[clients,setClients]=useState<Client[]>([])
   const[filtre,setFiltre]=useState<'tous'|'particulier'|'professionnel'>('tous')
   const[filtreStatut,setFiltreStatut]=useState<'tous'|'actif'|'inactif'|'prospect'>('tous')
   const[search,setSearch]=useState('')
