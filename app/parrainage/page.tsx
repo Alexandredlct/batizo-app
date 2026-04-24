@@ -29,18 +29,48 @@ export default function ParrainagePage(){
     {icon:'🎁',label:'Parrainage',href:'/parrainage'},
     {icon:'👤',label:'Mes informations',href:'/mes-informations'},
   ]
+  const codeParrainage=(()=>{
+    if(typeof window==='undefined') return 'MONCODE'
+    try{
+      const p=localStorage.getItem('batizo_params')
+      if(p){const parsed=JSON.parse(p);if(parsed.nomEntreprise)return parsed.nomEntreprise.replace(/\s/g,'').toUpperCase().slice(0,8)+'2026'}
+    }catch(e){}
+    return 'BATIZO2026'
+  })()
+  const lienParrainage='https://batizo.fr/invite/'+codeParrainage
+
   const copier=()=>{
-    navigator.clipboard.writeText('https://batizo.fr/invite/ALEX2026')
+    navigator.clipboard.writeText(lienParrainage)
     setCopied(true)
     setTimeout(()=>setCopied(false),2000)
   }
-  const filleuls=[
-    {nom:'Pierre Leblanc',email:'p.leblanc@batiment.fr',date:'12/01/2026',statut:'abonne'},
-    {nom:'Karim Mansouri',email:'k.mansouri@elec.fr',date:'28/01/2026',statut:'abonne'},
-    {nom:'Sophie Moreau',email:'s.moreau@deco.fr',date:'15/02/2026',statut:'abonne'},
-    {nom:'Marc Fontaine',email:'m.fontaine@plomberie.fr',date:'01/03/2026',statut:'inscrit'},
-    {nom:'Julie Renard',email:'j.renard@peinture.fr',date:'20/03/2026',statut:'invite'},
-  ]
+  const[filleuls,setFilleuls]=useState<any[]>(()=>{
+    if(typeof window==='undefined') return []
+    try{const raw=localStorage.getItem('batizo_filleuls');if(raw)return JSON.parse(raw)}catch(e){}
+    return []
+  })
+  const[emailInvit,setEmailInvit]=useState('')
+  const[nomInvit,setNomInvit]=useState('')
+  const[sendingInvit,setSendingInvit]=useState(false)
+  const[invitToast,setInvitToast]=useState('')
+
+  const envoyerInvitation=()=>{
+    if(!emailInvit.trim()||!nomInvit.trim())return
+    setSendingInvit(true)
+    setTimeout(()=>{
+      const nouveau={nom:nomInvit,email:emailInvit,date:new Date().toLocaleDateString('fr-FR'),statut:'invite'}
+      const updated=[...filleuls,nouveau]
+      setFilleuls(updated)
+      try{localStorage.setItem('batizo_filleuls',JSON.stringify(updated))}catch(e){}
+      setEmailInvit('');setNomInvit('');setSendingInvit(false)
+      setInvitToast('Invitation envoyée à '+nomInvit+' !');setTimeout(()=>setInvitToast(''),3000)
+    },800)
+  }
+
+  // Calculs dynamiques
+  const filleulsActifs=filleuls.filter(f=>f.statut==='abonne').length
+  const moisOfferts=filleulsActifs
+  const invitsEnAttente=filleuls.filter(f=>f.statut==='invite').length
   return(
     <div style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}} onClick={()=>setUserMenu(false)}>
       <div style={{width:sw,minWidth:sw,height:'100vh',background:'#fff',borderRight:`1px solid ${BD}`,display:'flex',flexDirection:'column',transition:'width 0.2s',overflow:'hidden',flexShrink:0}}>
@@ -110,9 +140,9 @@ export default function ParrainagePage(){
               <div style={{fontSize:14,opacity:0.85,lineHeight:1.6,maxWidth:420}}>Pour chaque ami qui s'abonne à Batizo, vous gagnez <strong>1 mois offert</strong>. Votre filleul bénéficie également d'<strong>1 mois offert</strong>.</div>
             </div>
             <div style={{textAlign:'center'}}>
-              <div style={{fontSize:36,fontWeight:700}}>3</div>
+              <div style={{fontSize:36,fontWeight:700}}>{filleulsActifs}</div>
               <div style={{fontSize:13,opacity:0.8}}>filleuls actifs</div>
-              <div style={{fontSize:13,fontWeight:600,marginTop:4,background:'rgba(255,255,255,0.2)',padding:'4px 14px',borderRadius:20}}>= 3 mois offerts</div>
+              <div style={{fontSize:13,fontWeight:600,marginTop:4,background:'rgba(255,255,255,0.2)',padding:'4px 14px',borderRadius:20}}>= {moisOfferts} mois offert{moisOfferts>1?'s':''}</div>
             </div>
           </div>
 
@@ -148,7 +178,7 @@ export default function ParrainagePage(){
             <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,padding:24}}>
               <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16,flexWrap:'wrap' as const}}>
                 <div style={{flex:1,minWidth:200,background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:8,padding:'10px 14px',fontSize:13,fontFamily:'monospace',color:'#333'}}>
-                  https://batizo.fr/invite/ALEX2026
+                  {lienParrainage}
                 </div>
                 <button onClick={copier} style={{padding:'10px 18px',background:copied?'#059669':G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer',transition:'background 0.2s',whiteSpace:'nowrap' as const}}>
                   {copied?'✓ Copié !':'📋 Copier le lien'}
@@ -157,9 +187,9 @@ export default function ParrainagePage(){
               <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap' as const}}>
                 <span style={{fontSize:13,color:'#444'}}>Partager via :</span>
                 {[
-                  {label:'📧 Email',bg:'#eff6ff',color:'#2563eb',href:`mailto:?subject=Essayez Batizo&body=Créez votre compte : https://batizo.fr/invite/ALEX2026`},
-                  {label:'💬 WhatsApp',bg:'#f0fdf4',color:G,href:`https://wa.me/?text=Essayez Batizo : https://batizo.fr/invite/ALEX2026`},
-                  {label:'📱 SMS',bg:'#f9fafb',color:'#555',href:`sms:?body=Essayez Batizo : https://batizo.fr/invite/ALEX2026`},
+                  {label:'📧 Email',bg:'#eff6ff',color:'#2563eb',href:`mailto:?subject=Essayez Batizo&body=Créez votre compte : {lienParrainage}`},
+                  {label:'💬 WhatsApp',bg:'#f0fdf4',color:G,href:`https://wa.me/?text=Essayez Batizo : {lienParrainage}`},
+                  {label:'📱 SMS',bg:'#f9fafb',color:'#555',href:`sms:?body=Essayez Batizo : {lienParrainage}`},
                 ].map(btn=>(
                   <a key={btn.label}href={btn.href}target="_blank"rel="noopener noreferrer"
                     style={{padding:'7px 14px',background:btn.bg,color:btn.color,border:`1px solid ${btn.color}22`,borderRadius:7,fontSize:13,fontWeight:500,textDecoration:'none',transition:'opacity 0.15s'}}
@@ -190,6 +220,24 @@ export default function ParrainagePage(){
             </div>
           </div>
 
+          {/* Formulaire invitation */}
+          <div style={{marginBottom:24}}>
+            <div style={{fontSize:13,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Inviter un ami</div>
+            <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,padding:20}}>
+              <div style={{display:'flex',gap:10,flexWrap:'wrap' as const}}>
+                <input value={nomInvit} onChange={e=>setNomInvit(e.target.value)} placeholder="Prénom Nom"
+                  style={{flex:1,minWidth:140,padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',color:'#111'}}/>
+                <input value={emailInvit} onChange={e=>setEmailInvit(e.target.value)} placeholder="email@exemple.fr" type="email"
+                  style={{flex:2,minWidth:200,padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:8,fontSize:13,outline:'none',color:'#111'}}/>
+                <button onClick={envoyerInvitation} disabled={!emailInvit.trim()||!nomInvit.trim()||sendingInvit}
+                  style={{padding:'9px 20px',background:emailInvit.trim()&&nomInvit.trim()?G:'#e5e7eb',color:emailInvit.trim()&&nomInvit.trim()?'#fff':'#aaa',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                  {sendingInvit?'Envoi...':'Envoyer l'invitation'}
+                </button>
+              </div>
+              {invitToast&&<div style={{marginTop:10,fontSize:12,color:G,fontWeight:500}}>✓ {invitToast}</div>}
+            </div>
+          </div>
+
           {/* Table filleuls */}
           <div style={{marginBottom:24}}>
             <div style={{fontSize:13,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Mes filleuls</div>
@@ -201,7 +249,9 @@ export default function ParrainagePage(){
                   ))}
                 </tr></thead>
                 <tbody>
-                  {filleuls.map((f,i)=>(
+                  {filleuls.length===0?(
+                    <tr><td colSpan={5} style={{padding:'2rem',textAlign:'center' as const,color:'#888',fontSize:13}}>Aucun filleul pour l'instant — invitez vos collègues !</td></tr>
+                  ):filleuls.map((f,i)=>(
                     <tr key={i}style={{borderBottom:i<filleuls.length-1?`1px solid ${BD}`:'none'}}
                       onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
                       onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
