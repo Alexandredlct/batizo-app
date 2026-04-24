@@ -41,14 +41,7 @@ const initClients:Client[]=[
   {id:'c5',type:'professionnel',civilite:'Mme',prenom:'Alice',nom:'Bernard',email:'a.bernard@sci-famille.fr',tel:'06 56 78 90 12',statut:'actif',enCharge:'Ysaline Bernard',raisonSociale:'SCI Famille Bernard',formeJuridique:'SCI',siret:'65432198700089',siren:'654321987',tvaIntra:'',paysImmat:'France',contactNom:'Alice Bernard',contactPoste:'Gérante',adresseFactLine1:'17 rue de la République',adresseFactVille:'Levallois-Perret',adresseFactCp:'92300',adresseFactPays:'France',adresseChantierLine1:'Résidence Les Pins, Bât A',adresseChantierVille:'Clichy',adresseChantierCp:'92110',source:'Recommandation',langue:'Français',tags:'SCI, immeuble',notes:'Gère plusieurs lots',nbDevis:5,caTotal:67200,margeAvg:60,derniereActivite:'28/03/2026'},
 ]
 
-const historiqueDevis=[
-  {clientId:'c1',num:'DEV-2024-089',titre:'Rénovation bureau 3ème étage',date:'05/04/2026',statut:'Signé',montant:42000,marge:64},
-  {clientId:'c1',num:'DEV-2024-076',titre:'Installation électrique complète',date:'12/02/2026',statut:'Signé',montant:28500,marge:61},
-  {clientId:'c2',num:'DEV-2024-091',titre:'Rénovation salle de bain',date:'08/04/2026',statut:'En attente',montant:12400,marge:58},
-  {clientId:'c2',num:'DEV-2024-083',titre:'Peinture salon/séjour',date:'15/03/2026',statut:'Signé',montant:8200,marge:57},
-  {clientId:'c3',num:'DEV-2024-085',titre:'Rénovation immeuble 12 lots',date:'02/04/2026',statut:'En cours',montant:95000,marge:66},
-  {clientId:'c3',num:'DEV-2024-072',titre:'Aménagement parties communes',date:'20/02/2026',statut:'Signé',montant:34000,marge:63},
-]
+
 
 const historiqueCommunications:Record<string,{date:string,type:string,sujet:string,statut:string}[]>={
   'c1':[
@@ -181,6 +174,7 @@ export default function ClientsPage(){
   const[noteText,setNoteText]=useState('')
   const[notes,setNotes]=useState<Record<string,{text:string,date:string}[]>>({})
   const[toast,setToast]=useState('')
+  const[historiqueDevis,setHistoriqueDevis]=useState<{clientId:string,num:string,titre:string,date:string,statut:string,montant:number,marge:number}[]>([])
   const[showImportModal,setShowImportModal]=useState(false)
   const[importErrors,setImportErrors]=useState<string[]>([])
   const[importStats,setImportStats]=useState<{imported:number,dupes:number,errors:number}|null>(null)
