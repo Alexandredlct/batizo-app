@@ -159,7 +159,7 @@ export default function DashboardPage() {
       const caAnneePrec = calcCA(devisList, anneePrecDebut, anneePrecFin)
 
       // Devis en attente (envoyés/brouillons actifs)
-      const devisAttente = devisList.filter((d:any) => ['brouillon','en_attente'].includes(d.statut||'brouillon'))
+      const devisAttente = devisList.filter((d:any) => d.statut&&['brouillon','attente','finalise'].includes(d.statut))
       const caAttente = devisAttente.reduce((s:number, d:any) => {
         return s + (d.lignes||[]).reduce((ls:number, l:any) => {
           if(!['materiau','mo','ouvrage'].includes(l.type)) return ls
