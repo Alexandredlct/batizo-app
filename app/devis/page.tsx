@@ -434,7 +434,7 @@ export default function DevisPage() {
                                     {d.label && <span style={{fontSize:11,color:'#555',marginLeft:4,fontWeight:500}}>{d.label}</span>}
                                   </td>
                                   <td style={{padding:'10px 16px',textAlign:'right',fontSize:13,fontWeight:700,color:'#111'}}>{fmt(d.montant)}</td>
-                                  <td style={{padding:'10px 16px',textAlign:'right',fontSize:13,fontWeight:600,color:'#555'}}>{fmt(Math.round(d.montant*(1+(d.tva===10?0.1:0.2))))}</td>
+                                  <td style={{padding:'10px 16px',textAlign:'right',fontSize:13,fontWeight:600,color:'#555'}}>{fmt(Math.round(d.montant*(1+((d as any).tva===10?0.1:0.2))))}</td>
                                   <td style={{padding:'10px 16px',textAlign:'center',fontSize:13,color:'#444'}}>{d.date}</td>
                                   <td style={{padding:'10px 16px',textAlign:'center'}}>
                                     <select value={d.statut} onChange={e => handleStatutChange(c.id,d.ref,e.target.value,d.type)}
