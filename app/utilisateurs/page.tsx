@@ -11,13 +11,18 @@ const NavIcon=({id}:{id:string})=>{
   if(id==='clients')return<svg viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2"strokeLinecap="round"style={{width:17,height:17,flexShrink:0}}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9"cy="7"r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
   return<svg viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2"strokeLinecap="round"style={{width:17,height:17,flexShrink:0}}><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
 }
-const initUsers:any[]=[
-  {nom:'Alexandre Delcourt',email:'a.delcourt@batizo.fr',depuis:'01/03/2024',role:'proprietaire',vous:true,statut:'actif'},
-  {nom:'Emma Strano',email:'e.strano@batizo.fr',depuis:'04/09/2024',role:'utilisateur',vous:false,statut:'actif'},
-  {nom:'Ysaline Bernard',email:'y.bernard@batizo.fr',depuis:'15/01/2025',role:'utilisateur',vous:false,statut:'actif'},
-  {nom:'Xavier Concy',email:'x.concy@batizo.fr',depuis:'03/03/2025',role:'observateur',vous:false,statut:'actif'},
-  {nom:'Thomas Giraud',email:'t.giraud@batizo.fr',depuis:'10/01/2026',role:'utilisateur',vous:false,statut:'actif'},
+const DEFAULT_USERS:any[]=[
+  {id:'u1',nom:'Alexandre Delcourt',email:'a.delcourt@batizo.fr',depuis:'01/03/2024',role:'proprietaire',vous:true,statut:'actif'},
 ]
+const loadUsers=()=>{
+  try{
+    const raw=localStorage.getItem('batizo_utilisateurs')
+    if(raw){const list=JSON.parse(raw);if(list.length>0)return list}
+  }catch(e){}
+  // Initialiser avec le propriétaire par défaut
+  localStorage.setItem('batizo_utilisateurs',JSON.stringify(DEFAULT_USERS))
+  return DEFAULT_USERS
+}
 const roleLabels:Record<string,string>={proprietaire:'Propriétaire',admin:'Admin',utilisateur:'Utilisateur',observateur:'Observateur',revoque:"Révoquer l'accès"}
 const roleColors:Record<string,string>={proprietaire:'#7c3aed',admin:G,utilisateur:'#2563eb',observateur:AM,revoque:RD}
 export default function UtilisateursPage(){
@@ -25,7 +30,7 @@ export default function UtilisateursPage(){
   const { photo } = usePhoto()
   const[userMenu,setUserMenu]=useState(false)
   const[showForm,setShowForm]=useState(false)
-  const[users,setUsers]=useState(initUsers)
+  const[users,setUsers]=useState<any[]>(()=>typeof window!=='undefined'?loadUsers():DEFAULT_USERS)
   const[newName,setNewName]=useState('')
   const[newEmail,setNewEmail]=useState('')
   const[newRole,setNewRole]=useState('utilisateur')
@@ -33,12 +38,21 @@ export default function UtilisateursPage(){
   const[showTransfert,setShowTransfert]=useState(false)
   const[transfertCible,setTransfertCible]=useState<{nom:string,idx:number}|null>(null)
   const estProprietaire = true // À connecter à Supabase plus tard
+
+  // Persister users dans localStorage
+  React.useEffect(()=>{
+    try{localStorage.setItem('batizo_utilisateurs',JSON.stringify(users))}catch(e){}
+  },[users])
   const[perms,setPerms]=useState<Record<string,Record<string,boolean>>>({
     proprietaire:{voir_devis:true,creer_devis:true,modifier_devis:true,dupliquer:true,envoyer_devis:true,creer_facture:true,modifier_facture:true,envoyer_facture:true,archiver:true,pdf:true,voir_clients:true,ajouter_client:true,modifier_client:true,supprimer_client:true,voir_biblio:true,ajouter_biblio:true,modifier_biblio:true,supprimer_biblio:true,gerer_users:true,inviter:true,parametres:true,infos_entreprise:true,abonnement:true,transfert:true,stats:true},
     admin:{voir_devis:true,creer_devis:true,modifier_devis:true,dupliquer:true,envoyer_devis:true,creer_facture:true,modifier_facture:true,envoyer_facture:true,archiver:true,pdf:true,voir_clients:true,ajouter_client:true,modifier_client:true,supprimer_client:true,voir_biblio:true,ajouter_biblio:true,modifier_biblio:true,supprimer_biblio:true,gerer_users:true,inviter:true,parametres:true,infos_entreprise:false,abonnement:false,transfert:false,stats:true},
     utilisateur:{voir_devis:true,creer_devis:true,modifier_devis:true,dupliquer:true,envoyer_devis:true,creer_facture:true,modifier_facture:true,envoyer_facture:true,archiver:true,pdf:true,voir_clients:true,ajouter_client:true,modifier_client:true,supprimer_client:false,voir_biblio:true,ajouter_biblio:true,modifier_biblio:true,supprimer_biblio:false,gerer_users:false,inviter:false,parametres:false,infos_entreprise:false,abonnement:false,transfert:false,stats:true},
     observateur:{voir_devis:true,creer_devis:false,modifier_devis:false,dupliquer:false,envoyer_devis:false,creer_facture:false,modifier_facture:false,envoyer_facture:false,archiver:false,pdf:true,voir_clients:true,ajouter_client:false,modifier_client:false,supprimer_client:false,voir_biblio:true,ajouter_biblio:false,modifier_biblio:false,supprimer_biblio:false,gerer_users:false,inviter:false,parametres:false,infos_entreprise:false,abonnement:false,transfert:false,stats:true},
   })
+  const desactiverUser=(idx:number)=>{
+    setUsers(p=>p.map((u,i)=>i===idx?{...u,statut:'revoque'}:u))
+  }
+
   const transfererPropriete=(idx:number,nom:string)=>{
     setTransfertCible({nom,idx})
     setShowTransfert(true)
@@ -73,7 +87,7 @@ export default function UtilisateursPage(){
   ]
   const inviter=async()=>{
     if(!newName||!newEmail)return
-    setUsers(p=>[...p,{nom:newName,email:newEmail,depuis:new Date().toLocaleDateString('fr-FR'),role:newRole,vous:false,statut:'en_attente'}])
+    setUsers(p=>[...p,{id:'u'+Date.now(),nom:newName,email:newEmail,depuis:new Date().toLocaleDateString('fr-FR'),role:newRole,vous:false,statut:'en_attente'}])
     try {
       const res = await fetch('/api/invite',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:newEmail,nom:newName,role:newRole})})
       const data = await res.json()
