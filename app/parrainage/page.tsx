@@ -131,7 +131,7 @@ export default function ParrainagePage(){
         <div style={{height:60,background:'#fff',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',padding:'0 24px',flexShrink:0}}>
           <div style={{fontSize:16,fontWeight:700,color:'#111',flexShrink:0}}>Parrainage</div><SearchBar/>
         </div>
-        <div style={{flex:1,overflowY:'auto',padding:24,maxWidth:900}}>
+        <div style={{flex:1,overflowY:'auto',padding:24}}>
 
           {/* Hero */}
           <div style={{background:`linear-gradient(135deg,#085041,${G})`,borderRadius:16,padding:'24px 28px',marginBottom:24,color:'#fff',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:20}}>
@@ -207,8 +207,7 @@ export default function ParrainagePage(){
             <div style={{fontSize:13,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:10}}>Mes récompenses</div>
             <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:12}}>
               {[
-                {val:'3',label:'Filleuls actifs',color:G},
-                {val:'3',label:'Mois offerts gagnés',color:G},
+
                 {val:'57 €',label:'Économisés au total',color:G},
                 {val:'2',label:'Invitations en attente',color:AM},
               ].map(item=>(
