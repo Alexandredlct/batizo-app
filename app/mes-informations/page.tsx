@@ -41,7 +41,7 @@ export default function MesInfosPage(){
   const[deleteConfirm,setDeleteConfirm]=useState('')
 
   // Historique connexions simulé depuis localStorage
-  const[sessions,setSessions]=React.useState<any[]>(()=>{
+  const[sessions,setSessions]=React.useState<any[]>(()=>{if(typeof window==="undefined")return []
     try{
       const raw=localStorage.getItem('batizo_sessions')
       if(raw) return JSON.parse(raw)
