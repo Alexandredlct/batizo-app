@@ -318,13 +318,14 @@ export default function DevisPage() {
                                   style={{fontSize:16,fontWeight:700,color:'#111',border:`1px solid ${G}`,borderRadius:6,padding:'2px 8px',outline:'none',minWidth:220,background:'#f0fdf4'}}/>
                               ) : (
                                 <>
-                                  <span style={{fontSize:16,fontWeight:700,color:'#111'}}>{c.client} — {c.titre}</span><span style={{fontSize:12,color:'#444',fontWeight:500,marginLeft:10}}>{fmt(c.montantDevis)} HT devisé · <span style={{color:montantFacture===0?'#888':G}}>{fmt(montantFacture)} HT facturé</span></span>
+                                  <span style={{fontSize:16,fontWeight:700,color:'#111'}}>{c.client} — {c.titre}</span>
                                   <button onClick={e => { e.stopPropagation(); setEditingTitre(c.id); setEditTitreVal(c.titre) }} title="Modifier le titre"
-                                    style={{background:'none',border:'none',cursor:'pointer',color:'#999',padding:2,display:'flex',alignItems:'center',transition:'color 0.15s'}}
+                                    style={{background:'none',border:'none',cursor:'pointer',color:'#bbb',padding:2,display:'flex',alignItems:'center',transition:'color 0.15s',flexShrink:0}}
                                     onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color=G}
-                                    onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color='#ccc'}>
+                                    onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color='#bbb'}>
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                   </button>
+                                  <span style={{fontSize:12,color:'#444',fontWeight:500,marginLeft:4}}>{fmt(c.montantDevis)} HT devisé · <span style={{color:montantFacture===0?'#888':G}}>{fmt(montantFacture)} HT facturé</span></span>
                                 </>
                               )}
                             </div>
@@ -344,18 +345,7 @@ export default function DevisPage() {
                                 {c.tel}
                               </a>
                             </div>
-                            <div style={{fontSize:13,display:'flex',alignItems:'center',gap:6}}>
-                              <span>👤</span>
-                              <span style={{color:'#888'}}>Vendeur : <strong style={{color:'#555'}}>{c.vendeur}</strong></span>
-                              {/* Bouton note */}
-                              <button onClick={e => { e.stopPropagation(); setEditingNote(editingNote===c.id?null:c.id); setNoteVal(c.note||'') }}
-                                title="Note interne"
-                                style={{display:'flex',alignItems:'center',gap:3,background:'none',border:`1px solid ${c.note?AM:BD}`,borderRadius:5,cursor:'pointer',padding:'2px 6px',fontSize:11,color:c.note?AM:'#aaa',transition:'all 0.15s'}}
-                                onMouseEnter={e => { const b=e.currentTarget as HTMLButtonElement; b.style.borderColor=AM; b.style.color=AM }}
-                                onMouseLeave={e => { const b=e.currentTarget as HTMLButtonElement; b.style.borderColor=c.note?AM:BD; b.style.color=c.note?AM:'#aaa' }}>
-                                📝 {c.note ? 'Note' : 'Ajouter note'}
-                              </button>
-                            </div>
+
                             {/* Zone note */}
                             {editingNote===c.id && (
                               <div style={{marginTop:8}} onClick={e => e.stopPropagation()}>
@@ -413,6 +403,9 @@ export default function DevisPage() {
                                 <th style={{padding:'8px 16px',textAlign:'right',fontSize:12,color:'#555',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('montant')}>
                                   Montant HT <SortIcon field="montant"/>
                                 </th>
+                                <th style={{padding:'8px 16px',textAlign:'right',fontSize:12,color:'#555',fontWeight:600}}>
+                                  Montant TTC
+                                </th>
                                 <th style={{padding:'8px 16px',textAlign:'center',fontSize:12,color:'#555',fontWeight:600,cursor:'pointer'}} onClick={() => handleSort('date')}>
                                   Date <SortIcon field="date"/>
                                 </th>
@@ -441,6 +434,7 @@ export default function DevisPage() {
                                     {d.label && <span style={{fontSize:11,color:'#555',marginLeft:4,fontWeight:500}}>{d.label}</span>}
                                   </td>
                                   <td style={{padding:'10px 16px',textAlign:'right',fontSize:13,fontWeight:700,color:'#111'}}>{fmt(d.montant)}</td>
+                                  <td style={{padding:'10px 16px',textAlign:'right',fontSize:13,fontWeight:600,color:'#555'}}>{fmt(Math.round(d.montant*(1+(d.tva===10?0.1:0.2))))}</td>
                                   <td style={{padding:'10px 16px',textAlign:'center',fontSize:13,color:'#444'}}>{d.date}</td>
                                   <td style={{padding:'10px 16px',textAlign:'center'}}>
                                     <select value={d.statut} onChange={e => handleStatutChange(c.id,d.ref,e.target.value,d.type)}
