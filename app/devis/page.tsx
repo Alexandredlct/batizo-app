@@ -143,7 +143,7 @@ export default function DevisPage() {
               montantDevis:d.montant||0,
               statut:d.statut||'brouillon',
               archive:d.archive||false,
-              docs:d.docs||[{ref:d.ref||'DEV-'+d.id?.slice(-4),type:'devis',montant:d.montant||0,date:new Date(d.dateDevis||d.createdAt||Date.now()).toLocaleDateString('fr-FR'),statut:d.statut||'brouillon'}],
+              docs:d.docs||[{ref:d.ref||'',type:'devis',montant:d.montant||0,date:new Date(d.dateDevis||d.createdAt||Date.now()).toLocaleDateString('fr-FR'),statut:d.statut||'brouillon'}],
               note:d.note
             }
           })
