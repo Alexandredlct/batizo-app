@@ -208,8 +208,10 @@ export default function ParrainagePage(){
             <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:12}}>
               {[
 
-                {val:'57 €',label:'Économisés au total',color:G},
-                {val:'2',label:'Invitations en attente',color:AM},
+                {val:filleulsActifs,label:'Filleuls actifs',color:G},
+                {val:moisOfferts,label:'Mois offerts gagnés',color:G},
+                {val:(moisOfferts*19)+'  €',label:'Économisés au total',color:G},
+                {val:invitsEnAttente,label:'Invitations en attente',color:AM},
               ].map(item=>(
                 <div key={item.label}style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,padding:'20px 16px',textAlign:'center' as const}}>
                   <div style={{fontSize:28,fontWeight:700,color:item.color}}>{item.val}</div>
