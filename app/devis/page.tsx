@@ -319,7 +319,7 @@ export default function DevisPage() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Exporter
             </button>
-            <div style={{display:'flex',alignItems:'center',gap:8}}><NotifBell/><a onClick={e=>{e.preventDefault();setShowNouveauDevis(true)}} href="#" style={{padding:'8px 16px',background:G,color:'#fff',borderRadius:8,fontSize:13,fontWeight:600,textDecoration:'none',display:'flex',alignItems:'center',cursor:'pointer'}}>+ Nouveau devis</a></div>
+            <a onClick={e=>{e.preventDefault();setShowNouveauDevis(true)}} href="#" style={{padding:'8px 16px',background:G,color:'#fff',borderRadius:8,fontSize:13,fontWeight:600,textDecoration:'none',display:'flex',alignItems:'center',cursor:'pointer'}}>+ Nouveau devis</a><NotifBell/>
           </div>
         </div>
 
