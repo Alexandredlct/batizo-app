@@ -531,4 +531,449 @@ export default function ClientsPage(){
             {label:'⬆ Exporter CSV',onClick:exportCSV,variant:'secondary'},
             {label:'⬇ Importer CSV',onClick:()=>{setShowImportModal(true);setImportErrors([]);setImportStats(null)},variant:'secondary'},
             {label:'+ Nouveau client',onClick:openAdd,variant:'primary'},
+          ]}/><polyline points=\"17 8 12 3 7 8\"/><line x1=\"12\" y1=\"3\" x2=\"12\" y2=\"15\"/></svg>"},
+            {label:'Importer CSV',onClick:()=>{setShowImportModal(true);setImportErrors([]);setImportStats(null)},variant:'secondary',icon:"<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" strokeWidth=\"2\"><path d=\"M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4\"/><polyline points=\"7 10 12 15 17 10\"/><line x1=\"12\" y1=\"15\" x2=\"12\" y2=\"3\"/></svg>"},
+            {label:'+ Nouveau client',onClick:openAdd,variant:'primary'},
           ]}/>
+
+        <div style={{flex:1,overflowY:'auto',padding:24}}>
+          {/* Stats */}
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}}>
+            <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px'}}>
+              <div style={{fontSize:11,color:'#888',fontWeight:600,textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:4}}>Total clients</div>
+              <div style={{fontSize:22,fontWeight:700,color:'#111'}}>{clients.length}</div>
+            </div>
+            <KpiWithPeriod id="nouveaux" label="Nouveaux clients" kpiStats={kpiStats} kpiPeriode={kpiPeriode} setKpiPeriode={setKpiPeriode} kpiDD={kpiDD} setKpiDD={setKpiDD} BD={BD} G={G}/>
+            <KpiWithPeriod id="panier" label="Panier moyen HT" kpiStats={kpiStats} kpiPeriode={kpiPeriode} setKpiPeriode={setKpiPeriode} kpiDD={kpiDD} setKpiDD={setKpiDD} BD={BD} G={G}/>
+            <KpiWithPeriod id="ca" label="CA HT" kpiStats={kpiStats} kpiPeriode={kpiPeriode} setKpiPeriode={setKpiPeriode} kpiDD={kpiDD} setKpiDD={setKpiDD} BD={BD} G={G}/>
+          </div>
+
+          {/* Onglets pilules */}
+          <div style={{display:'flex',gap:8,marginBottom:16}}>
+            {([
+              ['tous','Tous',clients.length],
+              ['particulier','Particuliers',clients.filter(c=>c.type==='particulier').length],
+              ['professionnel','Professionnels',clients.filter(c=>c.type==='professionnel').length],
+            ] as const).map(([val,label,count])=>(
+              <button key={val} onClick={()=>setFiltre(val as typeof filtre)}
+                style={{padding:'7px 16px',borderRadius:20,border:`1px solid ${filtre===val?G:BD}`,background:filtre===val?'#f0fdf4':'#fff',color:filtre===val?G:'#555',fontSize:13,fontWeight:filtre===val?600:400,cursor:'pointer',display:'flex',alignItems:'center',gap:6}}>
+                {label}
+                <span style={{background:filtre===val?G:'#e5e7eb',color:filtre===val?'#fff':'#888',fontSize:10,fontWeight:700,padding:'1px 6px',borderRadius:10}}>{count}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Barre recherche + filtre en charge */}
+          <div style={{display:'flex',gap:8,marginBottom:20,alignItems:'center'}}>
+            <div style={{flex:'1 1 auto',position:'relative'}}>
+              <svg style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)'}} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input value={search} onChange={e=>setSearch(e.target.value)}
+                placeholder="Rechercher par nom, email, téléphone, ville..."
+                style={{width:'100%',padding:'9px 12px 9px 36px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}
+                onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+                onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor='#999'}/>
+              {search&&<button onClick={()=>setSearch('')} style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#aaa',fontSize:18}}>×</button>}
+            </div>
+            <select value={filtreEnCharge} onChange={e=>setFiltreEnCharge(e.target.value)}
+              style={{padding:'9px 18px 9px 12px',border:'1px solid #999',borderRadius:8,fontSize:13,outline:'none',background:'#fff',color:'#111',width:'auto',height:40,flexShrink:0,appearance:'none' as const,WebkitAppearance:'none' as const,backgroundImage:'url(%22data:image/svg+xml;charset=UTF-8,%3csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%2212%22%20height=%2212%22%20viewBox=%220%200%2012%2012%22%3e%3cpath%20d=%22M3%204.5L6%207.5L9%204.5%22%20stroke=%22%236B7280%22%20stroke-width=%221.5%22%20fill=%22none%22/%3e%3c/svg%3e%22)',backgroundRepeat:'no-repeat',backgroundPosition:'right 10px center',backgroundSize:'12px',backgroundColor:'#fff'}}>
+              <option value="tous">En charge : Tous</option>
+              {MEMBRES.map(m=><option key={m} value={m}>{m}</option>)}
+              <option value="">Non assigné</option>
+            </select>
+          </div>
+
+          {/* Tableau */}
+          <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,overflow:'hidden'}}>
+            <table style={{width:'100%',borderCollapse:'collapse'}}>
+              <thead>
+                <tr style={{background:'#f9fafb'}}>
+                  {[
+                    {label:'Client',key:'nom'},
+                    {label:'Type',key:''},
+                    {label:'Email',key:''},
+                    {label:'Téléphone',key:''},
+                    {label:'Ville',key:'adresseFactVille'},
+                    {label:'Devis',key:'nbDevis'},
+                    {label:'CA total HT',key:'caTotal'},
+                    {label:'En charge',key:''},
+                    {label:'Dernière activité',key:'derniereActivite'},
+                  ].map(({label,key})=>(
+                    <th key={label} onClick={()=>key&&toggleTri(key as typeof tri)}
+                      style={{padding:'10px 14px',textAlign:'left' as const,fontSize:12,color:tri===key&&key?G:'#888',fontWeight:600,borderBottom:`1px solid ${BD}`,cursor:key?'pointer':'default',userSelect:'none' as const,whiteSpace:'nowrap' as const}}>
+                      {label}{tri===key&&key?(triDir==='asc'?' ↑':' ↓'):''}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length===0?(
+                  <tr><td colSpan={7} style={{padding:'3rem',textAlign:'center' as const,color:'#888',fontSize:13}}>Aucun client{search?' pour cette recherche':''}</td></tr>
+                ):sorted(filtered).map(client=>(
+                  <tr key={client.id} style={{borderBottom:`1px solid ${BD}`,cursor:'pointer'}}
+                    onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f9fafb'}
+                    onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}
+                    onClick={()=>openView(client)}>
+
+                    {/* 1. Client */}
+                    <td style={{padding:'11px 14px'}}>
+                      <div style={{fontSize:13,fontWeight:600,color:'#111'}}>
+                        {(()=>{
+  const isPro=client.type==='professionnel'
+  const prenom=(client as any).prenom||''
+  const nom=(client as any).nomFamille||(client as any).nom||''
+  const civ=(client as any).civilite||''
+  if(isPro) return client.raisonSociale||client.nom
+  if(prenom&&nom) return prenom+' '+nom
+  if(!prenom&&nom) return civ?(civ+' '+nom):nom
+  if(prenom&&!nom) return civ?(civ+' '+prenom):prenom
+  return client.nom
+})()}
+
+                      </div>
+                      {(()=>{
+  const isPro=client.type==='professionnel'
+  const prenom=(client as any).prenom||''
+  const nomF=(client as any).nomFamille||''
+  const civ=(client as any).civilite||''
+  if(!isPro) return null
+  let contact=''
+  if(prenom&&nomF) contact=prenom+' '+nomF
+  else if(prenom) contact=civ?(civ+' '+prenom):prenom
+  else if(nomF) contact=civ?(civ+' '+nomF):nomF
+  return contact?<div style={{fontSize:11,color:'#888',marginTop:1}}>{contact}</div>:null
+})()}
+
+                    </td>
+
+                    {/* 2. Type */}
+                    <td style={{padding:'11px 14px'}}>
+                      <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:10,
+                        background:client.type==='professionnel'?'#eff6ff':'#fff7ed',
+                        color:client.type==='professionnel'?'#2563eb':'#ea580c'}}>
+                        {client.type==='professionnel'?'Professionnel':'Particulier'}
+                      </span>
+                    </td>
+
+
+
+                    {/* 4. Email */}
+                    <td style={{padding:'11px 14px',fontSize:13,color:'#333'}} onClick={e=>e.stopPropagation()}>
+                      {client.email?<a href={`mailto:${client.email}`} style={{color:'#333',textDecoration:'none'}} onMouseEnter={e=>(e.currentTarget as HTMLAnchorElement).style.color='#2563eb'} onMouseLeave={e=>(e.currentTarget as HTMLAnchorElement).style.color='#333'}>{client.email}</a>:'—'}
+                    </td>
+
+                    {/* 5. Téléphone */}
+                    <td style={{padding:'11px 14px'}} onClick={e=>e.stopPropagation()}>
+                      {client.tel?(
+                        <a href={`tel:${client.tel.replace(/\s/g,'')}`} style={{fontSize:13,color:'#333',textDecoration:'none',display:'flex',alignItems:'center',gap:4}}
+                          onMouseEnter={e=>(e.currentTarget as HTMLAnchorElement).style.color='#2563eb'}
+                          onMouseLeave={e=>(e.currentTarget as HTMLAnchorElement).style.color='#333'}>
+                          {client.tel}
+                        </a>
+                      ):'—'}
+                    </td>
+
+                    {/* 6. Ville */}
+                    <td style={{padding:'11px 14px',fontSize:13,color:'#555'}}>{client.adresseFactVille||'—'}</td>
+
+                    {/* 7. Devis */}
+                    <td style={{padding:'11px 14px',fontSize:13,fontWeight:600,color:'#111',textAlign:'center' as const}}>{client.nbDevis}</td>
+
+                    {/* 8. CA total HT */}
+                    <td style={{padding:'11px 14px',fontSize:13,fontWeight:600,color:'#111'}}>{fmt(client.caTotal)}</td>
+
+                    {/* 10. En charge */}
+                    <td style={{padding:'11px 14px',overflow:'visible'}} onClick={e=>e.stopPropagation()}>
+                      <div style={{position:'relative'}}>
+                        <div data-encharge={client.id} onClick={e=>{const r=(e.currentTarget as HTMLDivElement).getBoundingClientRect();setEnChargePos({top:r.bottom+4,left:r.left});setEnChargeMenu(enChargeMenu===client.id?null:client.id)}}
+                          style={{display:'inline-flex',alignItems:'center',gap:5,cursor:'pointer',padding:'3px 7px',borderRadius:7,transition:'background 0.1s'}}
+                          onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f3f4f6'}
+                          onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                          <div style={{width:24,height:24,borderRadius:'50%',background:'#f0f4ff',color:'#2563eb',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:700,flexShrink:0}}>
+                            {client.enCharge?client.enCharge.split(' ').map((n:string)=>n[0]).join('').slice(0,2):'?'}
+                          </div>
+                          <span style={{fontSize:12,color:'#333',maxWidth:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>
+                            {client.enCharge?client.enCharge.split(' ')[0]:'—'}
+                          </span>
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        {enChargeMenu===client.id&&typeof window!=='undefined'&&createPortal(
+                          <div onClick={e=>e.stopPropagation()} style={{position:'fixed',background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 8px 24px rgba(0,0,0,0.15)',zIndex:9999,minWidth:200,overflow:'hidden',top:enChargePos.top,left:enChargePos.left}}>
+                            <div style={{padding:'8px 12px',fontSize:11,color:'#888',fontWeight:600,borderBottom:`1px solid #f3f4f6`}}>ASSIGNER À</div>
+                            {['', ...MEMBRES].map(m=>(
+                              <div key={m||'none'} onClick={()=>{setClients(p=>p.map(cl=>cl.id===client.id?{...cl,enCharge:m}:cl));setEnChargeMenu(null)}}
+                                style={{padding:'9px 14px',fontSize:13,cursor:'pointer',display:'flex',alignItems:'center',gap:8,
+                                  background:client.enCharge===m?'#f0fdf4':'',color:client.enCharge===m?G:'#333',fontWeight:client.enCharge===m?600:400}}
+                                onMouseEnter={e=>{if(client.enCharge!==m)(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}}
+                                onMouseLeave={e=>{if(client.enCharge!==m)(e.currentTarget as HTMLDivElement).style.background=''}}>
+                                <div style={{display:'flex',alignItems:'center',gap:8,flex:1}}>
+                                  {m?(<>
+                                    <div style={{width:22,height:22,borderRadius:'50%',background:'#f0f4ff',color:'#2563eb',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:700,flexShrink:0}}>
+                                      {m.split(' ').map((n:string)=>n[0]).join('').slice(0,2)}
+                                    </div>
+                                    {m}
+                                  </>):<span style={{color:'#aaa'}}>Non assigné</span>}
+                                </div>
+                                {client.enCharge===m&&<span style={{color:G,fontSize:12}}>✓</span>}
+                              </div>
+                            ))}
+                          </div>,
+                          document.body
+                        )}
+                      </div>
+                    </td>
+
+                    {/* 9. Dernière activité */}
+                    <td style={{padding:'11px 14px',fontSize:12,color:'#888',whiteSpace:'nowrap' as const}}>{client.derniereActivite}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div style={{marginTop:8,fontSize:12,color:'#888'}}>{filtered.length} client{filtered.length>1?'s':''} affiché{filtered.length>1?'s':''}</div>
+        </div>
+      </div>
+      {/* Panneau Add/Edit */}
+      {(panel==='add'||panel==='edit')&&(
+        <NouveauClientDrawer
+          mode={panel}
+          clientInitial={panel==='edit'?form:undefined}
+          onClose={closePanel}
+          onSave={(client:any)=>{
+            if(panel==='edit'&&selectedId){
+              setClients(p=>{const updated=p.map(c=>c.id===selectedId?{...client,id:selectedId}:c);try{localStorage.setItem('batizo_clients',JSON.stringify(updated))}catch(e){}return updated})
+              showToast('Client modifié')
+            } else {
+              setClients(p=>{const updated=[...p,{...client,nbDevis:0,caTotal:0,margeAvg:0,derniereActivite:new Date().toLocaleDateString('fr-FR')}];try{localStorage.setItem('batizo_clients',JSON.stringify(updated))}catch(e){}return updated})
+              showToast('Client ajouté')
+            }
+            closePanel()
+          }}
+        />
+      )}
+      {/* Panneau vue fiche */}
+      {panel==='view'&&selectedClient&&(
+        <>
+          <div onClick={closePanel} style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.3)',zIndex:399}}/>
+          <div onClick={e=>e.stopPropagation()} style={{position:'fixed',top:0,right:0,width:580,height:'100vh',background:'#fff',boxShadow:'-4px 0 24px rgba(0,0,0,0.12)',zIndex:400,display:'flex',flexDirection:'column',overflow:'hidden'}}>
+            <div style={{padding:'14px 20px',borderBottom:`1px solid ${BD}`,display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
+              <div>
+                <div style={{fontSize:15,fontWeight:700,color:'#111'}}>
+                  {selectedClient.type==='professionnel'
+                    ? selectedClient.raisonSociale||selectedClient.nom
+                    : [selectedClient.civilite, selectedClient.prenom, (selectedClient as any).nomFamille||selectedClient.nom].filter(Boolean).join(' ')
+                  }
+                </div>
+                {selectedClient.type==='professionnel'&&(selectedClient.prenom||(selectedClient as any).nomFamille)&&(
+                  <div style={{fontSize:12,color:'#888',marginTop:2}}>
+                    {[selectedClient.prenom, (selectedClient as any).nomFamille||selectedClient.nom].filter(Boolean).join(' ')}
+                  </div>
+                )}
+              </div>
+              <div style={{display:'flex',gap:8}}>
+                <button onClick={()=>{setDevisClientPreselect(selectedClient);setShowNouveauDevisModal(true)}}
+                  style={{padding:'7px 14px',background:G,color:'#fff',borderRadius:7,fontSize:13,fontWeight:600,border:'none',cursor:'pointer',display:'inline-flex',alignItems:'center',gap:4}}>
+                  + Nouveau devis
+                </button>
+                <button onClick={()=>openEdit(selectedClient)} style={{padding:'7px 14px',background:'#fff',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,cursor:'pointer',color:'#333',fontWeight:500}}>Modifier</button>
+                <button onClick={closePanel} style={{width:32,height:32,borderRadius:'50%',border:`1px solid ${BD}`,background:'#f9fafb',cursor:'pointer',fontSize:16,color:'#888',display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
+              </div>
+            </div>
+
+            <div style={{flex:1,overflowY:'auto',padding:20,display:'flex',flexDirection:'column',gap:14}}>
+              {/* Stats */}
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10}}>
+                {(()=>{
+                  const devisClient=historiqueDevis.filter(d=>d.clientId===selectedClient.id)
+                  const nbDevis=devisClient.length
+                  const signes=devisClient.filter(d=>d.statut==='Signé')
+                  const caTotal=signes.reduce((s,d)=>s+d.montant,0)
+                  const margeAvg=signes.length>0?Math.round(signes.reduce((s,d)=>s+d.marge,0)/signes.length):0
+                  return[
+                    {label:'Devis',val:nbDevis,color:'#111'},
+                    {label:'CA total HT',val:fmt(caTotal),color:G},
+                    {label:'Marge moy.',val:margeAvg>0?margeAvg+'%':'—',color:margeAvg>=60?G:margeAvg>=40?AM:RD},
+                  ]
+                })().map(s=>(
+                  <div key={s.label} style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:10,padding:'10px 14px',textAlign:'center' as const}}>
+                    <div style={{fontSize:10,color:'#888',fontWeight:600,textTransform:'uppercase' as const,marginBottom:3}}>{s.label}</div>
+                    <div style={{fontSize:17,fontWeight:700,color:s.color}}>{s.val}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Informations */}
+              <FicheInfos client={selectedClient} BD={BD} G={G}/>
+
+              {/* Historique devis */}
+              <div>
+                <div style={{fontSize:11,fontWeight:700,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:8}}>Historique devis</div>
+                {historiqueDevis.filter(d=>d.clientId===selectedClient.id).length===0?(
+                  <div style={{textAlign:'center' as const,padding:'1rem',color:'#888',fontSize:12,background:'#f9fafb',borderRadius:8,border:`1px solid ${BD}`}}>Aucun devis</div>
+                ):(
+                  <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                    {historiqueDevis.filter(d=>d.clientId===selectedClient.id).map((d,i)=>(
+                      <div key={i} onClick={()=>{
+                          // Trouver l'id du devis depuis localStorage
+                          try{
+                            const raw=localStorage.getItem('batizo_devis')
+                            if(raw){
+                              const list=JSON.parse(raw)
+                              const devis=list.find((dv:any)=>dv.clientId===selectedClient.id&&(dv.ref===d.num||dv.titreProjet===d.titre))
+                              if(devis){closePanel();window.location.href='/devis/'+devis.id;return}
+                            }
+                          }catch(e){}
+                        }}
+                        style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:8,padding:'10px 12px',display:'flex',alignItems:'center',justifyContent:'space-between',cursor:'pointer'}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#fff'}>
+                        <div>
+                          <div style={{fontSize:11,color:'#888',marginBottom:1}}>{d.num} · {d.date}</div>
+                          <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{d.titre}</div>
+                        </div>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:10,...(statutColors[d.statut]||{bg:'#f9fafb',color:'#888'})}}>{d.statut}</span>
+                          <div style={{textAlign:'right' as const}}>
+                            <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{fmt(d.montant)}</div>
+                            <div style={{fontSize:11,color:d.marge>=60?G:AM}}>{d.marge}%</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Communications */}
+              <div>
+                <div style={{fontSize:11,fontWeight:700,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:8}}>Communications</div>
+                {(historiqueCommunications[selectedClient.id]||[]).length===0?(
+                  <div style={{textAlign:'center' as const,padding:'1rem',color:'#888',fontSize:12,background:'#f9fafb',borderRadius:8,border:`1px solid ${BD}`}}>Aucune communication</div>
+                ):(
+                  <div style={{display:'flex',flexDirection:'column',gap:5}}>
+                    {(historiqueCommunications[selectedClient.id]||[]).map((comm,i)=>(
+                      <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:7}}>
+                        <span style={{fontSize:14}}>{comm.type==='devis'?'📄':comm.type==='facture'?'🧾':'🔔'}</span>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:12,fontWeight:500,color:'#111',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>{comm.sujet}</div>
+                          <div style={{fontSize:11,color:'#888'}}>{comm.date}</div>
+                        </div>
+                        <span style={{fontSize:10,fontWeight:700,padding:'2px 6px',borderRadius:8,background:comm.statut==='Payée'?'#f0fdf4':'#eff6ff',color:comm.statut==='Payée'?G:'#2563eb',flexShrink:0}}>{comm.statut}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Notes */}
+              <div>
+                <div style={{fontSize:11,fontWeight:700,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:8}}>Notes internes</div>
+                <div style={{display:'flex',gap:8,marginBottom:8}}>
+                  <input value={noteText} onChange={e=>setNoteText(e.target.value)} placeholder="Ajouter une note..."
+                    onKeyDown={e=>e.key==='Enter'&&ajouterNote(selectedClient.id)}
+                    style={{flex:1,padding:'7px 11px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111'}}
+                    onFocus={e=>(e.currentTarget as HTMLInputElement).style.borderColor=G}
+                    onBlur={e=>(e.currentTarget as HTMLInputElement).style.borderColor=BD}/>
+                  <button onClick={()=>ajouterNote(selectedClient.id)} style={{padding:'7px 14px',background:G,color:'#fff',border:'none',borderRadius:7,fontSize:13,fontWeight:600,cursor:'pointer'}}>+</button>
+                </div>
+                <div style={{display:'flex',flexDirection:'column',gap:5}}>
+                  {selectedClient.notes&&<div style={{background:'#fffbeb',border:'1px solid #fde68a',borderRadius:7,padding:'8px 10px',fontSize:13,color:'#333'}}>{selectedClient.notes}</div>}
+                  {[...(notes[selectedClient.id]||[])].reverse().map((n,i)=>(
+                    <div key={i} style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:7,padding:'8px 10px'}}>
+                      <div style={{fontSize:10,color:'#888',marginBottom:2}}>{n.date}</div>
+                      <div style={{fontSize:13,color:'#333'}}>{n.text}</div>
+                    </div>
+                  ))}
+                  {!selectedClient.notes&&(notes[selectedClient.id]||[]).length===0&&(
+                    <div style={{textAlign:'center' as const,padding:'1rem',color:'#888',fontSize:12,background:'#f9fafb',borderRadius:7,border:`1px solid ${BD}`}}>Aucune note</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Modal delete */}
+      {deleteConfirm&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setDeleteConfirm(null)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:14,padding:24,maxWidth:360,width:'90%',textAlign:'center' as const}}>
+            <div style={{width:46,height:46,borderRadius:'50%',background:'#fef2f2',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 12px'}}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={RD} strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+            </div>
+            <div style={{fontSize:16,fontWeight:700,color:'#111',marginBottom:6}}>Supprimer ce client ?</div>
+            <div style={{fontSize:13,color:'#555',marginBottom:18}}>Cette action peut être annulée.</div>
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={()=>setDeleteConfirm(null)} style={{flex:1,padding:10,border:'1px solid #333',borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#111',fontWeight:500}}>Annuler</button>
+              <button onClick={()=>supprimer(deleteConfirm)} style={{flex:1,padding:10,background:RD,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>Supprimer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast undo */}
+      {showUndoToast&&(
+        <div style={{position:'fixed',bottom:80,left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',color:'#fff',borderRadius:10,padding:'12px 20px',zIndex:9999,display:'flex',alignItems:'center',gap:12,boxShadow:'0 4px 20px rgba(0,0,0,0.3)'}}>
+          <span style={{fontSize:13}}>Client supprimé</span>
+          <button onClick={annulerSuppression} style={{padding:'5px 14px',background:G,color:'#fff',border:'none',borderRadius:6,fontSize:12,fontWeight:700,cursor:'pointer'}}>Annuler</button>
+        </div>
+      )}
+
+      {/* Modal Import CSV */}
+      {showImportModal&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowImportModal(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:560,width:'92%',display:'flex',flexDirection:'column' as const,gap:16}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Importer depuis CSV</div>
+              <button onClick={()=>setShowImportModal(false)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
+            </div>
+            <div style={{background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:10,padding:'14px 16px'}}>
+              <div style={{fontSize:13,fontWeight:600,color:'#111',marginBottom:8}}>Étape 1 — Télécharger le modèle</div>
+              <p style={{fontSize:12,color:'#555',marginBottom:10}}>Téléchargez le modèle CSV, remplissez-le et réimportez-le.</p>
+              <button onClick={telechargerModeleClients}
+                style={{padding:'6px 14px',background:'#fff',border:'1px solid #bbf7d0',borderRadius:7,fontSize:12,fontWeight:600,color:G,cursor:'pointer'}}>
+                ⬇ Modèle Clients
+              </button>
+            </div>
+            <div>
+              <div style={{fontSize:13,fontWeight:600,color:'#111',marginBottom:10}}>Étape 2 — Importer votre fichier</div>
+              <label style={{display:'inline-flex',alignItems:'center',gap:6,padding:'8px 16px',background:G,color:'#fff',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Choisir un fichier CSV
+                <input type="file" accept=".csv,.txt" onChange={parseImportClients} style={{display:'none'}}/>
+              </label>
+            </div>
+            {importErrors.length>0&&(
+              <div style={{background:'#fef2f2',border:'1px solid #fca5a5',borderRadius:8,padding:'10px 14px',maxHeight:160,overflowY:'auto' as const}}>
+                <div style={{fontSize:12,fontWeight:600,color:RD,marginBottom:4}}>⚠️ {importErrors.length} erreur(s)</div>
+                {importErrors.map((e,i)=><div key={i} style={{fontSize:11,color:'#555'}}>{e}</div>)}
+              </div>
+            )}
+            {importStats&&(
+              <div style={{background:'#f0fdf4',borderRadius:8,padding:'10px 14px',fontSize:13}}>
+                ✅ <strong>{importStats.imported}</strong> importé(s) · 
+                {importStats.dupes>0&&<span> 🔁 <strong>{importStats.dupes}</strong> doublon(s) ignoré(s) ·</span>}
+                {importStats.errors>0&&<span> ❌ <strong>{importStats.errors}</strong> erreur(s)</span>}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal Nouveau devis depuis fiche client */}
+      {showNouveauDevisModal&&devisClientPreselect&&(
+        <NouveauDevisModal
+          onClose={()=>{setShowNouveauDevisModal(false);setDevisClientPreselect(null)}}
+          clientPreselect={devisClientPreselect}
+        />
+      )}
+
+      {/* Toast */}
+      {toast&&(
+        <div style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',color:'#fff',borderRadius:10,padding:'12px 24px',zIndex:9999,display:'flex',alignItems:'center',gap:10,boxShadow:'0 4px 20px rgba(0,0,0,0.3)'}}>
+          <span style={{color:G,fontSize:16}}>✓</span>
+          <span style={{fontSize:13}}>{toast}</span>
+        </div>
+      )}
+      </div>
+  </>)
+}
