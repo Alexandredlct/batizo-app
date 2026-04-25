@@ -2,6 +2,7 @@
 import NouveauDevisModal from '../components/NouveauDevisModal'
 import FicheClientPanel from '../components/FicheClientPanel'
 import NotifBell from '../components/NotifBell'
+import PageHeader from '../components/PageHeader'
 import NouveauClientDrawer from '../components/NouveauClientDrawer'
 import { getClients } from '../lib/clientsStore'
 import SearchBar from '../components/SearchBar'
