@@ -8,7 +8,6 @@ export interface HeaderAction {
   label: string
   onClick: () => void
   variant?: 'primary' | 'secondary'
-  icon?: React.ReactNode
   disabled?: boolean
 }
 
@@ -36,7 +35,6 @@ export default function PageHeader({ title, actions=[] }: PageHeaderProps) {
             }}
             onMouseEnter={e=>{if(!a.disabled)(e.currentTarget as HTMLButtonElement).style.opacity='0.85'}}
             onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.opacity='1'}>
-            {a.icon&&<span style={{display:'flex',alignItems:'center'}}>{a.icon}</span>}
             {a.label}
           </button>
         ))}
