@@ -234,7 +234,16 @@ export default function NouveauDevisPage(){
       const list=raw?JSON.parse(raw):[]
       const idx=list.findIndex((d:any)=>d.id===devisId)
       if(idx>=0){
-        list[idx]={...list[idx],lignes,titre,adresseProjet,dateDevis,validite,remise,notes,condPaiement,...updates,updatedAt:new Date().toISOString()}
+        // Calculer le montant total HT
+        const totalHT=lignes.reduce((s:number,l:any)=>{
+          if(['materiau','mo'].includes(l.type)) return s+(l.qte||0)*(l.pu||0)
+          if(l.type==='ouvrage'){
+            if(l.prixManuel&&l.prixForce!=null) return s+(l.qte||0)*l.prixForce
+            return s+(l.qte||0)*(l.lignesInternes||[]).reduce((ls:number,li:any)=>(ls+(li.qte||0)*(li.pu||0)),0)
+          }
+          return s
+        },0)
+        list[idx]={...list[idx],lignes,titre,adresseProjet,dateDevis,validite,remise,notes,condPaiement,montant:Math.round(totalHT*100)/100,...updates,updatedAt:new Date().toISOString()}
         localStorage.setItem('batizo_devis',JSON.stringify(list))
       }
     }catch(e){}
@@ -1041,7 +1050,7 @@ export default function NouveauDevisPage(){
               <button onClick={annulerModifications} style={{padding:'8px 14px',background:'#fff',border:`1px solid ${RD}`,borderRadius:8,fontSize:13,cursor:'pointer',color:'#D32F2F',fontWeight:500}}>Annuler</button>
             )}
             <button onClick={()=>{
-                if(editMode){setShowSaved(true);setEditMode(false);setSnapshot(null);setTimeout(()=>setShowSaved(false),3000)}
+                if(editMode){saveDevis();setShowSaved(true);setEditMode(false);setSnapshot(null);setTimeout(()=>setShowSaved(false),3000)}
                 else{
                   setSnapshot({lignes:[...lignes],client,titre,adresseProjet,adresseMode,dateDevis,validite,remise,remisePct,acompte,acomptePct,primeCEE,primeCEELabel,condPaiement,notes,statut})
                   setEditMode(true)
