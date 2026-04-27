@@ -834,15 +834,17 @@ export default function ClientsPage(){
                         style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:8,padding:'10px 12px',display:'flex',alignItems:'center',justifyContent:'space-between',cursor:'pointer'}}
                         onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
                         onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#fff'}>
-                        <div>
-                          <div style={{fontSize:11,color:'#888',marginBottom:1}}><NumeroDevisDisplay devis={{ref:d.num||undefined}} showBadge={true} size="small"/> · {d.date}</div>
-                          <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{d.titre}</div>
-                        </div>
-                        <div style={{display:'flex',alignItems:'center',gap:8}}>
-                          <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:10,...(statutColors[d.statut]||{bg:'#f9fafb',color:'#888'})}}>{d.statut}</span>
-                          <div style={{textAlign:'right' as const}}>
-                            <div style={{fontSize:13,fontWeight:700,color:'#111'}}>{fmt(d.montant)}</div>
-                            <div style={{fontSize:11,color:d.marge>=60?G:AM}}>{d.marge}%</div>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:2}}>
+                            <div style={{fontSize:11,color:'#888',display:'flex',alignItems:'center',gap:4}}><NumeroDevisDisplay devis={{ref:d.num||undefined}} showBadge={false} size="small"/> · {d.date}</div>
+                            <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
+                              <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:10,...(statutColors[d.statut]||{bg:'#f9fafb',color:'#888'})}}>{d.statut}</span>
+                              <div style={{fontSize:13,fontWeight:700,color:'#111',minWidth:60,textAlign:'right' as const}}>{fmt(d.montant)}</div>
+                            </div>
+                          </div>
+                          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                            <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{d.titre}</div>
+                            {d.marge>0&&<div style={{fontSize:11,color:d.marge>=60?G:AM,flexShrink:0}}>{d.marge}%</div>}
                           </div>
                         </div>
                       </div>
