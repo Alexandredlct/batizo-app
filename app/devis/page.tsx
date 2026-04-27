@@ -884,6 +884,31 @@ export default function DevisPage() {
       )}
 
       {/* TOAST */}
+      {showNumeroRequis&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:28,maxWidth:420,width:'90%'}}>
+            <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:16}}>
+              <div style={{width:44,height:44,borderRadius:12,background:'#f0fdf4',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>📋</div>
+              <div>
+                <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Numéro de devis requis</div>
+                <div style={{fontSize:12,color:'#888',marginTop:2}}>Cette action est non réversible</div>
+              </div>
+            </div>
+            <p style={{fontSize:13,color:'#555',lineHeight:1.6,marginBottom:12}}>
+              Pour passer ce devis en <strong>"{({'attente':'En attente','finalise':'Finalisé','signe':'Signé','refuse':'Refusé'} as Record<string,string>)[showNumeroRequis.newStatut]||showNumeroRequis.newStatut}"</strong>, vous devez d'abord lui attribuer un numéro unique.
+            </p>
+            <div style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:8,padding:'10px 14px',marginBottom:20,fontSize:13}}>
+              Prochain numéro disponible : <strong style={{color:G}}>{showNumeroRequis.numero}</strong>
+            </div>
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={()=>setShowNumeroRequis(null)} style={{flex:1,padding:11,border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555'}}>Annuler</button>
+              <button onClick={confirmerStatutAvecNumero} style={{flex:2,padding:11,background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer'}}>
+                ✔ Attribuer {showNumeroRequis.numero} et {({'attente':'mettre en attente','finalise':'finaliser','signe':'signer','refuse':'marquer comme refusé'} as Record<string,string>)[showNumeroRequis.newStatut]||'changer le statut'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {toast.visible && (
         <div style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',background:'#1a1a1a',color:'#fff',borderRadius:12,padding:'12px 20px',zIndex:9999,display:'flex',alignItems:'center',gap:12,minWidth:320,boxShadow:'0 4px 20px rgba(0,0,0,0.3)'}}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={G} strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
