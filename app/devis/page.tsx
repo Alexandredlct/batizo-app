@@ -156,10 +156,28 @@ export default function DevisPage() {
               clientNom:d.clientNom,
               titreProjet:d.titreProjet||d.nom||'',
               titre:d.titreProjet||d.nom||'',
-              adresse:d.clientSnapshot?.adresseFactLine1||d.adresse||'',
-              adresseCp:d.clientSnapshot?.adresseFactCp||'',
-              adresseVille:d.clientSnapshot?.adresseFactVille||'',
-              tel:d.clientSnapshot?.tel||d.tel||'',
+              adresse:(()=>{
+                const snap=d.clientSnapshot
+                if(snap?.adresseFactLine1) return snap.adresseFactLine1
+                // Chercher dans batizo_clients
+                try{const raw=localStorage.getItem('batizo_clients');if(raw){const cl=JSON.parse(raw).find((c:any)=>c.id===d.clientId);if(cl?.adresseFactLine1)return cl.adresseFactLine1}}catch(e){}
+                return d.adresse||''
+              })(),
+              adresseCp:(()=>{
+                if(d.clientSnapshot?.adresseFactCp) return d.clientSnapshot.adresseFactCp
+                try{const raw=localStorage.getItem('batizo_clients');if(raw){const cl=JSON.parse(raw).find((c:any)=>c.id===d.clientId);if(cl?.adresseFactCp)return cl.adresseFactCp}}catch(e){}
+                return ''
+              })(),
+              adresseVille:(()=>{
+                if(d.clientSnapshot?.adresseFactVille) return d.clientSnapshot.adresseFactVille
+                try{const raw=localStorage.getItem('batizo_clients');if(raw){const cl=JSON.parse(raw).find((c:any)=>c.id===d.clientId);if(cl?.adresseFactVille)return cl.adresseFactVille}}catch(e){}
+                return ''
+              })(),
+              tel:(()=>{
+                if(d.clientSnapshot?.tel) return d.clientSnapshot.tel
+                try{const raw=localStorage.getItem('batizo_clients');if(raw){const cl=JSON.parse(raw).find((c:any)=>c.id===d.clientId);if(cl?.tel)return cl.tel}}catch(e){}
+                return d.tel||''
+              })(),
               montantDevis:d.montant||0,
               statut:d.statut||'brouillon',
               archive:d.archive||false,
@@ -559,7 +577,7 @@ export default function DevisPage() {
                       {/* Sous-tableau */}
                       {expanded[c.id] && (
                         <div style={{borderTop:`1px solid ${BD}`}}>
-                          <table style={{width:'100%',borderCollapse:'collapse'}}>
+                          <table style={{width:'100%',borderCollapse:'collapse',tableLayout:'fixed' as const}}>
                             <thead>
                               <tr style={{background:'#f9fafb'}}>
                                 <th style={{padding:'8px 16px',textAlign:'left',fontSize:12,color:'#555',fontWeight:600,width:30}}></th>
