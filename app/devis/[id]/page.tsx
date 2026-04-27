@@ -1156,7 +1156,7 @@ export default function NouveauDevisPage(){
                           </span>
                         )}
                         {editMode&&!numeroDevis&&<button onClick={()=>{setProchainNumero(calcProchainNumero());setShowNumeroModal(true)}}
-                          style={{fontSize:11,color:G,background:'none',border:`1px solid ${G}40`,borderRadius:4,padding:'2px 7px',cursor:'pointer'}} onClick={()=>{setProchainNumero(calcProchainNumero());setShowNumeroModal(true)}}>Attribuer</button>}
+                          style={{fontSize:11,color:G,background:'none',border:`1px solid ${G}40`,borderRadius:4,padding:'2px 7px',cursor:'pointer'}}>Attribuer</button>}
                       </div>
                       {(validite||editMode)&&(
                         <div style={{fontSize:14,color:'#555',position:'relative' as const}}>
