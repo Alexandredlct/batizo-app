@@ -144,7 +144,7 @@ export default function DashboardPage() {
 
       const calcCA = (list: any[], start: Date, end: Date) => {
         return list.filter((d:any) => {
-          if(['refuse','archive'].includes(d.statut||'')) return false
+          if(d.statut!=='signe') return false
           const date = new Date(d.dateDevis||d.date||'')
           return !isNaN(date.getTime()) && date>=start && date<=end
         }).reduce((s:number, d:any) => {
