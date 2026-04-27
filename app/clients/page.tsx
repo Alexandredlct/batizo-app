@@ -1,5 +1,6 @@
 'use client'
 import { createPortal } from 'react-dom'
+import NumeroDevisDisplay from '../components/NumeroDevisDisplay'
 import NouveauDevisModal from '../components/NouveauDevisModal'
 import NotifBell from '../components/NotifBell'
 import NouveauClientDrawer from '../components/NouveauClientDrawer'
@@ -208,7 +209,7 @@ export default function ClientsPage(){
         const devisList=JSON.parse(rawD)
         const statMap:Record<string,string>={brouillon:'Brouillon',attente:'En attente',finalise:'Finalisé',signe:'Signé',refuse:'Refusé'}
         setHistoriqueDevis(devisList.filter((d:any)=>d.clientId).map((d:any)=>({
-          clientId:d.clientId,num:d.ref||'DEV-???',
+          clientId:d.clientId,num:(d.ref&&!d.ref.startsWith('dev-'))?d.ref:null,
           titre:d.titreProjet||d.nom||'',
           date:new Date(d.dateDevis||d.createdAt||Date.now()).toLocaleDateString('fr-FR'),
           statut:statMap[d.statut]||d.statut||'Brouillon',
@@ -834,7 +835,7 @@ export default function ClientsPage(){
                         onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
                         onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#fff'}>
                         <div>
-                          <div style={{fontSize:11,color:'#888',marginBottom:1}}>{d.num} · {d.date}</div>
+                          <div style={{fontSize:11,color:'#888',marginBottom:1}}><NumeroDevisDisplay devis={{ref:d.num||undefined}} showBadge={true} size="small"/> · {d.date}</div>
                           <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{d.titre}</div>
                         </div>
                         <div style={{display:'flex',alignItems:'center',gap:8}}>
