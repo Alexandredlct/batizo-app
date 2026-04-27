@@ -2,6 +2,7 @@
 import NouveauDevisModal from '../components/NouveauDevisModal'
 import FicheClientPanel from '../components/FicheClientPanel'
 import NotifBell from '../components/NotifBell'
+import NumeroDevisDisplay from '../components/NumeroDevisDisplay'
 import PageHeader from '../components/PageHeader'
 import NouveauClientDrawer from '../components/NouveauClientDrawer'
 import { getClients } from '../lib/clientsStore'
@@ -218,7 +219,7 @@ export default function DashboardPage() {
         return{
           id:d.id,
           client:d.clientNom||d.nom||'—',
-          num:d.ref||d.id?.slice(-6)||'—',
+          num:(d.ref&&!d.ref.startsWith('dev-')&&!d.ref.startsWith('cli-'))?d.ref:null,
           date:date.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}),
           montant:(d.montant||0).toLocaleString('fr-FR')+' € HT',
           statut:statMap[d.statut]||d.statut||'Brouillon',
@@ -363,7 +364,7 @@ export default function DashboardPage() {
                     <tr key={i} onClick={()=>window.location.href=`/devis/${d.id||'nouveau'}`} onMouseEnter={e=>{(e.currentTarget as HTMLTableRowElement).style.background="#f0fdf4"}} onMouseLeave={e=>{(e.currentTarget as HTMLTableRowElement).style.background=""}} style={{borderTop:i===0?'none':`1px solid ${BD}`,cursor:'pointer'}}>
                       <td style={{padding:'10px 16px'}}>
                         <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{d.client}</div>
-                        <div style={{fontSize:11,color:'#888'}}>{d.num} · {d.date}</div>
+                        <div style={{fontSize:11,color:'#888'}}><NumeroDevisDisplay devis={{ref:d.num||undefined}} showBadge={false} size="small"/> · {d.date}</div>
                       </td>
                       <td style={{padding:'10px 16px',textAlign:'right' as const,fontSize:13,fontWeight:600,color:'#111'}}>{d.montant}</td>
                       <td style={{padding:'10px 16px',textAlign:'right' as const}}>
