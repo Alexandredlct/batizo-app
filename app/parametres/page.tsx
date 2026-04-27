@@ -233,6 +233,14 @@ const[saved,setSaved]=useState(false)
 
   // Helpers UI
   const formatEx=(fmt:string)=>fmt.replace('{YYYY}',new Date().getFullYear().toString()).replace('{NUM}','001')
+  const validateFormat=(fmt:string):{valid:boolean,error?:string}=>{
+    if(!fmt.includes('{NUM}')) return {valid:false,error:'Le format doit contenir le token {NUM}'}
+    const tokens=fmt.match(/\{[^}]+\}/g)||[]
+    const validTokens=['{YYYY}','{NUM}']
+    const invalid=tokens.filter(t=>!validTokens.includes(t))
+    if(invalid.length>0) return {valid:false,error:'Token non supporté : '+invalid[0]+'. Tokens disponibles : {YYYY}, {NUM}'}
+    return {valid:true}
+  }
 
   return(
     <div style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}}>
@@ -424,8 +432,12 @@ const[saved,setSaved]=useState(false)
                     <div style={{marginBottom:14}}>
                       <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Format numérotation devis</label>
                       <input value={params.formatDevis} onChange={e=>set('formatDevis',e.target.value)}
-                        style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',boxSizing:'border-box' as const,fontFamily:'monospace'}}/>
-                      <div style={{fontSize:11,color:'#888',marginTop:4}}>Exemple : <strong>{formatEx(params.formatDevis)}</strong></div>
+                        style={{width:'100%',padding:'8px 10px',border:`1px solid ${validateFormat(params.formatDevis).valid?BD:'#fca5a5'}`,borderRadius:7,fontSize:13,color:'#111',outline:'none',boxSizing:'border-box' as const,fontFamily:'monospace'}}/>
+                      {validateFormat(params.formatDevis).valid
+                        ?<div style={{fontSize:11,color:'#888',marginTop:4}}>Aperçu : <strong style={{color:'#111'}}>{formatEx(params.formatDevis)}</strong> · {params.formatDevis.includes('{YYYY}')?'Compteur remis à zéro le 1er janvier':'Compteur cumulé à vie'}</div>
+                        :<div style={{fontSize:11,color:'#DC2626',marginTop:4}}>⚠️ {validateFormat(params.formatDevis).error}</div>
+                      }
+                      <div style={{fontSize:11,color:'#aaa',marginTop:4}}>Tokens disponibles : <code style={{background:'#f3f4f6',padding:'1px 4px',borderRadius:3}}>{'{YYYY}'}</code> année · <code style={{background:'#f3f4f6',padding:'1px 4px',borderRadius:3}}>{'{NUM}'}</code> compteur séquentiel</div>
                     </div>
                     <div style={{marginBottom:14}}>
                       <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Format numérotation factures</label>
