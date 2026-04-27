@@ -89,13 +89,15 @@ export default function DevisPage() {
   }
 
   const handleStatutChange = (chantierId:string, docRef:string, newStatut:string, docType:string) => {
-    setChantiers(prev => prev.map(c => {
+    const updated = chantiers.map(c => {
       if (c.id!==chantierId) return c
       const newDocs = c.docs.map(d => d.ref===docRef ? {...d,statut:newStatut} : d)
       let newStatutChantier = c.statut
       if (docType==='devis') newStatutChantier = newStatut
       return {...c,docs:newDocs,statut:newStatutChantier}
-    }))
+    })
+    setChantiers(updated)
+    persistChantiers(updated)
   }
 
   const saveTitre = (id:string) => {
