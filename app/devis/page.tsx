@@ -325,7 +325,9 @@ export default function DevisPage() {
     const items = filtered.filter(c => c.mois===mois)
     const totalDevis = items.reduce((s,c) => s+c.montantDevis, 0)
     const totalPaye = items.reduce((s,c) => s+getMontantFacture(c), 0)
-    return { count:items.length, totalDevis, totalPaye, aEncaisser:totalDevis-totalPaye }
+    const totalSigne = items.filter(c => c.statut==='signe').reduce((s,c) => s+c.montantDevis, 0)
+    const aEncaisser = Math.max(0, totalSigne - totalPaye)
+    return { count:items.length, totalDevis, totalPaye, aEncaisser }
   }
 
   const navItems = [
@@ -452,7 +454,7 @@ export default function DevisPage() {
                   <span style={{fontSize:12,color:'#555'}}>
                     {stats.count} devis &nbsp;·&nbsp; <strong>{fmt(stats.totalDevis)} HT</strong> devisés &nbsp;·&nbsp;
                     <span style={{color:G,fontWeight:600}}>{fmt(stats.totalPaye)} HT payés</span> &nbsp;·&nbsp;
-                    <span style={{color:RD,fontWeight:600}}>{fmt(stats.aEncaisser)} HT à encaisser</span>
+                    <span style={{color:stats.aEncaisser>0?RD:'#888',fontWeight:600}}>{fmt(stats.aEncaisser)} HT à encaisser</span>
                   </span>
                 </div>
 
