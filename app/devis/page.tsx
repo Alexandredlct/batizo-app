@@ -897,7 +897,7 @@ export default function DevisPage() {
             <p style={{fontSize:13,color:'#555',lineHeight:1.6,marginBottom:12}}>
               Pour passer ce devis en <strong>"{({'attente':'En attente','finalise':'Finalisé','signe':'Signé','refuse':'Refusé'} as Record<string,string>)[showNumeroRequis.newStatut]||showNumeroRequis.newStatut}"</strong>, vous devez d'abord lui attribuer un numéro unique.
             </p>
-            <div style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:8,padding:'10px 14px',marginBottom:20,fontSize:13}}>
+            <div style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:8,padding:'10px 14px',marginBottom:20,fontSize:13,color:'#333'}}>
               Prochain numéro disponible : <strong style={{color:G}}>{showNumeroRequis.numero}</strong>
             </div>
             <div style={{display:'flex',gap:10}}>
