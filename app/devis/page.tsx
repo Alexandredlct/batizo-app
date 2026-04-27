@@ -44,6 +44,48 @@ export default function DevisPage() {
   const [clients, setClients] = useState<any[]>([])
   const [toast, setToast] = useState<{visible:boolean,id:string|null}>({visible:false,id:null})
   const [showArchiveError, setShowArchiveError] = useState(false)
+  const [showNumeroRequis, setShowNumeroRequis] = useState<{chantierId:string,docRef:string,newStatut:string,numero:string}|null>(null)
+
+  const calcProchainNumeroDevis=()=>{
+    try{
+      const params=JSON.parse(localStorage.getItem('batizo_params')||'{}')
+      const format=params.formatDevis||'DEV-{YYYY}-{NUM}'
+      const annee=new Date().getFullYear().toString()
+      const scopeKey=format.includes('{YYYY}')?annee:'global'
+      const raw=localStorage.getItem('batizo_compteurs_devis')
+      const compteurs=raw?JSON.parse(raw):{}
+      const next=(compteurs[scopeKey]||0)+1
+      return format.replace('{YYYY}',annee).replace('{NUM}',String(next).padStart(3,'0'))
+    }catch(e){return 'DEV-'+new Date().getFullYear()+'-001'}
+  }
+
+  const confirmerStatutAvecNumero=()=>{
+    if(!showNumeroRequis) return
+    const{chantierId,docRef,newStatut,numero}=showNumeroRequis
+    try{
+      const params=JSON.parse(localStorage.getItem('batizo_params')||'{}')
+      const format=params.formatDevis||'DEV-{YYYY}-{NUM}'
+      const annee=new Date().getFullYear().toString()
+      const scopeKey=format.includes('{YYYY}')?annee:'global'
+      const raw=localStorage.getItem('batizo_compteurs_devis')
+      const compteurs=raw?JSON.parse(raw):{}
+      compteurs[scopeKey]=(compteurs[scopeKey]||0)+1
+      localStorage.setItem('batizo_compteurs_devis',JSON.stringify(compteurs))
+      const rawD=localStorage.getItem('batizo_devis')
+      if(rawD){
+        const list=JSON.parse(rawD)
+        const idx=list.findIndex((d:any)=>d.id===chantierId)
+        if(idx>=0){list[idx]={...list[idx],ref:numero,statut:newStatut,numeroAttribueAt:new Date().toISOString()};localStorage.setItem('batizo_devis',JSON.stringify(list))}
+      }
+    }catch(e){}
+    const updated=chantiers.map(c=>{
+      if(c.id!==chantierId) return c
+      const newDocs=c.docs.map(d=>d.ref===docRef?{...d,ref:numero,statut:newStatut}:d)
+      return{...c,docs:newDocs,statut:newStatut}
+    })
+    setChantiers(updated);persistChantiers(updated)
+    setShowNumeroRequis(null)
+  }
   const [tooltip, setTooltip] = useState<string|null>(null)
   const [docMenu, setDocMenu] = useState<string|null>(null)
   const [actionMenu, setActionMenu] = useState<string|null>(null)
@@ -103,15 +145,29 @@ export default function DevisPage() {
   }
 
   const handleStatutChange = (chantierId:string, docRef:string, newStatut:string, docType:string) => {
-    const updated = chantiers.map(c => {
-      if (c.id!==chantierId) return c
-      const newDocs = c.docs.map(d => d.ref===docRef ? {...d,statut:newStatut} : d)
-      let newStatutChantier = c.statut
-      if (docType==='devis') newStatutChantier = newStatut
-      return {...c,docs:newDocs,statut:newStatutChantier}
+    if(newStatut==='brouillon'){
+      const updated=chantiers.map(c=>{
+        if(c.id!==chantierId) return c
+        const newDocs=c.docs.map(d=>d.ref===docRef?{...d,statut:newStatut}:d)
+        return{...c,docs:newDocs,statut:newStatut}
+      })
+      setChantiers(updated);persistChantiers(updated);return
+    }
+    const chantier=chantiers.find(c=>c.id===chantierId)
+    const doc=chantier?.docs.find(d=>d.ref===docRef)
+    const hasNumero=doc?.ref&&doc.ref.length>0&&!doc.ref.startsWith('dev-')
+    if(!hasNumero&&docType==='devis'){
+      setShowNumeroRequis({chantierId,docRef,newStatut,numero:calcProchainNumeroDevis()})
+      return
+    }
+    const updated=chantiers.map(c=>{
+      if(c.id!==chantierId) return c
+      const newDocs=c.docs.map(d=>d.ref===docRef?{...d,statut:newStatut}:d)
+      let newStatutChantier=c.statut
+      if(docType==='devis') newStatutChantier=newStatut
+      return{...c,docs:newDocs,statut:newStatutChantier}
     })
-    setChantiers(updated)
-    persistChantiers(updated)
+    setChantiers(updated);persistChantiers(updated)
   }
 
   const saveTitre = (id:string) => {
