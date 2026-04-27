@@ -211,6 +211,7 @@ export default function NouveauDevisPage(){
               siret:devis.clientSnapshot.siret||''
             })
           }
+          if(devis.ref&&!devis.ref.startsWith('dev-')) setNumeroDevis(devis.ref)
           if(devis.titreProjet) setTitre(devis.titreProjet)
           if(devis.lignes&&devis.lignes.length>0) setLignes(devis.lignes)
           if(devis.adresseProjet) setAdresseProjet(devis.adresseProjet)
@@ -327,6 +328,51 @@ export default function NouveauDevisPage(){
   const[showAdresseMenu,setShowAdresseMenu]=useState(false)
   const[numeroDevis,setNumeroDevis]=useState<string|null>(null)
   const[showNumeroModal,setShowNumeroModal]=useState(false)
+  const[prochainNumero,setProchainNumero]=useState('')
+
+  const calcProchainNumero=()=>{
+    try{
+      const params=JSON.parse(localStorage.getItem('batizo_params')||'{}')
+      const format=params.formatDevis||'DEV-{YYYY}-{NUM}'
+      const annee=new Date().getFullYear().toString()
+      const scopeKey=format.includes('{YYYY}')?annee:'global'
+      const raw=localStorage.getItem('batizo_compteurs_devis')
+      const compteurs=raw?JSON.parse(raw):{}
+      const current=compteurs[scopeKey]||0
+      const next=current+1
+      const numero=format.replace('{YYYY}',annee).replace('{NUM}',String(next).padStart(3,'0'))
+      return numero
+    }catch(e){return 'DEV-'+new Date().getFullYear()+'-001'}
+  }
+
+  const attribuerNumero=()=>{
+    const numero=prochainNumero||calcProchainNumero()
+    // Incrémenter le compteur
+    try{
+      const params=JSON.parse(localStorage.getItem('batizo_params')||'{}')
+      const format=params.formatDevis||'DEV-{YYYY}-{NUM}'
+      const annee=new Date().getFullYear().toString()
+      const scopeKey=format.includes('{YYYY}')?annee:'global'
+      const raw=localStorage.getItem('batizo_compteurs_devis')
+      const compteurs=raw?JSON.parse(raw):{}
+      compteurs[scopeKey]=(compteurs[scopeKey]||0)+1
+      localStorage.setItem('batizo_compteurs_devis',JSON.stringify(compteurs))
+    }catch(e){}
+    // Sauvegarder le numéro sur le devis
+    setNumeroDevis(numero)
+    try{
+      const raw=localStorage.getItem('batizo_devis')
+      if(raw&&devisId){
+        const list=JSON.parse(raw)
+        const idx=list.findIndex((d:any)=>d.id===devisId)
+        if(idx>=0){
+          list[idx]={...list[idx],ref:numero,numeroAttribueAt:new Date().toISOString()}
+          localStorage.setItem('batizo_devis',JSON.stringify(list))
+        }
+      }
+    }catch(e){}
+    setShowNumeroModal(false)
+  }
 
   const annulerModifications=()=>{
     if(!snapshot)return
@@ -1109,8 +1155,8 @@ export default function NouveauDevisPage(){
                             Devis n° {numeroDevis||'—'}
                           </span>
                         )}
-                        {editMode&&!numeroDevis&&<button onClick={()=>setShowNumeroModal(true)}
-                          style={{fontSize:11,color:G,background:'none',border:`1px solid ${G}40`,borderRadius:4,padding:'2px 7px',cursor:'pointer'}}>Attribuer</button>}
+                        {editMode&&!numeroDevis&&<button onClick={()=>{setProchainNumero(calcProchainNumero());setShowNumeroModal(true)}}
+                          style={{fontSize:11,color:G,background:'none',border:`1px solid ${G}40`,borderRadius:4,padding:'2px 7px',cursor:'pointer'}} onClick={()=>{setProchainNumero(calcProchainNumero());setShowNumeroModal(true)}}>Attribuer</button>}
                       </div>
                       {(validite||editMode)&&(
                         <div style={{fontSize:14,color:'#555',position:'relative' as const}}>
@@ -1612,14 +1658,14 @@ export default function NouveauDevisPage(){
             </div>
             <div style={{background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:10,padding:'14px 16px',marginBottom:16}}>
               <div style={{fontSize:12,color:'#888',marginBottom:4}}>Prochain numéro disponible</div>
-              <div style={{fontSize:22,fontWeight:800,color:'#111',letterSpacing:'0.02em'}}>DEV-2026-001</div>
+              <div style={{fontSize:22,fontWeight:800,color:'#111',letterSpacing:'0.02em'}}>{prochainNumero||'DEV-2026-001'}</div>
             </div>
             <p style={{fontSize:13,color:'#555',lineHeight:1.6,marginBottom:20}}>
               Une fois attribué, ce numéro ne peut plus être modifié. Les numéros se suivent automatiquement.
             </p>
             <div style={{display:'flex',gap:10}}>
               <button onClick={()=>setShowNumeroModal(false)} style={{flex:1,padding:11,border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555',fontWeight:500}}>Annuler</button>
-              <button onClick={()=>{setNumeroDevis('DEV-2026-001');setShowNumeroModal(false);setEditMode(true)}}
+              <button onClick={attribuerNumero}
                 style={{flex:1,padding:11,background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
                 ✔ Attribuer ce numéro
               </button>
