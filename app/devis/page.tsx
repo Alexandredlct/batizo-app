@@ -145,7 +145,18 @@ export default function DevisPage() {
               montantDevis:d.montant||0,
               statut:d.statut||'brouillon',
               archive:d.archive||false,
-              docs:d.docs||[{ref:d.ref||'',type:'devis',montant:d.montant||0,date:new Date(d.dateDevis||d.createdAt||Date.now()).toLocaleDateString('fr-FR'),statut:d.statut||'brouillon'}],
+              docs:(()=>{
+                const docDate=new Date(d.dateDevis||d.createdAt||Date.now()).toLocaleDateString('fr-FR')
+                const ref=(d.ref&&!d.ref.startsWith('dev-'))?d.ref:''
+                const montant=d.montant||0
+                const statut=d.statut||'brouillon'
+                // Si des docs existent ET sont cohérents avec le montant actuel, les garder
+                // Sinon recréer depuis les données fraîches
+                if(d.docs&&d.docs.length>0){
+                  return d.docs.map((doc:any)=>({...doc,ref:doc.type==='devis'?ref:doc.ref,montant:doc.type==='devis'?montant:doc.montant,statut:doc.type==='devis'?statut:doc.statut}))
+                }
+                return [{ref,type:'devis',montant,date:docDate,statut}]
+              })(),
               note:d.note
             }
           })
