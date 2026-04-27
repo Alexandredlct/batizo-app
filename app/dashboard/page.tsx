@@ -161,7 +161,7 @@ export default function DashboardPage() {
       const caAnneePrec = calcCA(devisList, anneePrecDebut, anneePrecFin)
 
       // Devis en attente (envoyés/brouillons actifs)
-      const devisAttente = devisList.filter((d:any) => d.statut&&['brouillon','attente','finalise'].includes(d.statut))
+      const devisAttente = devisList.filter((d:any) => d.statut&&['brouillon','attente','finalise'].includes(d.statut)&&!d.archive)
       const caAttente = devisAttente.reduce((s:number, d:any) => {
         return s + (d.lignes||[]).reduce((ls:number, l:any) => {
           if(!['materiau','mo','ouvrage'].includes(l.type)) return ls
@@ -247,14 +247,41 @@ export default function DashboardPage() {
     try{const raw=localStorage.getItem('batizo_clients');if(raw)return JSON.parse(raw)}catch(e){}
     return []
   })
-  const topClientsData=clientsData.map(cl=>({
-    nom:cl.raisonSociale||cl.prenom+' '+cl.nom,
-    n:cl.nbDevis||0,
-    ca:cl.caTotal?cl.caTotal.toLocaleString('fr-FR')+' €':'0 €',
-    mois:cl.mois||new Date().getMonth()+1,
-    annee:cl.annee||new Date().getFullYear(),
-    id:cl.id,
-  })).sort((a,b)=>b.n-a.n)
+  const topClientsData=React.useMemo(()=>{
+    try{
+      const raw=localStorage.getItem('batizo_devis')
+      if(!raw) return []
+      const devisList=JSON.parse(raw)
+      // Grouper par client, uniquement les devis signés non archivés
+      const map:Record<string,{nom:string,n:number,caRaw:number,mois:number,annee:number,id:string}>={}
+      devisList.filter((d:any)=>d.statut==='signe'&&!d.archive&&d.clientId).forEach((d:any)=>{
+        const id=d.clientId
+        const date=new Date(d.dateDevis||d.createdAt||Date.now())
+        if(!map[id]){
+          // Trouver le nom du client
+          const cl=clientsData.find((c:any)=>c.id===id)
+          let nom='Client inconnu'
+          if(cl){
+            if(cl.type==='professionnel') nom=cl.raisonSociale||cl.nom
+            else{
+              const prenom=cl.prenom||''
+              const nomF=cl.nomFamille||cl.nom||''
+              nom=prenom&&nomF?prenom+' '+nomF:nomF||prenom||cl.nom
+            }
+          } else {
+            nom=d.clientNom||'Client inconnu'
+          }
+          map[id]={nom,n:0,caRaw:0,mois:date.getMonth()+1,annee:date.getFullYear(),id}
+        }
+        map[id].n+=1
+        map[id].caRaw+=d.montant||0
+      })
+      return Object.values(map).sort((a,b)=>b.caRaw-a.caRaw).map(cl=>({
+        ...cl,
+        ca:cl.caRaw>0?cl.caRaw.toLocaleString('fr-FR')+' €':'0 €'
+      }))
+    }catch(e){return []}
+  },[clientsData,devis])
 
   const getStatutColor=(s:string)=>{
     if(s==='Brouillon') return '#888'
@@ -393,14 +420,16 @@ export default function DashboardPage() {
               </div>
               <table style={{width:'100%',borderCollapse:'collapse'}}>
                 <tbody>
-                {topClientsFiltres.map((cl,i)=>(
+                {topClientsFiltres.length===0?(
+                  <tr><td colSpan={2} style={{padding:'2rem',textAlign:'center' as const,color:'#888',fontSize:13}}>Aucun client avec devis signé sur cette période</td></tr>
+                ):topClientsFiltres.map((cl,i)=>(
                   <tr key={i} style={{borderBottom:i<topClientsData.length-1?`1px solid ${BD}`:'',cursor:'pointer'}}
                     onClick={()=>setFicheClient(clientsData.find(c=>c.id===cl.id)||clientsData.find(c=>(c.raisonSociale||c.prenom+' '+c.nom)===cl.nom))}
                     onMouseEnter={e=>(e.currentTarget as HTMLTableRowElement).style.background='#f0fdf4'}
                     onMouseLeave={e=>(e.currentTarget as HTMLTableRowElement).style.background=''}>
                     <td style={{padding:'10px 16px'}}>
                       <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{cl.nom}</div>
-                      <div style={{fontSize:11,color:'#888'}}>{cl.n} chantier{cl.n>1?'s':''}</div>
+                      <div style={{fontSize:11,color:'#888'}}>{cl.n} devis signé{cl.n>1?'s':''}</div>
                     </td>
                     <td style={{padding:'10px 16px',textAlign:'right' as const,fontSize:13,fontWeight:600,color:'#111'}}>{cl.ca} HT</td>
                   </tr>
