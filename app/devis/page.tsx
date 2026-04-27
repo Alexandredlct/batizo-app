@@ -157,6 +157,8 @@ export default function DevisPage() {
               titreProjet:d.titreProjet||d.nom||'',
               titre:d.titreProjet||d.nom||'',
               adresse:d.clientSnapshot?.adresseFactLine1||d.adresse||'',
+              adresseCp:d.clientSnapshot?.adresseFactCp||'',
+              adresseVille:d.clientSnapshot?.adresseFactVille||'',
               tel:d.clientSnapshot?.tel||d.tel||'',
               montantDevis:d.montant||0,
               statut:d.statut||'brouillon',
@@ -492,12 +494,14 @@ export default function DevisPage() {
                             </div>
                             
                             <div style={{display:"flex",alignItems:"center",gap:20,flexWrap:"wrap",marginBottom:4}}>
+                              {(c.adresse||(c as any).adresseCp||(c as any).adresseVille)&&(
                               <a href={mapsUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
                                 style={{color:'#555',textDecoration:'none',fontSize:13,transition:'color 0.15s'}}
                                 onMouseEnter={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color='#2563eb'; a.style.textDecoration='underline' }}
                                 onMouseLeave={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color='#555'; a.style.textDecoration='none' }}>
-                                {c.adresse}
+                                {[c.adresse,(c as any).adresseCp&&(c as any).adresseVille?((c as any).adresseCp+' '+(c as any).adresseVille):(c as any).adresseCp||(c as any).adresseVille].filter(Boolean).join(', ')}
                               </a>
+                              )}
                               <a href={`tel:${c.tel.replace(/\s/g,'')}`} onClick={e => e.stopPropagation()}
                                 style={{color:'#555',textDecoration:'none',fontSize:13,transition:'color 0.15s'}}
                                 onMouseEnter={e => { const a=e.currentTarget as HTMLAnchorElement; a.style.color='#2563eb'; a.style.textDecoration='underline' }}
