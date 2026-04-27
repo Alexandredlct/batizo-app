@@ -43,6 +43,7 @@ export default function DevisPage() {
   const [chantiers, setChantiers] = useState<Chantier[]>([])
   const [clients, setClients] = useState<any[]>([])
   const [toast, setToast] = useState<{visible:boolean,id:string|null}>({visible:false,id:null})
+  const [showArchiveError, setShowArchiveError] = useState(false)
   const [tooltip, setTooltip] = useState<string|null>(null)
   const [docMenu, setDocMenu] = useState<string|null>(null)
   const [actionMenu, setActionMenu] = useState<string|null>(null)
@@ -72,11 +73,24 @@ export default function DevisPage() {
 
   const archiver = (id:string, e:React.MouseEvent) => {
     e.stopPropagation()
+    const chantier = chantiers.find(c => c.id===id)
+    // Vérifier que le statut est Brouillon
+    if(chantier && chantier.statut !== 'brouillon') {
+      setShowArchiveError(true)
+      return
+    }
     const updated = chantiers.map(c => c.id===id ? {...c,archive:true} : c)
     setChantiers(updated)
     persistChantiers(updated)
     setToast({visible:true,id})
     setTimeout(() => setToast({visible:false,id:null}), 5000)
+  }
+
+  const desarchiver = (id:string, e:React.MouseEvent) => {
+    e.stopPropagation()
+    const updated = chantiers.map(c => c.id===id ? {...c,archive:false} : c)
+    setChantiers(updated)
+    persistChantiers(updated)
   }
 
   const annulerArchivage = () => {
@@ -515,12 +529,12 @@ export default function DevisPage() {
                         <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0,marginLeft:16}} onClick={e => e.stopPropagation()}>
                           <span style={{background:`${statutColors[c.statut]}18`,color:statutColors[c.statut],padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:700}}>{statutLabels[c.statut]}</span>
                           <div style={{display:'inline-flex',alignItems:'center',gap:4}}>
-                            <button onClick={e => archiver(c.id,e)}
+                            <button onClick={e => c.archive ? desarchiver(c.id,e) : archiver(c.id,e)}
                               style={{display:'flex',alignItems:'center',gap:4,padding:'5px 10px',border:`1px solid ${BD}`,borderRadius:6,background:'#fff',fontSize:11,cursor:'pointer',color:'#666',transition:'all 0.15s'}}
                               onMouseEnter={e => { const b=e.currentTarget as HTMLButtonElement; b.style.borderColor=AM; b.style.color=AM; b.style.background='#fffbeb' }}
                               onMouseLeave={e => { const b=e.currentTarget as HTMLButtonElement; b.style.borderColor=BD; b.style.color='#666'; b.style.background='#fff' }}>
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-                              Archiver
+                              {c.archive ? 'Désarchiver' : 'Archiver'}
                             </button>
                             <div style={{position:'relative'}}>
                               <button onMouseEnter={() => setTooltip(c.id)} onMouseLeave={() => setTooltip(null)}
@@ -583,7 +597,7 @@ export default function DevisPage() {
                                   <td style={{padding:'10px 16px',textAlign:'right',fontSize:13,fontWeight:600,color:'#555'}}>{fmt(Math.round(d.montant*(1+((d as any).tva===10?0.1:0.2))))}</td>
                                   <td style={{padding:'10px 16px',textAlign:'center',fontSize:13,color:'#444'}}>{d.date}</td>
                                   <td style={{padding:'10px 16px',textAlign:'center'}}>
-                                    <select value={d.statut} onChange={e => handleStatutChange(c.id,d.ref,e.target.value,d.type)}
+                                    <select value={d.statut} onChange={e => handleStatutChange(c.id,d.ref,e.target.value,d.type)} disabled={c.archive}
                                       style={{padding:'4px 8px',border:`1px solid ${statutColors[d.statut]}`,borderRadius:6,fontSize:12,color:statutColors[d.statut],fontWeight:600,background:`${statutColors[d.statut]}18`,outline:'none',cursor:'pointer'}}>
                                       {d.type==='devis'
                                         ? ['brouillon','attente','finalise','signe','refuse'].map(s => <option key={s} value={s}>{statutLabels[s]}</option>)
