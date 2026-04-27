@@ -328,7 +328,26 @@ export default function NouveauDevisPage(){
   const[showAdresseMenu,setShowAdresseMenu]=useState(false)
   const[numeroDevis,setNumeroDevis]=useState<string|null>(null)
   const[showNumeroModal,setShowNumeroModal]=useState(false)
+  const[showPdfModal,setShowPdfModal]=useState(false)
   const[prochainNumero,setProchainNumero]=useState('')
+
+  const generatePdf=async()=>{
+    setGeneratingPdf(true)
+    try{
+      const devisData={params,lignes,client,titre,introTexte,dateDevis,validite,numeroDevis,adresseProjet,adresseMode,moyens,acomptes,mentionsLegales,notes,remises,prime,logoPreview}
+      const res=await fetch('/api/generate-pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(devisData)})
+      if(!res.ok){const err=await res.json();throw new Error(err.error||'Erreur serveur')}
+      const blob=await res.blob()
+      const url=URL.createObjectURL(blob)
+      const a=document.createElement('a')
+      a.href=url
+      const date=new Date().toISOString().split('T')[0]
+      a.download=`Devis_${numeroDevis||date}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    }catch(e:any){console.error(e);alert('Erreur PDF: '+e.message)}
+    finally{setGeneratingPdf(false)}
+  }
 
   const calcProchainNumero=()=>{
     try{
@@ -988,6 +1007,8 @@ export default function NouveauDevisPage(){
             </div>
             <button
               onClick={async()=>{
+                // Si pas de numéro, demander si on veut attribuer d'abord
+                if(!numeroDevis){setShowPdfModal(true);return}
                 setGeneratingPdf(true)
                 try{
                   const devisData={
@@ -1646,6 +1667,33 @@ export default function NouveauDevisPage(){
       </div>
 
       {/* Modal numéro devis */}
+      {/* Modale attribuer avant télécharger */}
+      {showPdfModal&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowPdfModal(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:28,maxWidth:380,width:'90%'}}>
+            <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:16}}>
+              <div style={{width:44,height:44,borderRadius:12,background:'#f0fdf4',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>📄</div>
+              <div>
+                <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Numéro unique</div>
+                <div style={{fontSize:12,color:'#888',marginTop:2}}>Voulez-vous attribuer un numéro avant de télécharger ?</div>
+              </div>
+            </div>
+            <p style={{fontSize:13,color:'#555',lineHeight:1.6,marginBottom:20}}>Cette action est non réversible.</p>
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={async()=>{setShowPdfModal(false);await generatePdf()}}
+                style={{flex:1,padding:11,border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555',fontWeight:500}}>Non</button>
+              <button onClick={async()=>{
+                setShowPdfModal(false)
+                attribuerNumero()
+                setTimeout(async()=>await generatePdf(),200)
+              }} style={{flex:2,padding:11,background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer'}}>
+                ✔ Attribuer un numéro
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showNumeroModal&&(
         <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setShowNumeroModal(false)}>
           <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:28,maxWidth:380,width:'90%'}}>
