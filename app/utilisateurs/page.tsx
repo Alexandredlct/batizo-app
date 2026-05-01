@@ -23,8 +23,8 @@ const loadUsers=()=>{
   localStorage.setItem('batizo_utilisateurs',JSON.stringify(DEFAULT_USERS))
   return DEFAULT_USERS
 }
-const roleLabels:Record<string,string>={proprietaire:'Propriétaire',admin:'Admin',utilisateur:'Utilisateur',observateur:'Observateur',revoque:"Révoquer l'accès"}
-const roleColors:Record<string,string>={proprietaire:'#7c3aed',admin:G,utilisateur:'#2563eb',observateur:AM,revoque:RD}
+const roleLabels:Record<string,string>={proprietaire:'Propriétaire',admin:'Admin',utilisateur:'Utilisateur',observateur:'Observateur',ouvrier:'Ouvrier',revoque:"Révoquer l'accès"}
+const roleColors:Record<string,string>={proprietaire:'#7c3aed',admin:G,utilisateur:'#2563eb',observateur:AM,ouvrier:'#EA580C',revoque:RD}
 export default function UtilisateursPage(){
   const[collapsed,setCollapsed]=useState(false)
   const { photo } = usePhoto()
@@ -178,9 +178,9 @@ export default function UtilisateursPage(){
                   <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Rôle</label>
                   <select value={newRole} onChange={e=>setNewRole(e.target.value)} style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
                     <option value="observateur">Observateur</option>
+                    <option value="ouvrier">Ouvrier</option>
                     <option value="utilisateur">Utilisateur</option>
                     <option value="admin">Admin</option>
-                    <option value="ouvrier">Ouvrier</option>
                   </select>
                 </div>
                 {newRole==='ouvrier'&&(
@@ -254,6 +254,7 @@ export default function UtilisateursPage(){
                           style={{padding:'5px 10px',border:`1px solid ${roleColors[u.role]||BD}`,borderRadius:6,fontSize:12,color:roleColors[u.role]||'#333',fontWeight:600,background:`${roleColors[u.role] || '#e5e7eb'}18`,outline:'none',cursor:'pointer'}}>
                           <option value="revoque">Révoquer l'accès</option>
                           <option value="observateur">Observateur</option>
+                          <option value="ouvrier">Ouvrier</option>
                           <option value="utilisateur">Utilisateur</option>
                           <option value="admin">Admin</option>
                         </select>
