@@ -636,7 +636,7 @@ export default function ResourceCalendar() {
                 style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const,color:'#111'}}/>
             </div>
             <div style={{display:'flex',gap:10}}>
-              <button onClick={()=>{setRepeatDays([]);setRepeatConfig({freq:'1',unit:'semaine',endDate:''});setShowRepeatModal(false)}}
+              <button onClick={()=>{setRepeatDays([]);setRepeatConfig({freq:'1',unit:'semaine',endDate:'',monthOption:'day'});setShowRepeatModal(false)}}
                 style={{padding:'8px 12px',border:'1px solid #fca5a5',borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#ef4444',fontWeight:500}}>
                 🗑️ Supprimer
               </button>
