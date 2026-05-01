@@ -76,6 +76,21 @@ const calcHeures = (start: string, end: string) => {
   return Math.round((eh * 60 + em - sh * 60 - sm) / 60 * 10) / 10
 }
 
+const getOrdinal = (n: number) => ['1er','2ème','3ème','4ème','5ème'][n-1]||`${n}ème`
+const JOURS_FR = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi']
+
+const getMonthRepeatOptions = (dateStr: string) => {
+  const d = new Date(dateStr+'T12:00:00')
+  const dayOfMonth = d.getDate()
+  const dayOfWeek = d.getDay()
+  const weekNum = Math.ceil(dayOfMonth / 7)
+  const jourNom = JOURS_FR[dayOfWeek]
+  return [
+    {label: String(dayOfMonth), value: 'day'},
+    {label: `${getOrdinal(weekNum)} ${jourNom}`, value: 'weekday'}
+  ]
+}
+
 const COULEURS_PREDEF = [
   '#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6',
   '#ec4899','#06b6d4','#84cc16','#f97316','#6366f1'
@@ -95,7 +110,7 @@ export default function ResourceCalendar() {
   const [devisSearch, setDevisSearch] = useState('')
   const [repeatDays, setRepeatDays] = useState<string[]>([])
   const [showRepeatModal, setShowRepeatModal] = useState(false)
-  const [repeatConfig, setRepeatConfig] = useState({freq:'1', unit:'semaine', endDate:''})
+  const [repeatConfig, setRepeatConfig] = useState({freq:'1', unit:'semaine', endDate:'', monthOption:'day'})
   const [dragOver, setDragOver] = useState(false)
   const [attachments, setAttachments] = useState<{name:string,size:number,url:string}[]>([])
 
@@ -458,7 +473,7 @@ export default function ResourceCalendar() {
                   <div style={{position:'relative',marginBottom:8}}>
                     <input value={devisSearch} onChange={e=>setDevisSearch(e.target.value)}
                       placeholder="Rechercher un devis signé..."
-                      style={{width:'100%',padding:'8px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+                      style={{width:'100%',padding:'8px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const,color:'#111'}}/>
                     {devisSearch && (
                       <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:100,maxHeight:180,overflowY:'auto'}}>
                         {devisList.filter(d=>(d.clientNom+d.titreProjet+d.ref).toLowerCase().includes(devisSearch.toLowerCase())).length === 0 ? (
@@ -589,17 +604,32 @@ export default function ResourceCalendar() {
                 <option value="mois">mois</option>
               </select>
             </div>
-            <div style={{marginBottom:16}}>
-              <div style={{fontSize:12,fontWeight:500,color:'#555',marginBottom:8}}>Le</div>
-              <div style={{display:'flex',gap:4,flexWrap:'wrap' as const}}>
-                {[['lun','L'],['mar','M'],['mer','M'],['jeu','J'],['ven','V'],['sam','S'],['dim','D']].map(([key,label])=>(
-                  <button key={key} onClick={()=>setRepeatDays(d=>d.includes(key)?d.filter(x=>x!==key):[...d,key])}
-                    style={{width:32,height:32,borderRadius:'50%',border:`1px solid ${repeatDays.includes(key)?G:BD}`,background:repeatDays.includes(key)?G:'#fff',color:repeatDays.includes(key)?'#fff':'#555',fontSize:12,fontWeight:600,cursor:'pointer'}}>
-                    {label}
-                  </button>
-                ))}
+            {repeatConfig.unit==='semaine'&&(
+              <div style={{marginBottom:16}}>
+                <div style={{fontSize:12,fontWeight:500,color:'#555',marginBottom:8}}>Le</div>
+                <div style={{display:'flex',gap:4,flexWrap:'wrap' as const}}>
+                  {[['lun','L'],['mar','M'],['mer','M'],['jeu','J'],['ven','V'],['sam','S'],['dim','D']].map(([key,label])=>(
+                    <button key={key} onClick={()=>setRepeatDays(d=>d.includes(key)?d.filter(x=>x!==key):[...d,key])}
+                      style={{width:32,height:32,borderRadius:'50%',border:`1px solid ${repeatDays.includes(key)?G:BD}`,background:repeatDays.includes(key)?G:'#fff',color:repeatDays.includes(key)?'#fff':'#555',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+            {repeatConfig.unit==='mois'&&editShift&&(
+              <div style={{marginBottom:16}}>
+                <div style={{fontSize:12,fontWeight:500,color:'#555',marginBottom:8}}>Le</div>
+                <div style={{display:'flex',gap:8}}>
+                  {getMonthRepeatOptions(editShift.date).map(opt=>(
+                    <button key={opt.value} onClick={()=>setRepeatConfig(r=>({...r,monthOption:opt.value}))}
+                      style={{padding:'7px 14px',borderRadius:8,border:`1px solid ${repeatConfig.monthOption===opt.value?G:BD}`,background:repeatConfig.monthOption===opt.value?G:'#fff',color:repeatConfig.monthOption===opt.value?'#fff':'#555',fontSize:13,fontWeight:500,cursor:'pointer'}}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div style={{marginBottom:20}}>
               <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Date de fin</label>
               <input type="date" value={repeatConfig.endDate} onChange={e=>setRepeatConfig(r=>({...r,endDate:e.target.value}))}
