@@ -6,11 +6,24 @@ const G='#1D9E75', BD='#e5e7eb', AM='#BA7517'
 interface Shift {
   id: string
   userId: string
-  date: string // YYYY-MM-DD
-  startTime: string // HH:MM
-  endTime: string // HH:MM
+  date: string
+  startTime: string
+  endTime: string
   label: string
   color: string
+  pauseMin: number
+  notes: string
+  devisId?: string
+  devisLabel?: string
+  posteId?: string
+  posteLabel?: string
+}
+
+interface Poste {
+  id: string
+  name: string
+  color: string
+  pauseMin: number
 }
 
 interface Ouvrier {
@@ -48,6 +61,15 @@ const formatDate = (d: Date) => d.toISOString().split('T')[0]
 
 const JOURS = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim']
 
+const calcDuree = (start: string, end: string, pauseMin: number) => {
+  const [sh, sm] = start.split(':').map(Number)
+  const [eh, em] = end.split(':').map(Number)
+  const total = Math.max(0, (eh * 60 + em - sh * 60 - sm) - pauseMin)
+  const h = Math.floor(total / 60)
+  const m = total % 60
+  return m > 0 ? `${h}h${String(m).padStart(2,'0')}` : `${h}h`
+}
+
 const calcHeures = (start: string, end: string) => {
   const [sh, sm] = start.split(':').map(Number)
   const [eh, em] = end.split(':').map(Number)
@@ -65,7 +87,12 @@ export default function ResourceCalendar() {
   const [shifts, setShifts] = useState<Shift[]>([])
   const [showModal, setShowModal] = useState(false)
   const [editShift, setEditShift] = useState<{userId:string, date:string, shift?:Shift}|null>(null)
-  const [form, setForm] = useState({label:'', startTime:'08:00', endTime:'17:00', color:'#3b82f6'})
+  const [form, setForm] = useState({label:'', startTime:'08:00', endTime:'17:00', color:'#3b82f6', pauseMin:0, notes:'', devisId:'', devisLabel:'', posteId:'', posteLabel:''})
+  const [devisList, setDevisList] = useState<any[]>([])
+  const [postes, setPostes] = useState<Poste[]>([])
+  const [showPosteModal, setShowPosteModal] = useState(false)
+  const [newPoste, setNewPoste] = useState({name:'', color:'#3b82f6', pauseMin:0})
+  const [devisSearch, setDevisSearch] = useState('')
 
   // Charger ouvriers depuis localStorage
   useEffect(() => {
@@ -95,6 +122,22 @@ export default function ResourceCalendar() {
       const raw = localStorage.getItem('batizo_planning_shifts')
       if(raw) setShifts(JSON.parse(raw))
     } catch(e) {}
+    try {
+      const raw = localStorage.getItem('batizo_devis')
+      if(raw) {
+        const list = JSON.parse(raw)
+        setDevisList(list.filter((d:any) => d.statut === 'signe' && !d.archive).map((d:any) => ({
+          id: d.id,
+          label: (d.clientNom||'Client') + ' — ' + (d.titreProjet||'Devis'),
+          ref: d.ref,
+          color: '#3b82f6'
+        })))
+      }
+    } catch(e) {}
+    try {
+      const raw = localStorage.getItem('batizo_planning_postes')
+      if(raw) setPostes(JSON.parse(raw))
+    } catch(e) {}
   }, [])
 
   const saveShifts = (updated: Shift[]) => {
@@ -117,8 +160,20 @@ export default function ResourceCalendar() {
 
   const openModal = (userId: string, date: string, shift?: Shift) => {
     setEditShift({userId, date, shift})
-    setForm(shift ? {label: shift.label, startTime: shift.startTime, endTime: shift.endTime, color: shift.color} : {label:'', startTime:'08:00', endTime:'17:00', color:'#3b82f6'})
+    setForm(shift ? {label: shift.label, startTime: shift.startTime, endTime: shift.endTime, color: shift.color, pauseMin: shift.pauseMin||0, notes: shift.notes||'', devisId: shift.devisId||'', devisLabel: shift.devisLabel||'', posteId: shift.posteId||'', posteLabel: shift.posteLabel||''} : {label:'', startTime:'08:00', endTime:'17:00', color:'#3b82f6', pauseMin:0, notes:'', devisId:'', devisLabel:'', posteId:'', posteLabel:''})
+    setDevisSearch('')
     setShowModal(true)
+  }
+
+  const savePoste = () => {
+    if(!newPoste.name.trim()) return
+    const poste: Poste = {id: 'p'+Date.now(), ...newPoste}
+    const updated = [...postes, poste]
+    setPostes(updated)
+    try { localStorage.setItem('batizo_planning_postes', JSON.stringify(updated)) } catch(e) {}
+    setForm(f => ({...f, posteId: poste.id, posteLabel: poste.name, color: poste.color, devisId:'', devisLabel:''}))
+    setShowPosteModal(false)
+    setNewPoste({name:'', color:'#3b82f6', pauseMin:0})
   }
 
   const saveShift = () => {
@@ -127,7 +182,7 @@ export default function ResourceCalendar() {
     if(editShift.shift) {
       updated = shifts.map(s => s.id === editShift.shift!.id ? {...s, ...form} : s)
     } else {
-      const newShift: Shift = {id: 's'+Date.now(), userId: editShift.userId, date: editShift.date, ...form}
+      const newShift: Shift = {id: 's'+Date.now(), userId: editShift.userId, date: editShift.date, ...form, pauseMin: form.pauseMin||0, notes: form.notes||''}
       updated = [...shifts, newShift]
     }
     saveShifts(updated)
@@ -292,43 +347,127 @@ export default function ResourceCalendar() {
 
       {/* Modale ajout/édition shift */}
       {showModal && editShift && (
-        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center'}}
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:500,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}
           onClick={()=>setShowModal(false)}>
-          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:28,maxWidth:380,width:'90%'}}>
-            <div style={{fontSize:15,fontWeight:700,color:'#111',marginBottom:20}}>
-              {editShift.shift ? 'Modifier le shift' : 'Ajouter un shift'}
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:480,width:'100%',maxHeight:'90vh',overflowY:'auto'}}>
+
+            {/* Header */}
+            <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:20}}>
+              <div>
+                <div style={{fontSize:15,fontWeight:700,color:'#111'}}>
+                  {editShift.shift ? 'Modifier le shift' : `Shift pour ${ouvriers.find(o=>o.id===editShift.userId)?.nom||'Non assigné'}`}
+                </div>
+                <div style={{fontSize:12,color:'#888',marginTop:2}}>
+                  {new Date(editShift.date+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+                </div>
+              </div>
+              <button onClick={()=>setShowModal(false)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888',padding:0}}>×</button>
             </div>
 
-            <div style={{marginBottom:14}}>
-              <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Titre / Description *</label>
+            {/* Onglets */}
+            <div style={{display:'flex',gap:0,marginBottom:20,borderBottom:`1px solid ${BD}`}}>
+              <button style={{padding:'8px 16px',background:'none',border:'none',borderBottom:`2px solid ${G}`,fontSize:13,fontWeight:600,color:G,cursor:'pointer'}}>Shift</button>
+              <button style={{padding:'8px 16px',background:'none',border:'none',borderBottom:'2px solid transparent',fontSize:13,color:'#aaa',cursor:'not-allowed'}} disabled>Absence</button>
+            </div>
+
+            {/* Horaires */}
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:12,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:8}}>Horaires</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10,marginBottom:8}}>
+                <div>
+                  <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Début</label>
+                  <input type="time" value={form.startTime} onChange={e=>setForm(f=>({...f,startTime:e.target.value}))}
+                    style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+                </div>
+                <div>
+                  <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Fin</label>
+                  <input type="time" value={form.endTime} onChange={e=>setForm(f=>({...f,endTime:e.target.value}))}
+                    style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+                </div>
+                <div>
+                  <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Pause (min)</label>
+                  <input type="number" value={form.pauseMin} min={0} max={120} onChange={e=>setForm(f=>({...f,pauseMin:parseInt(e.target.value)||0}))}
+                    style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+                </div>
+              </div>
+              <div style={{fontSize:12,color:'#888',background:'#f9fafb',borderRadius:6,padding:'6px 10px',display:'inline-block'}}>
+                Durée : <strong style={{color:'#111'}}>{calcDuree(form.startTime, form.endTime, form.pauseMin)}</strong>
+              </div>
+            </div>
+
+            {/* Client / Devis */}
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:12,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:8}}>Client — Devis</div>
+              {form.devisId ? (
+                <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',background:'#f0fdf4',border:`1px solid ${G}44`,borderRadius:8}}>
+                  <div style={{width:10,height:10,borderRadius:'50%',background:G,flexShrink:0}}/>
+                  <span style={{fontSize:13,color:'#111',flex:1}}>{form.devisLabel}</span>
+                  <button onClick={()=>setForm(f=>({...f,devisId:'',devisLabel:''}))} style={{background:'none',border:'none',cursor:'pointer',color:'#888',fontSize:16,padding:0}}>×</button>
+                </div>
+              ) : form.posteId ? (
+                <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',background:'#f9fafb',border:`1px solid ${BD}`,borderRadius:8}}>
+                  <div style={{width:10,height:10,borderRadius:'50%',background:form.color,flexShrink:0}}/>
+                  <span style={{fontSize:13,color:'#111',flex:1}}>{form.posteLabel}</span>
+                  <button onClick={()=>setForm(f=>({...f,posteId:'',posteLabel:''}))} style={{background:'none',border:'none',cursor:'pointer',color:'#888',fontSize:16,padding:0}}>×</button>
+                </div>
+              ) : (
+                <div>
+                  <div style={{position:'relative',marginBottom:8}}>
+                    <input value={devisSearch} onChange={e=>setDevisSearch(e.target.value)}
+                      placeholder="Rechercher un devis signé..."
+                      style={{width:'100%',padding:'8px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+                    {devisSearch && (
+                      <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:100,maxHeight:180,overflowY:'auto'}}>
+                        {devisList.filter(d=>d.label.toLowerCase().includes(devisSearch.toLowerCase())).length === 0 ? (
+                          <div style={{padding:'12px 16px',fontSize:13,color:'#888'}}>Aucun devis signé trouvé</div>
+                        ) : devisList.filter(d=>d.label.toLowerCase().includes(devisSearch.toLowerCase())).map(d => (
+                          <div key={d.id} onClick={()=>{setForm(f=>({...f,devisId:d.id,devisLabel:d.label,label:f.label||d.label}));setDevisSearch('')}}
+                            style={{padding:'10px 16px',fontSize:13,cursor:'pointer',borderBottom:`1px solid ${BD}`}}
+                            onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
+                            onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
+                            {d.label}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <button onClick={()=>setShowPosteModal(true)}
+                    style={{fontSize:12,color:G,background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline'}}>
+                    + Créer un poste libre
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Titre / Description */}
+            <div style={{marginBottom:16}}>
+              <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Titre *</label>
               <input value={form.label} onChange={e=>setForm(f=>({...f,label:e.target.value}))}
                 placeholder="Ex: Rénovation salon"
                 style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
             </div>
 
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:14}}>
-              <div>
-                <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Début</label>
-                <input type="time" value={form.startTime} onChange={e=>setForm(f=>({...f,startTime:e.target.value}))}
-                  style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
-              </div>
-              <div>
-                <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Fin</label>
-                <input type="time" value={form.endTime} onChange={e=>setForm(f=>({...f,endTime:e.target.value}))}
-                  style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
-              </div>
-            </div>
-
-            <div style={{marginBottom:20}}>
+            {/* Couleur */}
+            <div style={{marginBottom:16}}>
               <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:8}}>Couleur</label>
-              <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+              <div style={{display:'flex',gap:8,flexWrap:'wrap' as const}}>
                 {COULEURS_PREDEF.map(col => (
                   <div key={col} onClick={()=>setForm(f=>({...f,color:col}))}
-                    style={{width:28,height:28,borderRadius:'50%',background:col,cursor:'pointer',border:form.color===col?'3px solid #111':'3px solid transparent',transition:'border 0.15s'}}/>
+                    style={{width:26,height:26,borderRadius:'50%',background:col,cursor:'pointer',border:form.color===col?'3px solid #111':'3px solid transparent',transition:'border 0.15s'}}/>
                 ))}
               </div>
             </div>
 
+            {/* Notes */}
+            <div style={{marginBottom:20}}>
+              <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Notes</label>
+              <textarea value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))}
+                placeholder="Ajouter une note..."
+                rows={3} maxLength={1000}
+                style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const,resize:'vertical' as const,fontFamily:'system-ui'}}/>
+            </div>
+
+            {/* Boutons */}
             <div style={{display:'flex',gap:10}}>
               {editShift.shift && (
                 <button onClick={deleteShift}
@@ -342,7 +481,45 @@ export default function ResourceCalendar() {
               </button>
               <button onClick={saveShift} disabled={!form.label.trim()}
                 style={{flex:2,padding:11,background:form.label.trim()?G:'#e5e7eb',color:form.label.trim()?'#fff':'#aaa',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer'}}>
-                {editShift.shift ? 'Enregistrer' : '+ Ajouter'}
+                {editShift.shift ? 'Enregistrer' : '+ Créer le shift'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sous-modale Créer un poste */}
+      {showPosteModal && (
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.5)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:380,width:'100%'}}>
+            <div style={{fontSize:15,fontWeight:700,color:'#111',marginBottom:16}}>Créer un poste libre</div>
+            <div style={{display:'grid',gridTemplateColumns:'auto 1fr auto',gap:10,alignItems:'end',marginBottom:20}}>
+              <div>
+                <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Couleur</label>
+                <div style={{display:'flex',gap:6,flexWrap:'wrap' as const,maxWidth:120}}>
+                  {COULEURS_PREDEF.slice(0,6).map(col => (
+                    <div key={col} onClick={()=>setNewPoste(p=>({...p,color:col}))}
+                      style={{width:24,height:24,borderRadius:'50%',background:col,cursor:'pointer',border:newPoste.color===col?'3px solid #111':'3px solid transparent'}}/>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Nom du poste *</label>
+                <input value={newPoste.name} onChange={e=>setNewPoste(p=>({...p,name:e.target.value}))}
+                  placeholder="Ex: Maintenance"
+                  style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+              </div>
+              <div>
+                <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Pause (min)</label>
+                <input type="number" value={newPoste.pauseMin} min={0} onChange={e=>setNewPoste(p=>({...p,pauseMin:parseInt(e.target.value)||0}))}
+                  style={{width:70,padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none'}}/>
+              </div>
+            </div>
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={()=>setShowPosteModal(false)} style={{flex:1,padding:10,border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555'}}>Annuler</button>
+              <button onClick={savePoste} disabled={!newPoste.name.trim()}
+                style={{flex:2,padding:10,background:newPoste.name.trim()?G:'#e5e7eb',color:newPoste.name.trim()?'#fff':'#aaa',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer'}}>
+                Créer
               </button>
             </div>
           </div>
