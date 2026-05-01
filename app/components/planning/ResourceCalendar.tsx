@@ -448,7 +448,7 @@ export default function ResourceCalendar() {
                         {devisList.filter(d=>(d.clientNom+d.titreProjet+d.ref).toLowerCase().includes(devisSearch.toLowerCase())).length === 0 ? (
                           <div style={{padding:'12px 16px',fontSize:13,color:'#888'}}>Aucun devis signé trouvé</div>
                         ) : devisList.filter(d=>(d.clientNom+d.titreProjet+d.ref).toLowerCase().includes(devisSearch.toLowerCase())).map(d => (
-                          <div key={d.id} onClick={()=>{setForm(f=>({...f,devisId:d.id,devisLabel:d.label,color:d.color,devisId:d.id}));setDevisSearch('')}}
+                          <div key={d.id} onClick={()=>{setForm(f=>({...f,devisId:d.id,devisLabel:d.label,color:d.color}));setDevisSearch('')}}
                             style={{padding:'10px 16px',cursor:'pointer',borderBottom:`1px solid ${BD}`}}
                             onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
                             onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
