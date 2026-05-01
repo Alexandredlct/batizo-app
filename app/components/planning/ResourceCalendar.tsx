@@ -131,15 +131,31 @@ export default function ResourceCalendar() {
       const raw = localStorage.getItem('batizo_devis')
       if(raw) {
         const list = JSON.parse(raw)
-        setDevisList(list.filter((d:any) => d.statut === 'signe' && !d.archive).map((d:any) => ({
-          id: d.id,
-          label: (d.clientNom||'Client') + ' — ' + (d.titreProjet||'Devis'),
-          clientNom: d.clientNom||'Client',
-          titreProjet: d.titreProjet||'Devis',
-          ref: (d.ref&&!d.ref.startsWith('dev-'))?d.ref:'Sans numéro',
-          montant: d.montant||0,
-          color: '#3b82f6'
-        })))
+        const clients = (() => {
+          try {
+            const rc = localStorage.getItem('batizo_clients')
+            return rc ? JSON.parse(rc) : []
+          } catch(e) { return [] }
+        })()
+        setDevisList(list.filter((d:any) => d.statut === 'signe' && !d.archive).map((d:any) => {
+          // Trouver le vrai nom client depuis batizo_clients
+          const cl = clients.find((c:any) => c.id === d.clientId)
+          let clientNom = d.clientNom || 'Client'
+          if(cl) {
+            clientNom = cl.type==='professionnel'
+              ? (cl.raisonSociale||cl.nom)
+              : [cl.prenom, cl.nomFamille||cl.nom].filter(Boolean).join(' ')
+          }
+          return {
+            id: d.id,
+            label: clientNom + ' — ' + (d.titreProjet||'Devis'),
+            clientNom,
+            titreProjet: d.titreProjet||'Devis',
+            ref: (d.ref&&!d.ref.startsWith('dev-'))?d.ref:'Sans numéro',
+            montant: d.montant||0,
+            color: '#3b82f6'
+          }
+        }))
       }
     } catch(e) {}
     try {
@@ -414,7 +430,7 @@ export default function ResourceCalendar() {
                 <div>
                   <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Pause (min)</label>
                   <input type="number" value={form.pauseMin} min={0} max={120} onChange={e=>setForm(f=>({...f,pauseMin:parseInt(e.target.value)||0}))}
-                    style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+                    style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const,color:'#111'}}/>
                 </div>
               </div>
               <div style={{fontSize:12,color:'#888',background:'#f9fafb',borderRadius:6,padding:'6px 10px',display:'inline-block'}}>
@@ -525,9 +541,9 @@ export default function ResourceCalendar() {
                 ))}
               </div>
               <div style={{display:'flex',gap:12,alignItems:'center'}}>
-                <button onClick={()=>setRepeatDays(['lun','mar','mer','jeu','ven','sam','dim'])}
+                <button onClick={()=>repeatDays.length===7?setRepeatDays([]):setRepeatDays(['lun','mar','mer','jeu','ven','sam','dim'])}
                   style={{fontSize:12,color:G,background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline'}}>
-                  Tout sélectionner
+                  {repeatDays.length===7?'Tout désélectionner':'Tout sélectionner'}
                 </button>
                 <button onClick={()=>setShowRepeatModal(true)}
                   style={{fontSize:12,color:'#555',background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline'}}>
@@ -565,21 +581,37 @@ export default function ResourceCalendar() {
             <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16}}>
               <span style={{fontSize:13,color:'#555'}}>Tous les</span>
               <input type="number" value={repeatConfig.freq} min={1} max={12} onChange={e=>setRepeatConfig(r=>({...r,freq:e.target.value}))}
-                style={{width:56,padding:'7px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',textAlign:'center' as const}}/>
+                style={{width:56,padding:'7px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',textAlign:'center' as const,color:'#111'}}/>
               <select value={repeatConfig.unit} onChange={e=>setRepeatConfig(r=>({...r,unit:e.target.value}))}
                 style={{padding:'7px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
+                <option value="jour">jour(s)</option>
                 <option value="semaine">semaine(s)</option>
                 <option value="mois">mois</option>
               </select>
             </div>
             <div style={{marginBottom:16}}>
+              <div style={{fontSize:12,fontWeight:500,color:'#555',marginBottom:8}}>Le</div>
+              <div style={{display:'flex',gap:4,flexWrap:'wrap' as const}}>
+                {[['lun','L'],['mar','M'],['mer','M'],['jeu','J'],['ven','V'],['sam','S'],['dim','D']].map(([key,label])=>(
+                  <button key={key} onClick={()=>setRepeatDays(d=>d.includes(key)?d.filter(x=>x!==key):[...d,key])}
+                    style={{width:32,height:32,borderRadius:'50%',border:`1px solid ${repeatDays.includes(key)?G:BD}`,background:repeatDays.includes(key)?G:'#fff',color:repeatDays.includes(key)?'#fff':'#555',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div style={{marginBottom:20}}>
               <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Date de fin</label>
               <input type="date" value={repeatConfig.endDate} onChange={e=>setRepeatConfig(r=>({...r,endDate:e.target.value}))}
                 style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const,color:'#111'}}/>
             </div>
             <div style={{display:'flex',gap:10}}>
-              <button onClick={()=>setShowRepeatModal(false)} style={{padding:'8px 14px',border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555'}}>Annuler</button>
-              <button onClick={()=>setShowRepeatModal(false)} style={{flex:1,padding:'8px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>Appliquer</button>
+              <button onClick={()=>{setRepeatDays([]);setRepeatConfig({freq:'1',unit:'semaine',endDate:''});setShowRepeatModal(false)}}
+                style={{padding:'8px 12px',border:'1px solid #fca5a5',borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#ef4444',fontWeight:500}}>
+                🗑️ Supprimer
+              </button>
+              <button onClick={()=>setShowRepeatModal(false)} style={{flex:1,padding:'8px',border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555'}}>Annuler</button>
+              <button onClick={()=>setShowRepeatModal(false)} style={{flex:1,padding:'8px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>Ajouter</button>
             </div>
           </div>
         </div>
