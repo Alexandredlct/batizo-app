@@ -93,6 +93,11 @@ export default function ResourceCalendar() {
   const [showPosteModal, setShowPosteModal] = useState(false)
   const [newPoste, setNewPoste] = useState({name:'', color:'#3b82f6', pauseMin:0})
   const [devisSearch, setDevisSearch] = useState('')
+  const [repeatDays, setRepeatDays] = useState<string[]>([])
+  const [showRepeatModal, setShowRepeatModal] = useState(false)
+  const [repeatConfig, setRepeatConfig] = useState({freq:'1', unit:'semaine', endDate:''})
+  const [dragOver, setDragOver] = useState(false)
+  const [attachments, setAttachments] = useState<{name:string,size:number,url:string}[]>([])
 
   // Charger ouvriers depuis localStorage
   useEffect(() => {
@@ -129,7 +134,10 @@ export default function ResourceCalendar() {
         setDevisList(list.filter((d:any) => d.statut === 'signe' && !d.archive).map((d:any) => ({
           id: d.id,
           label: (d.clientNom||'Client') + ' — ' + (d.titreProjet||'Devis'),
-          ref: d.ref,
+          clientNom: d.clientNom||'Client',
+          titreProjet: d.titreProjet||'Devis',
+          ref: (d.ref&&!d.ref.startsWith('dev-'))?d.ref:'Sans numéro',
+          montant: d.montant||0,
           color: '#3b82f6'
         })))
       }
@@ -162,6 +170,11 @@ export default function ResourceCalendar() {
     setEditShift({userId, date, shift})
     setForm(shift ? {label: shift.label, startTime: shift.startTime, endTime: shift.endTime, color: shift.color, pauseMin: shift.pauseMin||0, notes: shift.notes||'', devisId: shift.devisId||'', devisLabel: shift.devisLabel||'', posteId: shift.posteId||'', posteLabel: shift.posteLabel||''} : {label:'', startTime:'08:00', endTime:'17:00', color:'#3b82f6', pauseMin:0, notes:'', devisId:'', devisLabel:'', posteId:'', posteLabel:''})
     setDevisSearch('')
+    // Pré-sélectionner le jour courant dans la répétition
+    const dayMap = ['dim','lun','mar','mer','jeu','ven','sam']
+    const d = new Date(date+'T12:00:00')
+    setRepeatDays([dayMap[d.getDay()]])
+    setAttachments([])
     setShowModal(true)
   }
 
@@ -177,13 +190,27 @@ export default function ResourceCalendar() {
   }
 
   const saveShift = () => {
-    if(!editShift || !form.label.trim()) return
+    if(!editShift) return
+    const derivedLabel = form.devisLabel || form.posteLabel || form.label
+    if(!derivedLabel.trim()) return
     let updated: Shift[]
     if(editShift.shift) {
       updated = shifts.map(s => s.id === editShift.shift!.id ? {...s, ...form} : s)
     } else {
-      const newShift: Shift = {id: 's'+Date.now(), userId: editShift.userId, date: editShift.date, ...form, pauseMin: form.pauseMin||0, notes: form.notes||''}
-      updated = [...shifts, newShift]
+      // Créer shifts pour chaque jour coché
+      const dayMap:Record<string,number> = {lun:1,mar:2,mer:3,jeu:4,ven:5,sam:6,dim:0}
+      const baseDate = new Date(editShift.date+'T12:00:00')
+      const weekStart = new Date(baseDate)
+      const wd = baseDate.getDay()
+      weekStart.setDate(baseDate.getDate() - (wd===0?6:wd-1))
+      const newShifts: Shift[] = repeatDays.map(day => {
+        const targetDay = dayMap[day]
+        const d = new Date(weekStart)
+        d.setDate(weekStart.getDate() + (targetDay===0?6:targetDay-1))
+        return {id:'s'+Date.now()+Math.random(), userId:editShift.userId, date:formatDate(d), ...form, label:derivedLabel, pauseMin:form.pauseMin||0, notes:form.notes||''}
+      })
+      const newShift = newShifts[0] || {id:'s'+Date.now(), userId:editShift.userId, date:editShift.date, ...form, label:derivedLabel, pauseMin:form.pauseMin||0, notes:form.notes||''}
+      updated = [...shifts, ...(repeatDays.length>1?newShifts:[newShift])]
     }
     saveShifts(updated)
     setShowModal(false)
@@ -377,12 +404,12 @@ export default function ResourceCalendar() {
                 <div>
                   <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Début</label>
                   <input type="time" value={form.startTime} onChange={e=>setForm(f=>({...f,startTime:e.target.value}))}
-                    style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+                    style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const,color:'#111'}}/>
                 </div>
                 <div>
                   <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Fin</label>
                   <input type="time" value={form.endTime} onChange={e=>setForm(f=>({...f,endTime:e.target.value}))}
-                    style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
+                    style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const,color:'#111'}}/>
                 </div>
                 <div>
                   <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Pause (min)</label>
@@ -418,14 +445,18 @@ export default function ResourceCalendar() {
                       style={{width:'100%',padding:'8px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const}}/>
                     {devisSearch && (
                       <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.1)',zIndex:100,maxHeight:180,overflowY:'auto'}}>
-                        {devisList.filter(d=>d.label.toLowerCase().includes(devisSearch.toLowerCase())).length === 0 ? (
+                        {devisList.filter(d=>(d.clientNom+d.titreProjet+d.ref).toLowerCase().includes(devisSearch.toLowerCase())).length === 0 ? (
                           <div style={{padding:'12px 16px',fontSize:13,color:'#888'}}>Aucun devis signé trouvé</div>
-                        ) : devisList.filter(d=>d.label.toLowerCase().includes(devisSearch.toLowerCase())).map(d => (
-                          <div key={d.id} onClick={()=>{setForm(f=>({...f,devisId:d.id,devisLabel:d.label,label:f.label||d.label}));setDevisSearch('')}}
-                            style={{padding:'10px 16px',fontSize:13,cursor:'pointer',borderBottom:`1px solid ${BD}`}}
+                        ) : devisList.filter(d=>(d.clientNom+d.titreProjet+d.ref).toLowerCase().includes(devisSearch.toLowerCase())).map(d => (
+                          <div key={d.id} onClick={()=>{setForm(f=>({...f,devisId:d.id,devisLabel:d.label,color:d.color,devisId:d.id}));setDevisSearch('')}}
+                            style={{padding:'10px 16px',cursor:'pointer',borderBottom:`1px solid ${BD}`}}
                             onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
                             onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=''}>
-                            {d.label}
+                            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:2}}>
+                              <span style={{fontSize:13,fontWeight:600,color:'#111'}}>{d.clientNom}</span>
+                              <span style={{fontSize:11,color:'#888',fontFamily:'monospace'}}>{d.ref}</span>
+                            </div>
+                            <div style={{fontSize:12,color:'#555'}}>{d.titreProjet} · <span style={{color:G,fontWeight:500}}>{d.montant.toLocaleString('fr-FR')} € HT</span></div>
                           </div>
                         ))}
                       </div>
@@ -437,14 +468,6 @@ export default function ResourceCalendar() {
                   </button>
                 </div>
               )}
-            </div>
-
-            {/* Titre / Description */}
-            <div style={{marginBottom:16}}>
-              <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Titre *</label>
-              <input value={form.label} onChange={e=>setForm(f=>({...f,label:e.target.value}))}
-                placeholder="Ex: Rénovation salon"
-                style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
             </div>
 
             {/* Couleur */}
@@ -467,6 +490,52 @@ export default function ResourceCalendar() {
                 style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const,resize:'vertical' as const,fontFamily:'system-ui'}}/>
             </div>
 
+            {/* Fichiers */}
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:12,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:8}}>Fichiers</div>
+              <div onDragOver={e=>{e.preventDefault();setDragOver(true)}} onDragLeave={()=>setDragOver(false)}
+                onDrop={e=>{e.preventDefault();setDragOver(false);const files=Array.from(e.dataTransfer.files).slice(0,6-attachments.length).filter(f=>f.size<=10*1024*1024);setAttachments(a=>[...a,...files.map(f=>({name:f.name,size:f.size,url:URL.createObjectURL(f)}))])}}
+                style={{border:`2px dashed ${dragOver?G:BD}`,borderRadius:10,padding:'20px',textAlign:'center' as const,background:dragOver?'#f0fdf4':'#f9fafb',transition:'all 0.15s',cursor:'pointer'}}
+                onClick={()=>{const i=document.createElement('input');i.type='file';i.multiple=true;i.accept='image/*,.pdf,.doc,.docx';i.onchange=(e:any)=>{const files=Array.from(e.target.files as FileList).slice(0,6-attachments.length).filter((f:File)=>f.size<=10*1024*1024);setAttachments(a=>[...a,...files.map((f:File)=>({name:(f as File).name,size:(f as File).size,url:URL.createObjectURL(f as File)}))])};i.click()}}>
+                <div style={{fontSize:20,marginBottom:4}}>☁️</div>
+                <div style={{fontSize:13,fontWeight:500,color:'#555'}}>Ajouter des photos ou documents</div>
+                <div style={{fontSize:11,color:'#aaa',marginTop:2}}>Limite de 6 fichiers · Max 10 MB</div>
+              </div>
+              {attachments.length>0&&(
+                <div style={{marginTop:8,display:'flex',flexWrap:'wrap' as const,gap:6}}>
+                  {attachments.map((f,i)=>(
+                    <div key={i} style={{display:'flex',alignItems:'center',gap:4,background:'#f3f4f6',borderRadius:6,padding:'4px 8px',fontSize:11,color:'#333'}}>
+                      📎 {f.name.slice(0,20)}{f.name.length>20?'...':''}
+                      <button onClick={()=>setAttachments(a=>a.filter((_,j)=>j!==i))} style={{background:'none',border:'none',cursor:'pointer',color:'#888',fontSize:12,padding:0}}>×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Répéter */}
+            <div style={{marginBottom:20}}>
+              <div style={{fontSize:12,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:8}}>Répéter le shift</div>
+              <div style={{display:'flex',gap:4,flexWrap:'wrap' as const,marginBottom:8}}>
+                {[['lun','L'],['mar','M'],['mer','M'],['jeu','J'],['ven','V'],['sam','S'],['dim','D']].map(([key,label])=>(
+                  <button key={key} onClick={()=>setRepeatDays(d=>d.includes(key)?d.length>1?d.filter(x=>x!==key):d:[...d,key])}
+                    style={{width:34,height:34,borderRadius:'50%',border:`1px solid ${repeatDays.includes(key)?G:BD}`,background:repeatDays.includes(key)?G:'#fff',color:repeatDays.includes(key)?'#fff':'#555',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div style={{display:'flex',gap:12,alignItems:'center'}}>
+                <button onClick={()=>setRepeatDays(['lun','mar','mer','jeu','ven','sam','dim'])}
+                  style={{fontSize:12,color:G,background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline'}}>
+                  Tout sélectionner
+                </button>
+                <button onClick={()=>setShowRepeatModal(true)}
+                  style={{fontSize:12,color:'#555',background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline'}}>
+                  🔄 Personnaliser la répétition
+                </button>
+              </div>
+            </div>
+
             {/* Boutons */}
             <div style={{display:'flex',gap:10}}>
               {editShift.shift && (
@@ -479,10 +548,38 @@ export default function ResourceCalendar() {
                 style={{flex:1,padding:11,border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555'}}>
                 Annuler
               </button>
-              <button onClick={saveShift} disabled={!form.label.trim()}
-                style={{flex:2,padding:11,background:form.label.trim()?G:'#e5e7eb',color:form.label.trim()?'#fff':'#aaa',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer'}}>
+              <button onClick={saveShift} disabled={!(form.devisLabel||form.posteLabel||form.label).trim()}
+                style={{flex:2,padding:11,background:(form.devisLabel||form.posteLabel||form.label).trim()?G:'#e5e7eb',color:(form.devisLabel||form.posteLabel||form.label).trim()?'#fff':'#aaa',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer'}}>
                 {editShift.shift ? 'Enregistrer' : '+ Créer le shift'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modale répétition personnalisée */}
+      {showRepeatModal&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.6)',zIndex:700,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:380,width:'100%'}}>
+            <div style={{fontSize:15,fontWeight:700,color:'#111',marginBottom:16}}>Personnaliser la répétition</div>
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16}}>
+              <span style={{fontSize:13,color:'#555'}}>Tous les</span>
+              <input type="number" value={repeatConfig.freq} min={1} max={12} onChange={e=>setRepeatConfig(r=>({...r,freq:e.target.value}))}
+                style={{width:56,padding:'7px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',textAlign:'center' as const}}/>
+              <select value={repeatConfig.unit} onChange={e=>setRepeatConfig(r=>({...r,unit:e.target.value}))}
+                style={{padding:'7px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
+                <option value="semaine">semaine(s)</option>
+                <option value="mois">mois</option>
+              </select>
+            </div>
+            <div style={{marginBottom:16}}>
+              <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Date de fin</label>
+              <input type="date" value={repeatConfig.endDate} onChange={e=>setRepeatConfig(r=>({...r,endDate:e.target.value}))}
+                style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',boxSizing:'border-box' as const,color:'#111'}}/>
+            </div>
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={()=>setShowRepeatModal(false)} style={{padding:'8px 14px',border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555'}}>Annuler</button>
+              <button onClick={()=>setShowRepeatModal(false)} style={{flex:1,padding:'8px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>Appliquer</button>
             </div>
           </div>
         </div>
