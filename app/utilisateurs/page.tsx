@@ -34,6 +34,9 @@ export default function UtilisateursPage(){
   const[newName,setNewName]=useState('')
   const[newEmail,setNewEmail]=useState('')
   const[newRole,setNewRole]=useState('utilisateur')
+  const[newContrat,setNewContrat]=useState('CDI')
+  const[newHeures,setNewHeures]=useState('')
+  const[newExterne,setNewExterne]=useState(false)
   const[editPerms,setEditPerms]=useState(false)
   const[showTransfert,setShowTransfert]=useState(false)
   const[transfertCible,setTransfertCible]=useState<{nom:string,idx:number}|null>(null)
@@ -87,13 +90,13 @@ export default function UtilisateursPage(){
   ]
   const inviter=async()=>{
     if(!newName||!newEmail)return
-    setUsers(p=>[...p,{id:'u'+Date.now(),nom:newName,email:newEmail,depuis:new Date().toLocaleDateString('fr-FR'),role:newRole,vous:false,statut:'en_attente'}])
+    setUsers(p=>[...p,{id:'u'+Date.now(),nom:newName,email:newEmail,depuis:new Date().toLocaleDateString('fr-FR'),role:newRole,vous:false,statut:'en_attente',...(newRole==='ouvrier'?{contrat:newContrat,heures:newHeures?parseInt(newHeures):null,externe:newExterne}:{})}])
     try {
       const res = await fetch('/api/invite',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:newEmail,nom:newName,role:newRole})})
       const data = await res.json()
       if(data.error) console.error('Erreur invitation:',data.error)
     } catch(e) { console.error(e) }
-    setNewName('');setNewEmail('');setNewRole('modification');setShowForm(false)
+    setNewName('');setNewEmail('');setNewRole('utilisateur');setNewContrat('CDI');setNewHeures('');setNewExterne(false);setShowForm(false)
   }
   return(
     <div style={{display:'flex',height:'100vh',fontFamily:'system-ui,sans-serif',background:'#f8f9fa',overflow:'hidden'}} onClick={()=>setUserMenu(false)}>
@@ -175,11 +178,35 @@ export default function UtilisateursPage(){
                   <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Rôle</label>
                   <select value={newRole} onChange={e=>setNewRole(e.target.value)} style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
                     <option value="observateur">Observateur</option>
-                    <option value="utilisateur" selected>Utilisateur</option>
+                    <option value="utilisateur">Utilisateur</option>
                     <option value="admin">Admin</option>
+                    <option value="ouvrier">Ouvrier</option>
                   </select>
                 </div>
-                <div style={{display:'flex',gap:8}}>
+                {newRole==='ouvrier'&&(
+                  <>
+                    <div style={{minWidth:160}}>
+                      <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Type de contrat *</label>
+                      <select value={newContrat} onChange={e=>setNewContrat(e.target.value)} style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',background:'#fff',color:'#111'}}>
+                        <option value="CDI">CDI</option>
+                        <option value="CDD">CDD</option>
+                        <option value="interim">Intérim</option>
+                        <option value="sous_traitant">Sous-traitant</option>
+                        <option value="extra">Extra</option>
+                      </select>
+                    </div>
+                    <div style={{minWidth:140}}>
+                      <label style={{fontSize:12,fontWeight:500,color:'#333',display:'block',marginBottom:5}}>Heures / semaine{newContrat!=='extra'?' *':''}</label>
+                      <input value={newHeures} onChange={e=>setNewHeures(e.target.value)} placeholder="35" type="number" min="1" max="60"
+                        style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
+                    </div>
+                    <div style={{display:'flex',alignItems:'center',gap:8,paddingTop:20}}>
+                      <input type="checkbox" id="externe" checked={newExterne} onChange={e=>setNewExterne(e.target.checked)} style={{width:16,height:16,cursor:'pointer'}}/>
+                      <label htmlFor="externe" style={{fontSize:13,color:'#333',cursor:'pointer'}}>Sous-traitant externe</label>
+                    </div>
+                  </>
+                )}
+                <div style={{display:'flex',gap:8,paddingTop:newRole==='ouvrier'?8:0}}>
                   <button onClick={inviter} style={{padding:'9px 18px',background:G,color:'#fff',border:'none',borderRadius:7,fontSize:13,fontWeight:600,cursor:'pointer'}}>Inviter</button>
                   <button onClick={()=>setShowForm(false)} style={{padding:'9px 14px',background:'#fff',border:'1px solid #333',borderRadius:7,fontSize:13,cursor:'pointer',color:'#111',fontWeight:500}}>Annuler</button>
                 </div>
