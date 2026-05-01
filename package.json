@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
+    "@schedule-x/calendar": "^4.5.0",
+    "@schedule-x/react": "^4.1.0",
+    "@schedule-x/theme-default": "^4.5.0",
     "@sparticuz/chromium": "^147.0.2",
     "@supabase/supabase-js": "^2.102.1",
     "html2canvas": "^1.4.1",
