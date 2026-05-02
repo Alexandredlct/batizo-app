@@ -1,5 +1,8 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { DndContext, DragEndEvent, DragOverEvent, useSensor, useSensors, PointerSensor } from '@dnd-kit/core'
+import { DraggableShift } from './DraggableShift'
+import { DroppableCell } from './DroppableCell'
 
 const G='#1D9E75', BD='#e5e7eb', AM='#BA7517'
 
@@ -101,6 +104,8 @@ export default function ResourceCalendar() {
   const [view, setView] = useState<'semaine'|'mois'>('semaine')
   const [monthOffset, setMonthOffset] = useState(0)
   const [hoveredShift, setHoveredShift] = useState<string|null>(null)
+  const [draggingShift, setDraggingShift] = useState<string|null>(null)
+  const [showDragModal, setShowDragModal] = useState<{shift:any,userId:string,date:string,action:'move'|'copy'}|null>(null)
   const [tooltipPos, setTooltipPos] = useState({x:0,y:0})
   const [ouvriers, setOuvriers] = useState<Ouvrier[]>([])
   const [shifts, setShifts] = useState<Shift[]>([])
@@ -182,6 +187,33 @@ export default function ResourceCalendar() {
       if(raw) setPostes(JSON.parse(raw))
     } catch(e) {}
   }, [])
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
+
+  const handleDragStart = (event: any) => {
+    setDraggingShift(event.active.id)
+    setHoveredShift(null)
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setDraggingShift(null)
+    const { active, over } = event
+    if(!over) return
+    const shift = shifts.find(s => s.id === active.id)
+    if(!shift) return
+    const [targetUserId, targetDate, action] = (over.id as string).split('__')
+    if(!targetDate) return
+    const act = (action as 'move'|'copy') || 'move'
+    // Vérifier que c'est pas la même cellule
+    if(shift.userId === targetUserId && shift.date === targetDate) return
+    if(act === 'move') {
+      const updated = shifts.map(s => s.id === shift.id ? {...s, userId: targetUserId, date: targetDate} : s)
+      saveShifts(updated)
+    } else {
+      const newShift = {...shift, id: 's'+Date.now(), userId: targetUserId, date: targetDate}
+      saveShifts([...shifts, newShift])
+    }
+  }
 
   const saveShifts = (updated: Shift[]) => {
     setShifts(updated)
@@ -317,7 +349,8 @@ export default function ResourceCalendar() {
       </div>
 
       {/* Grille Semaine */}
-      {view==='semaine'&&<div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,overflow:'hidden'}}>
+      {view==='semaine'&&<DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,overflow:'hidden'}}>
 
         {/* En-têtes colonnes */}
         <div style={{display:'grid',gridTemplateColumns:'200px repeat(7, 1fr) 80px',borderBottom:`1px solid ${BD}`,background:'#f9fafb'}}>
@@ -397,23 +430,28 @@ export default function ResourceCalendar() {
                   const isToday = dateStr === today
                   const dayShifts = getShiftsForUserDay(o.id, dateStr)
                   return (
-                    <div key={di} style={{borderRight:`1px solid ${BD}`,minHeight:64,padding:4,cursor:'pointer',background:isToday?'#f0fdf420':undefined,transition:'background 0.15s'}}
-                      onClick={()=>openModal(o.id, dateStr)}
-                      onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#f9fafb'}
-                      onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=isToday?'#f0fdf420':''}>
+                    <DroppableCell key={di} userId={o.id} date={dateStr}
+                      onDrop={(sid,uid,dt,act)=>{
+                        const s=shifts.find(x=>x.id===sid)
+                        if(!s) return
+                        if(act==='move'){saveShifts(shifts.map(x=>x.id===sid?{...x,userId:uid,date:dt}:x))}
+                        else{saveShifts([...shifts,{...s,id:'s'+Date.now(),userId:uid,date:dt}])}
+                      }}
+                      onClick={()=>openModal(o.id,dateStr)}
+                      style={{borderRight:`1px solid ${BD}`,minHeight:64,padding:4,cursor:'pointer',background:isToday?'#f0fdf420':undefined}}>
                       {dayShifts.map(s => (
-                        <div key={s.id} style={{position:'relative'}}
-                          onMouseEnter={e=>{setHoveredShift(s.id);setTooltipPos({x:e.clientX,y:e.clientY})}}
-                          onMouseLeave={()=>setHoveredShift(null)}>
+                        <DraggableShift key={s.id} shift={s}>
                           <div
-                            style={{background:s.color,borderRadius:6,padding:'3px 6px',fontSize:11,color:'#fff',fontWeight:600,marginBottom:2,cursor:'pointer'}}
+                            onMouseEnter={e=>{if(!draggingShift){setHoveredShift(s.id);setTooltipPos({x:e.clientX,y:e.clientY})}}}
+                            onMouseLeave={()=>setHoveredShift(null)}
+                            style={{background:s.color,borderRadius:6,padding:'3px 6px',fontSize:11,color:'#fff',fontWeight:600,marginBottom:2}}
                             onClick={e=>{e.stopPropagation();openModal(o.id,dateStr,s)}}>
                             {s.startTime}–{s.endTime}
                             <div style={{fontWeight:400,opacity:0.9,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{s.label}</div>
                           </div>
-                        </div>
+                        </DraggableShift>
                       ))}
-                    </div>
+                    </DroppableCell>
                   )
                 })}
 
@@ -439,7 +477,8 @@ export default function ResourceCalendar() {
             <span style={{fontSize:16}}>+</span> Ajouter un ouvrier
           </a>
         </div>
-      </div>}
+      </div>
+      </DndContext>}
 
       {/* Tooltip global */}
       {hoveredShift&&(()=>{
