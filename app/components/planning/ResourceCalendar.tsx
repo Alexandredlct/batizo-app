@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { DndContext, DragEndEvent, DragOverEvent, useSensor, useSensors, PointerSensor } from '@dnd-kit/core'
 import { DraggableShift } from './DraggableShift'
 import { DroppableCell } from './DroppableCell'
+import DatePicker from './DatePicker'
 
 const G='#1D9E75', BD='#e5e7eb', AM='#BA7517'
 
@@ -330,12 +331,13 @@ export default function ResourceCalendar() {
             onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background='#fff'}>
             ›
           </button>
-          <span style={{fontSize:14,fontWeight:600,color:'#111',textTransform:'capitalize' as const}}>
-            {view==='semaine'?moisLabel:moisLabelMois}
-          </span>
-          {view==='semaine'&&<span style={{fontSize:12,color:'#888'}}>
-            {days[0].toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})} – {days[6].toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}
-          </span>}
+          <DatePicker
+            weekOffset={weekOffset}
+            monthOffset={monthOffset}
+            view={view}
+            onWeekChange={setWeekOffset}
+            onMonthChange={setMonthOffset}
+          />
         </div>
         {/* Sélecteur vue */}
         <div style={{display:'flex',background:'#f3f4f6',borderRadius:8,padding:3,gap:2}}>
