@@ -192,6 +192,7 @@ export default function ResourceCalendar() {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { delay: 150, tolerance: 5 } }))
 
   const handleDragStart = (event: any) => {
+    console.log('DRAG START', event.active.id)
     setDraggingShift(event.active.id)
     setHoveredShift(null)
   }
@@ -199,6 +200,7 @@ export default function ResourceCalendar() {
   const handleDragEnd = (event: DragEndEvent) => {
     setDraggingShift(null)
     const { active, over } = event
+    console.log('DRAG END - active:', active.id, 'over:', over?.id)
     if(!over) return
     const shift = shifts.find(s => s.id === active.id)
     if(!shift) return
