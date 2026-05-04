@@ -6,9 +6,10 @@ interface Props {
   shift: any
   children: React.ReactNode
   onClick?: (e: React.MouseEvent) => void
+  onHover?: (id: string | null, x: number, y: number) => void
 }
 
-export function DraggableShift({ shift, children, onClick }: Props) {
+export function DraggableShift({ shift, children, onClick, onHover }: Props) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: shift.id,
     data: { shift }
@@ -17,28 +18,22 @@ export function DraggableShift({ shift, children, onClick }: Props) {
   return (
     <div
       ref={setNodeRef}
+      {...listeners}
+      {...attributes}
       style={{
         transform: CSS.Translate.toString(transform),
-        opacity: isDragging ? 0.4 : 1,
+        opacity: isDragging ? 0.5 : 1,
+        cursor: isDragging ? 'grabbing' : 'grab',
+        touchAction: 'none',
         userSelect: 'none' as const,
+        position: 'relative',
+        zIndex: isDragging ? 999 : 1,
       }}
+      onClick={onClick}
+      onMouseEnter={e => onHover?.(shift.id, e.clientX, e.clientY)}
+      onMouseLeave={() => onHover?.(null, 0, 0)}
     >
-      {/* Handle drag - barre en haut */}
-      <div
-        {...listeners}
-        {...attributes}
-        style={{
-          height: 6,
-          background: 'rgba(255,255,255,0.3)',
-          borderRadius: '6px 6px 0 0',
-          cursor: isDragging ? 'grabbing' : 'grab',
-          touchAction: 'none',
-        }}
-      />
-      {/* Contenu cliquable */}
-      <div onClick={onClick} style={{cursor:'pointer'}}>
-        {children}
-      </div>
+      {children}
     </div>
   )
 }

@@ -202,20 +202,18 @@ export default function ResourceCalendar() {
     if(!over) return
     const shift = shifts.find(s => s.id === active.id)
     if(!shift) return
+    // Format ID: userId__date__action
     const overId = over.id as string
     const parts = overId.split('__')
-    if(parts.length < 2) return
+    if(parts.length < 3) return
     const targetUserId = parts[0]
     const targetDate = parts[1]
-    const action = parts[2] as 'move'|'copy'|undefined
-    if(!targetDate || !targetUserId) return
-    if(shift.userId === targetUserId && shift.date === targetDate && !action) return
+    const action = parts[2] as 'move'|'copy'
+    if(!targetDate || !targetUserId || !action) return
     if(action === 'copy') {
-      // Copier : garder l'original + créer un duplicata
       const newShift = {...shift, id: 's'+Date.now()+Math.floor(Math.random()*9999), userId: targetUserId, date: targetDate}
       saveShifts([...shifts, newShift])
     } else {
-      // Déplacer : mettre à jour la position
       const updated = shifts.map(s => s.id === shift.id ? {...s, userId: targetUserId, date: targetDate} : s)
       saveShifts(updated)
     }
@@ -466,11 +464,10 @@ export default function ResourceCalendar() {
                       onClick={()=>openModal(o.id,dateStr)}
                       style={{borderRight:`1px solid ${BD}`,minHeight:64,padding:4,cursor:'pointer',background:isToday?'#f0fdf420':undefined}}>
                       {dayShifts.map(s => (
-                        <DraggableShift key={s.id} shift={s} onClick={e=>{e.stopPropagation();openModal(o.id,dateStr,s)}}>
-                          <div
-                            onMouseEnter={e=>{if(!draggingShift){setHoveredShift(s.id);setTooltipPos({x:e.clientX,y:e.clientY})}}}
-                            onMouseLeave={()=>setHoveredShift(null)}
-                            style={{background:s.color,borderRadius:'0 0 6px 6px',padding:'3px 6px',fontSize:11,color:'#fff',fontWeight:600,marginBottom:2}}>
+                        <DraggableShift key={s.id} shift={s}
+                          onClick={e=>{e.stopPropagation();if(!draggingShift)openModal(o.id,dateStr,s)}}
+                          onHover={(id,x,y)=>{if(id){setHoveredShift(id);setTooltipPos({x,y})}else setHoveredShift(null)}}>
+                          <div style={{background:s.color,borderRadius:6,padding:'3px 6px',fontSize:11,color:'#fff',fontWeight:600,marginBottom:2}}>
                             {s.startTime}–{s.endTime}
                             <div style={{fontWeight:400,opacity:0.9,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{s.label}</div>
                           </div>
