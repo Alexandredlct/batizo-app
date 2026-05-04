@@ -3,6 +3,43 @@ import { useState, useEffect, useRef } from 'react'
 
 const G = '#1D9E75', BD = '#e5e7eb'
 
+// Calcul jours fériés français
+const getEasterDate = (year: number) => {
+  const a=year%19,b=Math.floor(year/100),c=year%100
+  const d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25)
+  const g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30
+  const i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7
+  const m=Math.floor((a+11*h+22*l)/451)
+  const month=Math.floor((h+l-7*m+114)/31)
+  const day=((h+l-7*m+114)%31)+1
+  return new Date(year,month-1,day)
+}
+
+const getFrenchHolidays = (year: number): Record<string,string> => {
+  const easter = getEasterDate(year)
+  const add = (d: Date, days: number) => { const r=new Date(d); r.setDate(r.getDate()+days); return r }
+  const fmt = (d: Date) => `${d.getMonth()+1}-${d.getDate()}`
+  return {
+    '1-1': 'Jour de l'an',
+    [fmt(add(easter,1))]: 'Lundi de Pâques',
+    '5-1': 'Fête du Travail',
+    '5-8': 'Victoire 1945',
+    [fmt(add(easter,39))]: 'Ascension',
+    [fmt(add(easter,50))]: 'Lundi de Pentecôte',
+    '7-14': 'Fête nationale',
+    '8-15': 'Assomption',
+    '11-1': 'Toussaint',
+    '11-11': 'Armistice 1918',
+    '12-25': 'Noël',
+  }
+}
+
+const getHolidayName = (d: Date) => {
+  const holidays = getFrenchHolidays(d.getFullYear())
+  const key = `${d.getMonth()+1}-${d.getDate()}`
+  return holidays[key] || null
+}
+
 const MOIS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
 const JOURS_FR = ['Lu','Ma','Me','Je','Ve','Sa','Di']
 
@@ -175,7 +212,7 @@ export default function DatePicker({ weekOffset, monthOffset, view, onWeekChange
                       }}
                       onMouseEnter={e=>{if(!inActiveWeek)(e.currentTarget as HTMLDivElement).style.background='#f3f4f6'}}
                       onMouseLeave={e=>{if(!inActiveWeek)(e.currentTarget as HTMLDivElement).style.background='transparent'}}>
-                      {d.getDate()}
+                      {d.getDate()}{getHolidayName(d)?<span title={getHolidayName(d)||''} style={{fontSize:8,marginLeft:1}}>🎉</span>:null}
                     </div>
                   )
                 })}

@@ -202,17 +202,22 @@ export default function ResourceCalendar() {
     if(!over) return
     const shift = shifts.find(s => s.id === active.id)
     if(!shift) return
-    const [targetUserId, targetDate, action] = (over.id as string).split('__')
-    if(!targetDate) return
-    const act = (action as 'move'|'copy') || 'move'
-    // Vérifier que c'est pas la même cellule
-    if(shift.userId === targetUserId && shift.date === targetDate) return
-    if(act === 'move') {
+    const overId = over.id as string
+    const parts = overId.split('__')
+    if(parts.length < 2) return
+    const targetUserId = parts[0]
+    const targetDate = parts[1]
+    const action = parts[2] as 'move'|'copy'|undefined
+    if(!targetDate || !targetUserId) return
+    if(shift.userId === targetUserId && shift.date === targetDate && !action) return
+    if(action === 'copy') {
+      // Copier : garder l'original + créer un duplicata
+      const newShift = {...shift, id: 's'+Date.now()+Math.floor(Math.random()*9999), userId: targetUserId, date: targetDate}
+      saveShifts([...shifts, newShift])
+    } else {
+      // Déplacer : mettre à jour la position
       const updated = shifts.map(s => s.id === shift.id ? {...s, userId: targetUserId, date: targetDate} : s)
       saveShifts(updated)
-    } else {
-      const newShift = {...shift, id: 's'+Date.now(), userId: targetUserId, date: targetDate}
-      saveShifts([...shifts, newShift])
     }
   }
 
@@ -222,8 +227,24 @@ export default function ResourceCalendar() {
   }
 
   // Jours fériés français fixes
-  const JOURS_FERIES = ['01-01','05-01','05-08','07-14','08-15','11-01','11-11','12-25']
-  const isFerie = (d: Date) => JOURS_FERIES.includes((d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0'))
+  const getEasterDate = (year: number) => {
+    const a=year%19,b=Math.floor(year/100),c=year%100
+    const d2=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25)
+    const g=Math.floor((b-f+1)/3),h=(19*a+b-d2-g+15)%30
+    const i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7
+    const m=Math.floor((a+11*h+22*l)/451)
+    const month=Math.floor((h+l-7*m+114)/31)
+    const day=((h+l-7*m+114)%31)+1
+    return new Date(year,month-1,day)
+  }
+  const getFrenchHolidays = (year: number): Record<string,string> => {
+    const easter=getEasterDate(year)
+    const add=(d:Date,days:number)=>{const r=new Date(d);r.setDate(r.getDate()+days);return r}
+    const fmt=(d:Date)=>`\${d.getMonth()+1}-\${d.getDate()}`
+    return {'1-1':'Jour de l'an',[fmt(add(easter,1))]:'Lundi de Pâques','5-1':'Fête du Travail','5-8':'Victoire 1945',[fmt(add(easter,39))]:'Ascension',[fmt(add(easter,50))]:'Lundi de Pentecôte','7-14':'Fête nationale','8-15':'Assomption','11-1':'Toussaint','11-11':'Armistice 1918','12-25':'Noël'}
+  }
+  const getHolidayName=(d:Date)=>{const h=getFrenchHolidays(d.getFullYear());return h[`\${d.getMonth()+1}-\${d.getDate()}`]||null}
+  const isFerie = (d: Date) => !!getHolidayName(d)
 
   const getMonthDays = (offset: number) => {
     const now = new Date()
@@ -311,8 +332,8 @@ export default function ResourceCalendar() {
     <div style={{fontFamily:'system-ui,sans-serif'}}>
 
       {/* Header navigation */}
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16,flexWrap:'wrap' as const,gap:8}}>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16,gap:8,flexWrap:'nowrap' as const}}>
+        <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'nowrap' as const}}>
           <button onClick={()=>{setWeekOffset(0);setMonthOffset(0)}}
             style={{padding:'6px 12px',border:`1px solid ${BD}`,borderRadius:7,background:'#fff',fontSize:13,cursor:'pointer',fontWeight:500,color:'#333',transition:'background 0.15s'}}
             onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#f3f4f6'}
@@ -365,6 +386,7 @@ export default function ResourceCalendar() {
               <div key={i} style={{padding:'10px 8px',textAlign:'center',borderRight:`1px solid ${BD}`,background:isToday?'#f0fdf4':'transparent'}}>
                 <div style={{fontSize:11,fontWeight:600,color:isToday?G:'#888'}}>{JOURS[i]}</div>
                 <div style={{fontSize:16,fontWeight:700,color:isToday?G:'#111'}}>{d.getDate()}</div>
+                {isFerie(d)&&<div title={getHolidayName(d)||''} style={{fontSize:12,cursor:'default'}}>🎉</div>}
               </div>
             )
           })}
