@@ -5,9 +5,10 @@ import { CSS } from '@dnd-kit/utilities'
 interface Props {
   shift: any
   children: React.ReactNode
+  onClick?: (e: React.MouseEvent) => void
 }
 
-export function DraggableShift({ shift, children }: Props) {
+export function DraggableShift({ shift, children, onClick }: Props) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: shift.id,
     data: { shift }
@@ -16,21 +17,26 @@ export function DraggableShift({ shift, children }: Props) {
   return (
     <div
       ref={setNodeRef}
-      {...attributes}
       style={{
         transform: CSS.Translate.toString(transform),
-        opacity: isDragging ? 0.5 : 1,
-        cursor: isDragging ? 'grabbing' : 'grab',
-        touchAction: 'none',
+        opacity: isDragging ? 0.4 : 1,
         userSelect: 'none' as const,
       }}
     >
-      {/* Handle de drag séparé - ne bloque pas le clic sur l'enfant */}
+      {/* Handle drag - barre en haut */}
       <div
         {...listeners}
-        style={{position:'absolute',top:0,left:0,right:0,bottom:0,zIndex:1}}
+        {...attributes}
+        style={{
+          height: 6,
+          background: 'rgba(255,255,255,0.3)',
+          borderRadius: '6px 6px 0 0',
+          cursor: isDragging ? 'grabbing' : 'grab',
+          touchAction: 'none',
+        }}
       />
-      <div style={{position:'relative',zIndex:2}}>
+      {/* Contenu cliquable */}
+      <div onClick={onClick} style={{cursor:'pointer'}}>
         {children}
       </div>
     </div>

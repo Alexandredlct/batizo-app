@@ -227,24 +227,26 @@ export default function ResourceCalendar() {
   }
 
   // Jours fériés français fixes
-  const getEasterDate = (year: number) => {
-    const a=year%19,b=Math.floor(year/100),c=year%100
-    const d2=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25)
-    const g=Math.floor((b-f+1)/3),h=(19*a+b-d2-g+15)%30
-    const i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7
-    const m=Math.floor((a+11*h+22*l)/451)
-    const month=Math.floor((h+l-7*m+114)/31)
-    const day=((h+l-7*m+114)%31)+1
-    return new Date(year,month-1,day)
+  const getEaster=(y:number)=>{const a=y%19,b=Math.floor(y/100),cc=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,ii=Math.floor(cc/4),k=cc%4,l=(32+2*e+2*ii-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;return new Date(y,mo-1,da)}
+  const getHolidayName=(d:Date)=>{
+    const y=d.getFullYear(),m=d.getMonth()+1,day=d.getDate()
+    const e=getEaster(y)
+    const add=(dt:Date,n:number)=>{const r=new Date(dt);r.setDate(r.getDate()+n);return r}
+    const match=(dt:Date)=>dt.getMonth()+1===m&&dt.getDate()===day
+    if(m===1&&day===1) return "Jour de l'an"
+    if(match(add(e,1))) return 'Lundi de Pâques'
+    if(m===5&&day===1) return 'Fête du Travail'
+    if(m===5&&day===8) return 'Victoire 1945'
+    if(match(add(e,39))) return 'Ascension'
+    if(match(add(e,50))) return 'Lundi de Pentecôte'
+    if(m===7&&day===14) return 'Fête nationale'
+    if(m===8&&day===15) return 'Assomption'
+    if(m===11&&day===1) return 'Toussaint'
+    if(m===11&&day===11) return 'Armistice 1918'
+    if(m===12&&day===25) return 'Noël'
+    return null
   }
-  const getFrenchHolidays = (year: number): Record<string,string> => {
-    const easter=getEasterDate(year)
-    const add=(d:Date,days:number)=>{const r=new Date(d);r.setDate(r.getDate()+days);return r}
-    const fmt=(d:Date)=>`\${d.getMonth()+1}-\${d.getDate()}`
-    return {'1-1':"Jour de l'an",[fmt(add(easter,1))]:'Lundi de Pâques','5-1':'Fête du Travail','5-8':'Victoire 1945',[fmt(add(easter,39))]:'Ascension',[fmt(add(easter,50))]:'Lundi de Pentecôte','7-14':'Fête nationale','8-15':'Assomption','11-1':'Toussaint','11-11':'Armistice 1918','12-25':'Noël'}
-  }
-  const getHolidayName=(d:Date)=>{const h=getFrenchHolidays(d.getFullYear());return h[`\${d.getMonth()+1}-\${d.getDate()}`]||null}
-  const isFerie = (d: Date) => !!getHolidayName(d)
+  const isFerie=(d:Date)=>!!getHolidayName(d)
 
   const getMonthDays = (offset: number) => {
     const now = new Date()
@@ -258,7 +260,8 @@ export default function ResourceCalendar() {
   const days = getWeekDays(weekOffset)
   const monthDays = getMonthDays(monthOffset)
   const moisLabelMois = new Date(new Date().getFullYear(), new Date().getMonth()+monthOffset, 1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'})
-  const today = formatDate(new Date())
+  const [today, setToday] = useState('')
+  useEffect(()=>setToday(formatDate(new Date())),[]) 
 
   const getShiftsForUserDay = (userId: string, date: string) =>
     shifts.filter(s => s.userId === userId && s.date === date)
@@ -463,12 +466,11 @@ export default function ResourceCalendar() {
                       onClick={()=>openModal(o.id,dateStr)}
                       style={{borderRight:`1px solid ${BD}`,minHeight:64,padding:4,cursor:'pointer',background:isToday?'#f0fdf420':undefined}}>
                       {dayShifts.map(s => (
-                        <DraggableShift key={s.id} shift={s}>
+                        <DraggableShift key={s.id} shift={s} onClick={e=>{e.stopPropagation();openModal(o.id,dateStr,s)}}>
                           <div
                             onMouseEnter={e=>{if(!draggingShift){setHoveredShift(s.id);setTooltipPos({x:e.clientX,y:e.clientY})}}}
                             onMouseLeave={()=>setHoveredShift(null)}
-                            style={{background:s.color,borderRadius:6,padding:'3px 6px',fontSize:11,color:'#fff',fontWeight:600,marginBottom:2}}
-                            onClick={e=>{e.stopPropagation();openModal(o.id,dateStr,s)}}>
+                            style={{background:s.color,borderRadius:'0 0 6px 6px',padding:'3px 6px',fontSize:11,color:'#fff',fontWeight:600,marginBottom:2}}>
                             {s.startTime}–{s.endTime}
                             <div style={{fontWeight:400,opacity:0.9,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{s.label}</div>
                           </div>
