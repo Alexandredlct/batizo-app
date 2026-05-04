@@ -851,6 +851,16 @@ export default function ResourceCalendar() {
                       </div>
                     </div>
                   )}
+                  {absenceType==='journee'&&(
+                    <div style={{fontSize:12,color:'#888',background:'#f9fafb',padding:'6px 10px',borderRadius:6,marginTop:8}}>
+                      Nombre d'heures : <strong style={{color:'#111'}}>8h</strong>
+                    </div>
+                  )}
+                  {absenceType==='demi'&&(
+                    <div style={{fontSize:12,color:'#888',background:'#f9fafb',padding:'6px 10px',borderRadius:6,marginTop:8}}>
+                      Nombre d'heures : <strong style={{color:'#111'}}>4h</strong>
+                    </div>
+                  )}
                 </div>
                 {/* Notes absence */}
                 <div style={{marginBottom:16}}>
@@ -871,18 +881,18 @@ export default function ResourceCalendar() {
                 </div>
                 {/* Répétition absence */}
                 <div style={{marginBottom:16}}>
-                  <div style={{fontSize:12,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:8}}>Répéter</div>
+                  <div style={{fontSize:12,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:8}}>Répéter l'absence</div>
                   <div style={{display:'flex',gap:4,marginBottom:8}}>
                     {([['lun','L'],['mar','M'],['mer','M'],['jeu','J'],['ven','V'],['sam','S'],['dim','D']] as [string,string][]).map(([key,label])=>(
                       <button key={key} onClick={()=>setRepeatDays((d:string[])=>d.includes(key)?d.length>1?d.filter((x:string)=>x!==key):d:[...d,key])}
-                        style={{width:34,height:34,borderRadius:'50%',border:`1px solid ${repeatDays.includes(key)?'#6b7280':BD}`,background:repeatDays.includes(key)?'#6b7280':'#fff',color:repeatDays.includes(key)?'#fff':'#555',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                        style={{width:34,height:34,borderRadius:'50%',border:`1px solid ${repeatDays.includes(key)?'#6b7280':BD}`,background:repeatDays.includes(key)?'#1D9E75':'#fff',color:repeatDays.includes(key)?'#fff':'#555',fontSize:12,fontWeight:600,cursor:'pointer'}>
                         {label}
                       </button>
                     ))}
                   </div>
-                  <button onClick={()=>setRepeatDays(['lun','mar','mer','jeu','ven','sam','dim'])}
-                    style={{fontSize:12,color:'#555',background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline',marginRight:12}}>
-                    Tout sélectionner
+                  <button onClick={()=>repeatDays.length===7?setRepeatDays([]):setRepeatDays(['lun','mar','mer','jeu','ven','sam','dim'])}
+                    style={{fontSize:12,color:'#1D9E75',background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline',marginRight:12}}>
+                    {repeatDays.length===7?'Tout désélectionner':'Tout sélectionner'}
                   </button>
                   <button onClick={()=>setShowRepeatModal(true)}
                     style={{fontSize:12,color:'#555',background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline'}}>
