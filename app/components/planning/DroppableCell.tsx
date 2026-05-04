@@ -28,7 +28,7 @@ export function DroppableCell({ userId, date, children, style, onClick }: Props)
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
         display: 'flex',
-        pointerEvents: 'none', // laisse passer les events normaux
+        pointerEvents: 'none',
         zIndex: 10,
       }}>
         {/* Zone Déplacer - moitié gauche */}
@@ -42,7 +42,7 @@ export function DroppableCell({ userId, date, children, style, onClick }: Props)
             fontSize: 11, fontWeight: 700, color: '#166534',
             opacity: isOverAny ? 1 : 0,
             transition: 'all 0.1s',
-            pointerEvents: 'all',
+            pointerEvents: 'auto',
             border: isOverMove ? `2px solid ${G}` : isOverAny ? `1px dashed ${G}` : 'none',
           }}
         >
@@ -60,7 +60,7 @@ export function DroppableCell({ userId, date, children, style, onClick }: Props)
             fontSize: 11, fontWeight: 700, color: '#1e40af',
             opacity: isOverAny ? 1 : 0,
             transition: 'all 0.1s',
-            pointerEvents: 'all',
+            pointerEvents: 'auto',
             border: isOverCopy ? '2px solid #3b82f6' : isOverAny ? '1px dashed #93c5fd' : 'none',
           }}
         >

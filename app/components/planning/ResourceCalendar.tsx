@@ -189,7 +189,7 @@ export default function ResourceCalendar() {
     } catch(e) {}
   }, [])
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { delay: 150, tolerance: 5 } }))
 
   const handleDragStart = (event: any) => {
     setDraggingShift(event.active.id)
