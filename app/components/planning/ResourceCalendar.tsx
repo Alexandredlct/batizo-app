@@ -112,6 +112,13 @@ export default function ResourceCalendar() {
   const [absenceForm, setAbsenceForm] = useState({startTime:'08:00',endTime:'17:00',notes:''})
   const [tooltipPos, setTooltipPos] = useState({x:0,y:0})
   const [ouvriers, setOuvriers] = useState<Ouvrier[]>([])
+  const [allUsers, setAllUsers] = useState<any[]>([])
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false)
+  const [planningMemberIds, setPlanningMemberIds] = useState<string[]>(()=>{
+    if(typeof window==='undefined') return []
+    try{const raw=localStorage.getItem('batizo_planning_members');if(raw)return JSON.parse(raw)}catch(e){}
+    return []
+  })
   const [shifts, setShifts] = useState<Shift[]>([])
   const [showModal, setShowModal] = useState(false)
   const [editShift, setEditShift] = useState<{userId:string, date:string, shift?:Shift}|null>(null)
@@ -127,27 +134,29 @@ export default function ResourceCalendar() {
   const [dragOver, setDragOver] = useState(false)
   const [attachments, setAttachments] = useState<{name:string,size:number,url:string}[]>([])
 
-  // Charger ouvriers depuis localStorage
+  // Charger tous les utilisateurs de l'organisation
   useEffect(() => {
     try {
       const raw = localStorage.getItem('batizo_utilisateurs')
       if(raw) {
         const list = JSON.parse(raw)
-        const ouvriersList = list
-          .filter((u: any) => u.role === 'ouvrier' && u.statut !== 'revoque')
+        const actifs = list.filter((u: any) => u.statut !== 'revoque')
+        setAllUsers(actifs)
+        // Charger les membres du planning (IDs sauvegardés)
+        const savedIds = (() => {
+          try{const r=localStorage.getItem('batizo_planning_members');return r?JSON.parse(r):[]}catch(e){return []}
+        })()
+        const membres = actifs
+          .filter((u: any) => savedIds.includes(u.id))
           .map((u: any, i: number) => ({
-            id: u.id,
-            nom: u.nom,
-            contrat: u.contrat,
-            heures: u.heures,
-            externe: u.externe,
-            initiales: getInitiales(u.nom),
+            id: u.id, nom: u.nom, contrat: u.contrat, heures: u.heures,
+            externe: u.externe, initiales: getInitiales(u.nom),
             color: AVATAR_COLORS[i % AVATAR_COLORS.length]
           }))
-        setOuvriers(ouvriersList)
+        setOuvriers(membres)
       }
     } catch(e) {}
-  }, [])
+  }, [planningMemberIds])
 
   // Charger shifts depuis localStorage
   useEffect(() => {
@@ -238,6 +247,14 @@ export default function ResourceCalendar() {
 
     document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
+  }
+
+  const toggleMember = (userId: string) => {
+    setPlanningMemberIds(prev => {
+      const updated = prev.includes(userId) ? prev.filter(id=>id!==userId) : [...prev, userId]
+      try{localStorage.setItem('batizo_planning_members', JSON.stringify(updated))}catch(e){}
+      return updated
+    })
   }
 
   const saveShifts = (updated: Shift[]) => {
@@ -466,10 +483,10 @@ export default function ResourceCalendar() {
         {/* Lignes ouvriers */}
         {ouvriers.length === 0 ? (
           <div style={{padding:'3rem',textAlign:'center',color:'#888',fontSize:13}}>
-            Aucun ouvrier dans votre équipe.{' '}
-            <a href="/utilisateurs" style={{color:G,textDecoration:'none',fontWeight:600}}>
-              + Ajouter un ouvrier
-            </a>
+            Aucun membre dans le planning.{' '}
+            <button onClick={()=>setShowAddMemberModal(true)} style={{color:G,background:'none',border:'none',cursor:'pointer',fontWeight:600,fontSize:13,padding:0}}>
+              + Ajouter un utilisateur
+            </button>
           </div>
         ) : (
           ouvriers.map((o, oi) => {
@@ -538,13 +555,64 @@ export default function ResourceCalendar() {
           })
         )}
 
-        {/* Bouton + Employé */}
+        {/* Bouton + Ajouter un utilisateur */}
         <div style={{borderTop:`1px solid ${BD}`,padding:'10px 16px'}}>
-          <a href="/utilisateurs" style={{display:'inline-flex',alignItems:'center',gap:6,fontSize:13,color:G,textDecoration:'none',fontWeight:500}}>
-            <span style={{fontSize:16}}>+</span> Ajouter un ouvrier
-          </a>
+          <button onClick={()=>setShowAddMemberModal(true)}
+            style={{display:'inline-flex',alignItems:'center',gap:6,fontSize:13,color:G,background:'none',border:'none',cursor:'pointer',fontWeight:500,padding:0}}>
+            <span style={{fontSize:16}}>+</span> Ajouter un utilisateur
+          </button>
         </div>
       </div>}
+
+      {/* Modale sélection membres planning */}
+      {showAddMemberModal&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}
+          onClick={()=>setShowAddMemberModal(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:420,width:'100%',maxHeight:'80vh',display:'flex',flexDirection:'column' as const}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>Ajouter au planning</div>
+              <button onClick={()=>setShowAddMemberModal(false)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
+            </div>
+            <div style={{fontSize:13,color:'#888',marginBottom:16}}>
+              Sélectionnez les membres à afficher dans le planning.
+            </div>
+            <div style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column' as const,gap:8,marginBottom:16}}>
+              {allUsers.length===0?(
+                <div style={{textAlign:'center' as const,padding:'1rem',color:'#888',fontSize:13}}>
+                  Aucun utilisateur dans votre organisation.{' '}
+                  <a href="/utilisateurs" style={{color:G,fontWeight:600}}>Créer un utilisateur</a>
+                </div>
+              ):allUsers.map((u:any,i:number)=>{
+                const isInPlanning = planningMemberIds.includes(u.id)
+                return(
+                  <div key={u.id} onClick={()=>toggleMember(u.id)}
+                    style={{display:'flex',alignItems:'center',gap:12,padding:'10px 14px',borderRadius:10,border:`1px solid ${isInPlanning?G:BD}`,background:isInPlanning?'#f0fdf4':'#fff',cursor:'pointer',transition:'all 0.15s'}}>
+                    <div style={{width:36,height:36,borderRadius:'50%',background:AVATAR_COLORS[i%AVATAR_COLORS.length],display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:12,fontWeight:700,flexShrink:0}}>
+                      {getInitiales(u.nom)}
+                    </div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:13,fontWeight:600,color:'#111'}}>{u.nom}</div>
+                      <div style={{fontSize:11,color:'#888',textTransform:'capitalize' as const}}>{u.role}{u.heures?` · ${u.heures}h/sem`:''}</div>
+                    </div>
+                    <div style={{width:20,height:20,borderRadius:'50%',border:`2px solid ${isInPlanning?G:BD}`,background:isInPlanning?G:'#fff',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                      {isInPlanning&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <div style={{display:'flex',gap:10,borderTop:`1px solid ${BD}`,paddingTop:16}}>
+              <a href="/utilisateurs" style={{flex:1,padding:'10px',border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555',textDecoration:'none',textAlign:'center' as const,fontWeight:500}}>
+                + Créer un utilisateur
+              </a>
+              <button onClick={()=>setShowAddMemberModal(false)}
+                style={{flex:1,padding:'10px',background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tooltip global */}
       {hoveredShift&&(()=>{
