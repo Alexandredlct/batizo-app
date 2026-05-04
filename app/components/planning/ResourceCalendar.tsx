@@ -107,6 +107,9 @@ export default function ResourceCalendar() {
   const [draggingShift, setDraggingShift] = useState<Shift|null>(null)
   const [dragGhost, setDragGhost] = useState<{x:number,y:number}|null>(null)
   const [dragTarget, setDragTarget] = useState<{userId:string,date:string,action:'move'|'copy'}|null>(null)
+  const [modalTab, setModalTab] = useState<'shift'|'absence'>('shift')
+  const [absenceType, setAbsenceType] = useState<'journee'|'demi'|'perso'>('journee')
+  const [absenceForm, setAbsenceForm] = useState({startTime:'08:00',endTime:'17:00',notes:''})
   const [tooltipPos, setTooltipPos] = useState({x:0,y:0})
   const [ouvriers, setOuvriers] = useState<Ouvrier[]>([])
   const [shifts, setShifts] = useState<Shift[]>([])
@@ -293,6 +296,9 @@ export default function ResourceCalendar() {
     setEditShift({userId, date, shift})
     setForm(shift ? {label: shift.label, startTime: shift.startTime, endTime: shift.endTime, color: shift.color, pauseMin: shift.pauseMin||0, notes: shift.notes||'', devisId: shift.devisId||'', devisLabel: shift.devisLabel||'', posteId: shift.posteId||'', posteLabel: shift.posteLabel||''} : {label:'', startTime:'08:00', endTime:'17:00', color:'#3b82f6', pauseMin:0, notes:'', devisId:'', devisLabel:'', posteId:'', posteLabel:''})
     setDevisSearch('')
+    setModalTab('shift')
+    setAbsenceType('journee')
+    setAbsenceForm({startTime:'08:00',endTime:'17:00',notes:''})
     // Pré-sélectionner le jour courant dans la répétition
     const dayMap = ['dim','lun','mar','mer','jeu','ven','sam']
     const d = new Date(date+'T12:00:00')
@@ -310,6 +316,24 @@ export default function ResourceCalendar() {
     setForm(f => ({...f, posteId: poste.id, posteLabel: poste.name, color: poste.color, devisId:'', devisLabel:''}))
     setShowPosteModal(false)
     setNewPoste({name:'', color:'#3b82f6', pauseMin:0})
+  }
+
+  const saveAbsence = () => {
+    if(!editShift) return
+    const dureeLabel = absenceType==='journee'?'Toute la journée':absenceType==='demi'?'Demi-journée':calcDuree(absenceForm.startTime,absenceForm.endTime,0)
+    const startTime = absenceType==='journee'?'00:00':absenceType==='demi'?'08:00':absenceForm.startTime
+    const endTime = absenceType==='journee'?'23:59':absenceType==='demi'?'13:00':absenceForm.endTime
+    const newShift:Shift = {
+      id:'s'+Date.now(),userId:editShift.userId,date:editShift.date,
+      label:'Absent · '+dureeLabel,startTime,endTime,
+      color:'#9ca3af',pauseMin:0,notes:absenceForm.notes,
+      devisId:'',devisLabel:'',posteId:'',posteLabel:''
+    }
+    const updated = editShift.shift
+      ? shifts.map(s=>s.id===editShift.shift!.id?{...s,...newShift,id:s.id}:s)
+      : [...shifts,newShift]
+    saveShifts(updated)
+    setShowModal(false)
   }
 
   const saveShift = () => {
@@ -647,10 +671,13 @@ export default function ResourceCalendar() {
 
             {/* Onglets */}
             <div style={{display:'flex',gap:0,marginBottom:20,borderBottom:`1px solid ${BD}`}}>
-              <button style={{padding:'8px 16px',background:'none',border:'none',borderBottom:`2px solid ${G}`,fontSize:13,fontWeight:600,color:G,cursor:'pointer'}}>Shift</button>
-              <button style={{padding:'8px 16px',background:'none',border:'none',borderBottom:'2px solid transparent',fontSize:13,color:'#aaa',cursor:'not-allowed'}} disabled>Absence</button>
+              <button onClick={()=>setModalTab('shift')}
+                style={{padding:'8px 16px',background:'none',border:'none',borderBottom:modalTab==='shift'?`2px solid ${G}`:'2px solid transparent',fontSize:13,fontWeight:600,color:modalTab==='shift'?G:'#888',cursor:'pointer'}}>Shift</button>
+              <button onClick={()=>setModalTab('absence')}
+                style={{padding:'8px 16px',background:'none',border:'none',borderBottom:modalTab==='absence'?'2px solid #6b7280':'2px solid transparent',fontSize:13,fontWeight:600,color:modalTab==='absence'?'#374151':'#888',cursor:'pointer'}}>Absence</button>
             </div>
 
+            {modalTab==='shift'&&<>
             {/* Horaires */}
             <div style={{marginBottom:16}}>
               <div style={{fontSize:12,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:8}}>Horaires</div>
@@ -790,6 +817,81 @@ export default function ResourceCalendar() {
               </div>
             </div>
 
+            </>
+            }
+
+            {/* Contenu Absence */}
+            {modalTab==='absence'&&(
+              <div>
+                {/* Type d'absence */}
+                <div style={{marginBottom:16}}>
+                  <div style={{fontSize:12,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:8}}>Durée</div>
+                  <div style={{display:'flex',gap:8,marginBottom:12}}>
+                    {([['journee','Toute la journée'],['demi','Demi-journée'],['perso','Personnaliser']] as const).map(([val,label])=>(
+                      <button key={val} onClick={()=>setAbsenceType(val)}
+                        style={{padding:'8px 14px',borderRadius:8,border:`1px solid ${absenceType===val?'#6b7280':BD}`,background:absenceType===val?'#f3f4f6':'#fff',color:absenceType===val?'#374151':'#555',fontSize:13,fontWeight:absenceType===val?600:400,cursor:'pointer'}}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {absenceType==='perso'&&(
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:8}}>
+                      <div>
+                        <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Début</label>
+                        <input type="time" value={absenceForm.startTime} onChange={e=>setAbsenceForm(f=>({...f,startTime:e.target.value}))}
+                          style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
+                      </div>
+                      <div>
+                        <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:4}}>Fin</label>
+                        <input type="time" value={absenceForm.endTime} onChange={e=>setAbsenceForm(f=>({...f,endTime:e.target.value}))}
+                          style={{width:'100%',padding:'8px 10px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const}}/>
+                      </div>
+                      <div style={{gridColumn:'1/-1',fontSize:11,color:'#888',background:'#f9fafb',padding:'6px 10px',borderRadius:6}}>
+                        Durée : <strong style={{color:'#111'}}>{calcDuree(absenceForm.startTime,absenceForm.endTime,0)}</strong>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {/* Notes absence */}
+                <div style={{marginBottom:16}}>
+                  <label style={{fontSize:12,fontWeight:500,color:'#555',display:'block',marginBottom:5}}>Notes</label>
+                  <textarea value={absenceForm.notes} onChange={e=>setAbsenceForm(f=>({...f,notes:e.target.value}))}
+                    placeholder="Rédiger une description..."
+                    rows={3}
+                    style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',boxSizing:'border-box' as const,resize:'vertical' as const,fontFamily:'system-ui'}}/>
+                </div>
+                {/* Fichiers absence */}
+                <div style={{marginBottom:16}}>
+                  <div style={{border:`2px dashed ${BD}`,borderRadius:10,padding:'16px',textAlign:'center' as const,background:'#f9fafb',cursor:'pointer'}}
+                    onClick={()=>{const i=document.createElement('input');i.type='file';i.multiple=true;i.accept='image/*,.pdf,.doc,.docx';i.click()}}>
+                    <div style={{fontSize:16,marginBottom:4}}>☁️</div>
+                    <div style={{fontSize:13,fontWeight:500,color:'#555'}}>Ajouter des photos ou documents</div>
+                    <div style={{fontSize:11,color:'#aaa',marginTop:2}}>Limite de 6 fichiers · Max 10 MB</div>
+                  </div>
+                </div>
+                {/* Répétition absence */}
+                <div style={{marginBottom:16}}>
+                  <div style={{fontSize:12,fontWeight:600,color:'#888',textTransform:'uppercase' as const,letterSpacing:'0.04em',marginBottom:8}}>Répéter</div>
+                  <div style={{display:'flex',gap:4,marginBottom:8}}>
+                    {([['lun','L'],['mar','M'],['mer','M'],['jeu','J'],['ven','V'],['sam','S'],['dim','D']] as [string,string][]).map(([key,label])=>(
+                      <button key={key} onClick={()=>setRepeatDays((d:string[])=>d.includes(key)?d.length>1?d.filter((x:string)=>x!==key):d:[...d,key])}
+                        style={{width:34,height:34,borderRadius:'50%',border:`1px solid ${repeatDays.includes(key)?'#6b7280':BD}`,background:repeatDays.includes(key)?'#6b7280':'#fff',color:repeatDays.includes(key)?'#fff':'#555',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={()=>setRepeatDays(['lun','mar','mer','jeu','ven','sam','dim'])}
+                    style={{fontSize:12,color:'#555',background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline',marginRight:12}}>
+                    Tout sélectionner
+                  </button>
+                  <button onClick={()=>setShowRepeatModal(true)}
+                    style={{fontSize:12,color:'#555',background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline'}}>
+                    🔄 Personnaliser la répétition
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Boutons */}
             <div style={{display:'flex',gap:10}}>
               {editShift.shift && (
@@ -802,10 +904,16 @@ export default function ResourceCalendar() {
                 style={{flex:1,padding:11,border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555'}}>
                 Annuler
               </button>
-              <button onClick={saveShift} disabled={!(form.devisLabel||form.posteLabel||form.label).trim()}
-                style={{flex:2,padding:11,background:(form.devisLabel||form.posteLabel||form.label).trim()?G:'#e5e7eb',color:(form.devisLabel||form.posteLabel||form.label).trim()?'#fff':'#aaa',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer'}}>
-                {editShift.shift ? 'Enregistrer' : '+ Créer le shift'}
-              </button>
+              {modalTab==='shift'
+                ?<button onClick={saveShift} disabled={!(form.devisLabel||form.posteLabel||form.label).trim()}
+                  style={{flex:2,padding:11,background:(form.devisLabel||form.posteLabel||form.label).trim()?G:'#e5e7eb',color:(form.devisLabel||form.posteLabel||form.label).trim()?'#fff':'#aaa',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer'}}>
+                  {editShift.shift ? 'Enregistrer' : '+ Créer le shift'}
+                </button>
+                :<button onClick={saveAbsence}
+                  style={{flex:2,padding:11,background:'#6b7280',color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer'}}>
+                  {editShift.shift ? 'Enregistrer' : '+ Créer l'absence'}
+                </button>
+              }
             </div>
           </div>
         </div>
