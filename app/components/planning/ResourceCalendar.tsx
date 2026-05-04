@@ -241,7 +241,7 @@ export default function ResourceCalendar() {
     const easter=getEasterDate(year)
     const add=(d:Date,days:number)=>{const r=new Date(d);r.setDate(r.getDate()+days);return r}
     const fmt=(d:Date)=>`\${d.getMonth()+1}-\${d.getDate()}`
-    return {'1-1':'Jour de l'an',[fmt(add(easter,1))]:'Lundi de Pâques','5-1':'Fête du Travail','5-8':'Victoire 1945',[fmt(add(easter,39))]:'Ascension',[fmt(add(easter,50))]:'Lundi de Pentecôte','7-14':'Fête nationale','8-15':'Assomption','11-1':'Toussaint','11-11':'Armistice 1918','12-25':'Noël'}
+    return {'1-1':"Jour de l'an",[fmt(add(easter,1))]:'Lundi de Pâques','5-1':'Fête du Travail','5-8':'Victoire 1945',[fmt(add(easter,39))]:'Ascension',[fmt(add(easter,50))]:'Lundi de Pentecôte','7-14':'Fête nationale','8-15':'Assomption','11-1':'Toussaint','11-11':'Armistice 1918','12-25':'Noël'}
   }
   const getHolidayName=(d:Date)=>{const h=getFrenchHolidays(d.getFullYear());return h[`\${d.getMonth()+1}-\${d.getDate()}`]||null}
   const isFerie = (d: Date) => !!getHolidayName(d)
