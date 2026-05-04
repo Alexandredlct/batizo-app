@@ -467,7 +467,7 @@ export default function ResourceCalendar() {
                       style={{borderRight:`1px solid ${BD}`,minHeight:64,padding:4,cursor:'pointer',background:isToday?'#f0fdf420':undefined}}>
                       {dayShifts.map(s => (
                         <DraggableShift key={s.id} shift={s}
-                          onClick={e=>{e.stopPropagation();if(!draggingShift)openModal(o.id,dateStr,s)}}
+                          onClickShift={e=>{e.stopPropagation();if(!draggingShift)openModal(o.id,dateStr,s)}}
                           onHover={(id,x,y)=>{if(id){setHoveredShift(id);setTooltipPos({x,y})}else setHoveredShift(null)}}>
                           <div style={{background:s.color,borderRadius:6,padding:'3px 6px',fontSize:11,color:'#fff',fontWeight:600,marginBottom:2}}>
                             {s.startTime}–{s.endTime}
