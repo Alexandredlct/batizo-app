@@ -460,12 +460,6 @@ export default function ResourceCalendar() {
                   const dayShifts = getShiftsForUserDay(o.id, dateStr)
                   return (
                     <DroppableCell key={di} userId={o.id} date={dateStr}
-                      onDrop={(sid,uid,dt,act)=>{
-                        const s=shifts.find(x=>x.id===sid)
-                        if(!s) return
-                        if(act==='move'){saveShifts(shifts.map(x=>x.id===sid?{...x,userId:uid,date:dt}:x))}
-                        else{saveShifts([...shifts,{...s,id:'s'+Date.now(),userId:uid,date:dt}])}
-                      }}
                       onClick={()=>openModal(o.id,dateStr)}
                       style={{borderRight:`1px solid ${BD}`,minHeight:64,padding:4,cursor:'pointer',background:isToday?'#f0fdf420':undefined}}>
                       {dayShifts.map(s => (
