@@ -20,7 +20,7 @@ const getFrenchHolidays = (year: number): Record<string,string> => {
   const add = (d: Date, days: number) => { const r=new Date(d); r.setDate(r.getDate()+days); return r }
   const fmt = (d: Date) => `${d.getMonth()+1}-${d.getDate()}`
   return {
-    '1-1': 'Jour de l'an',
+    '1-1': "Jour de l'an",
     [fmt(add(easter,1))]: 'Lundi de Pâques',
     '5-1': 'Fête du Travail',
     '5-8': 'Victoire 1945',
