@@ -885,7 +885,7 @@ export default function ResourceCalendar() {
                   <div style={{display:'flex',gap:4,marginBottom:8}}>
                     {([['lun','L'],['mar','M'],['mer','M'],['jeu','J'],['ven','V'],['sam','S'],['dim','D']] as [string,string][]).map(([key,label])=>(
                       <button key={key} onClick={()=>setRepeatDays((d:string[])=>d.includes(key)?d.length>1?d.filter((x:string)=>x!==key):d:[...d,key])}
-                        style={{width:34,height:34,borderRadius:'50%',border:`1px solid ${repeatDays.includes(key)?'#6b7280':BD}`,background:repeatDays.includes(key)?'#1D9E75':'#fff',color:repeatDays.includes(key)?'#fff':'#555',fontSize:12,fontWeight:600,cursor:'pointer'}>
+                        style={{width:34,height:34,borderRadius:'50%',border:`1px solid ${repeatDays.includes(key)?'#1D9E75':BD}`,background:repeatDays.includes(key)?'#1D9E75':'#fff',color:repeatDays.includes(key)?'#fff':'#555',fontSize:12,fontWeight:600,cursor:'pointer'}}>
                         {label}
                       </button>
                     ))}
