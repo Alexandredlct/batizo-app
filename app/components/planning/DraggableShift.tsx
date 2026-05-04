@@ -1,33 +1,25 @@
 'use client'
-import { useDraggable } from '@dnd-kit/core'
-import { CSS } from '@dnd-kit/utilities'
-
+// Composant simple - le drag est géré par ResourceCalendar via onMouseDown
 interface Props {
   shift: any
   children: React.ReactNode
+  onMouseDown?: (e: React.MouseEvent, shift: any) => void
   onClickShift?: (e: React.MouseEvent) => void
   onHover?: (id: string | null, x: number, y: number) => void
+  isDragging?: boolean
 }
 
-export function DraggableShift({ shift, children, onClickShift, onHover }: Props) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: shift.id,
-    data: { shift }
-  })
-
+export function DraggableShift({ shift, children, onMouseDown, onClickShift, onHover, isDragging }: Props) {
   return (
     <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
       style={{
-        transform: CSS.Translate.toString(transform),
         opacity: isDragging ? 0.4 : 1,
-        cursor: isDragging ? 'grabbing' : 'grab',
-        touchAction: 'none',
+        cursor: 'grab',
         userSelect: 'none' as const,
         marginBottom: 2,
+        position: 'relative',
       }}
+      onMouseDown={e => onMouseDown?.(e, shift)}
       onMouseEnter={e => onHover?.(shift.id, e.clientX, e.clientY)}
       onMouseLeave={() => onHover?.(null, 0, 0)}
       onClick={e => { e.stopPropagation(); onClickShift?.(e) }}

@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { DndContext, DragEndEvent, DragOverEvent, useSensor, useSensors, PointerSensor } from '@dnd-kit/core'
 import { DraggableShift } from './DraggableShift'
 import { DroppableCell } from './DroppableCell'
 import DatePicker, { getWeekNumber } from './DatePicker'
@@ -105,8 +104,9 @@ export default function ResourceCalendar() {
   const [view, setView] = useState<'semaine'|'mois'>('semaine')
   const [monthOffset, setMonthOffset] = useState(0)
   const [hoveredShift, setHoveredShift] = useState<string|null>(null)
-  const [draggingShift, setDraggingShift] = useState<string|null>(null)
-  const [showDragModal, setShowDragModal] = useState<{shift:any,userId:string,date:string,action:'move'|'copy'}|null>(null)
+  const [draggingShift, setDraggingShift] = useState<Shift|null>(null)
+  const [dragGhost, setDragGhost] = useState<{x:number,y:number}|null>(null)
+  const [dragTarget, setDragTarget] = useState<{userId:string,date:string,action:'move'|'copy'}|null>(null)
   const [tooltipPos, setTooltipPos] = useState({x:0,y:0})
   const [ouvriers, setOuvriers] = useState<Ouvrier[]>([])
   const [shifts, setShifts] = useState<Shift[]>([])
@@ -189,36 +189,52 @@ export default function ResourceCalendar() {
     } catch(e) {}
   }, [])
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { delay: 150, tolerance: 5 } }))
-
-  const handleDragStart = (event: any) => {
-    console.log('DRAG START', event.active.id)
-    setDraggingShift(event.active.id)
+  // Drag natif
+  const startDrag = (e: React.MouseEvent, shift: Shift) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDraggingShift(shift)
+    setDragGhost({x: e.clientX, y: e.clientY})
     setHoveredShift(null)
-  }
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    setDraggingShift(null)
-    const { active, over } = event
-    console.log('DRAG END - active:', active.id, 'over:', over?.id)
-    if(!over) return
-    const shift = shifts.find(s => s.id === active.id)
-    if(!shift) return
-    // Format ID: userId__date__action
-    const overId = over.id as string
-    const parts = overId.split('__')
-    if(parts.length < 3) return
-    const targetUserId = parts[0]
-    const targetDate = parts[1]
-    const action = parts[2] as 'move'|'copy'
-    if(!targetDate || !targetUserId || !action) return
-    if(action === 'copy') {
-      const newShift = {...shift, id: 's'+Date.now()+Math.floor(Math.random()*9999), userId: targetUserId, date: targetDate}
-      saveShifts([...shifts, newShift])
-    } else {
-      const updated = shifts.map(s => s.id === shift.id ? {...s, userId: targetUserId, date: targetDate} : s)
-      saveShifts(updated)
+    const onMouseMove = (ev: MouseEvent) => {
+      setDragGhost({x: ev.clientX, y: ev.clientY})
+      // Détecter la zone survolée
+      const el = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement
+      if(el) {
+        const cell = el.closest('[data-cell]') as HTMLElement
+        if(cell) {
+          const userId = cell.dataset.userid || ''
+          const date = cell.dataset.date || ''
+          const rect = cell.getBoundingClientRect()
+          const action = ev.clientX < rect.left + rect.width/2 ? 'move' : 'copy'
+          setDragTarget({userId, date, action})
+          return
+        }
+      }
+      setDragTarget(null)
     }
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+      setDragGhost(null)
+      setDraggingShift(null)
+      setDragTarget(prev => {
+        if(prev && shift) {
+          if(prev.action === 'copy') {
+            const newShift = {...shift, id:'s'+Date.now()+Math.floor(Math.random()*9999), userId:prev.userId, date:prev.date}
+            saveShifts([...shifts, newShift])
+          } else {
+            saveShifts(shifts.map(s => s.id===shift.id ? {...s, userId:prev.userId, date:prev.date} : s))
+          }
+        }
+        return null
+      })
+    }
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
   }
 
   const saveShifts = (updated: Shift[]) => {
@@ -380,8 +396,7 @@ export default function ResourceCalendar() {
       </div>
 
       {/* Grille Semaine */}
-      {view==='semaine'&&<DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,overflow:'hidden'}}>
+      {view==='semaine'&&<div style={{background:'#fff',border:`1px solid ${BD}`,borderRadius:12,overflow:'hidden'}}>
 
         {/* En-têtes colonnes */}
         <div style={{display:'grid',gridTemplateColumns:'200px repeat(7, 1fr) 80px',borderBottom:`1px solid ${BD}`,background:'#f9fafb'}}>
@@ -463,12 +478,16 @@ export default function ResourceCalendar() {
                   const dayShifts = getShiftsForUserDay(o.id, dateStr)
                   return (
                     <DroppableCell key={di} userId={o.id} date={dateStr}
-                      onClick={()=>openModal(o.id,dateStr)}
-                      style={{borderRight:`1px solid ${BD}`,minHeight:64,padding:4,cursor:'pointer',background:isToday?'#f0fdf420':undefined}}>
+                      dragOverAction={dragTarget?.userId===o.id&&dragTarget?.date===dateStr?dragTarget.action:null}
+                      onClick={()=>{if(!draggingShift)openModal(o.id,dateStr)}}
+                      style={{borderRight:`1px solid ${BD}`,minHeight:64,padding:4,cursor:'pointer',background:isToday?'#f0fdf420':undefined,'--data-userid':o.id,'--data-date':dateStr} as any}
+                      onDragOverZone={(uid,dt,act)=>setDragTarget(act?{userId:uid,date:dt,action:act}:null)}>
                       {dayShifts.map(s => (
                         <DraggableShift key={s.id} shift={s}
+                          isDragging={draggingShift?.id===s.id}
+                          onMouseDown={(e)=>startDrag(e,s)}
                           onClickShift={e=>{e.stopPropagation();if(!draggingShift)openModal(o.id,dateStr,s)}}
-                          onHover={(id,x,y)=>{if(id){setHoveredShift(id);setTooltipPos({x,y})}else setHoveredShift(null)}}>
+                          onHover={(id,x,y)=>{if(id&&!draggingShift){setHoveredShift(id);setTooltipPos({x,y})}else setHoveredShift(null)}}>
                           <div style={{background:s.color,borderRadius:6,padding:'3px 6px',fontSize:11,color:'#fff',fontWeight:600,marginBottom:2}}>
                             {s.startTime}–{s.endTime}
                             <div style={{fontWeight:400,opacity:0.9,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{s.label}</div>
@@ -501,8 +520,7 @@ export default function ResourceCalendar() {
             <span style={{fontSize:16}}>+</span> Ajouter un ouvrier
           </a>
         </div>
-      </div>
-      </DndContext>}
+      </div>}
 
       {/* Tooltip global */}
       {hoveredShift&&(()=>{
