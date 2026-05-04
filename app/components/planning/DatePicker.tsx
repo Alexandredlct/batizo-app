@@ -44,7 +44,7 @@ const MOIS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Ao�
 const JOURS_FR = ['Lu','Ma','Me','Je','Ve','Sa','Di']
 
 // Numéro de semaine ISO 8601
-const getWeekNumber = (d: Date) => {
+export const getWeekNumber = (d: Date) => {
   const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
   const day = date.getUTCDay() || 7
   date.setUTCDate(date.getUTCDate() + 4 - day)
@@ -152,12 +152,7 @@ export default function DatePicker({ weekOffset, monthOffset, view, onWeekChange
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
 
-      {/* Indicateur semaine */}
-      {view==='semaine'&&(
-        <span style={{marginLeft:8,fontSize:12,color:'#888',fontWeight:500,background:'#f3f4f6',padding:'3px 8px',borderRadius:6}}>
-          Semaine {weekNum}
-        </span>
-      )}
+
 
       {/* Popup calendrier - Vue Semaine */}
       {open && view==='semaine'&&(

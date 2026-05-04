@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { DndContext, DragEndEvent, DragOverEvent, useSensor, useSensors, PointerSensor } from '@dnd-kit/core'
 import { DraggableShift } from './DraggableShift'
 import { DroppableCell } from './DroppableCell'
-import DatePicker from './DatePicker'
+import DatePicker, { getWeekNumber } from './DatePicker'
 
 const G='#1D9E75', BD='#e5e7eb', AM='#BA7517'
 
@@ -359,6 +359,11 @@ export default function ResourceCalendar() {
             onWeekChange={setWeekOffset}
             onMonthChange={setMonthOffset}
           />
+          {view==='semaine'&&(
+            <span style={{fontSize:12,color:'#888',fontWeight:500,background:'#f3f4f6',padding:'4px 10px',borderRadius:6,whiteSpace:'nowrap' as const}}>
+              Semaine {getWeekNumber(days[0])}
+            </span>
+          )}
         </div>
         {/* Sélecteur vue */}
         <div style={{display:'flex',background:'#f3f4f6',borderRadius:8,padding:3,gap:2}}>

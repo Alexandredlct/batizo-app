@@ -1,86 +1,64 @@
 'use client'
 import { useDroppable } from '@dnd-kit/core'
-import { useState } from 'react'
 
 interface Props {
   userId: string
   date: string
-  onDrop: (shiftId: string, userId: string, date: string, action: 'move'|'copy') => void
   children: React.ReactNode
   style?: React.CSSProperties
   onClick?: () => void
-  isActive?: boolean
 }
 
 const G = '#1D9E75'
 
-export function DroppableCell({ userId, date, onDrop, children, style, onClick, isActive }: Props) {
-  const cellId = `${userId}__${date}`
-  const [hoveredZone, setHoveredZone] = useState<'move'|'copy'|null>(null)
+function DropZone({ id, label, color, hoverColor, textColor, borderStyle }: {
+  id: string, label: string, color: string, hoverColor: string, textColor: string, borderStyle?: string
+}) {
+  const { isOver, setNodeRef } = useDroppable({ id, data: { droppableId: id } })
+  return (
+    <div ref={setNodeRef} style={{
+      flex: 1,
+      background: isOver ? hoverColor : color,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: 11, fontWeight: 700, color: textColor,
+      borderBottom: borderStyle,
+      transition: 'background 0.1s',
+    }}>
+      {label}
+    </div>
+  )
+}
 
-  const { isOver, setNodeRef } = useDroppable({
+export function DroppableCell({ userId, date, children, style, onClick }: Props) {
+  const cellId = `${userId}__${date}`
+  const { isOver: isOverCell, setNodeRef } = useDroppable({
     id: cellId,
     data: { userId, date }
   })
 
   return (
-    <div
-      ref={setNodeRef}
-      style={{ position: 'relative', ...style }}
-      onClick={onClick}
-    >
+    <div ref={setNodeRef} style={{ position: 'relative', ...style }} onClick={onClick}>
       {children}
-
-      {/* Zones Déplacer/Copier visibles pendant le survol drag */}
-      {isOver && (
+      {isOverCell && (
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
           display: 'flex', flexDirection: 'column', zIndex: 50,
-          borderRadius: 6, overflow: 'hidden',
-          border: `2px solid ${G}`,
+          borderRadius: 6, overflow: 'hidden', border: `2px solid ${G}`,
         }}
-          onClick={e => e.stopPropagation()}
-        >
-          {/* Zone Déplacer (haut) */}
-          <div
-            style={{
-              flex: 1,
-              background: hoveredZone === 'move' ? '#bbf7d0' : '#f0fdf4',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 11, fontWeight: 700, color: '#166534',
-              cursor: 'copy', borderBottom: '1px solid #86efac',
-              transition: 'background 0.1s'
-            }}
-            onMouseEnter={() => setHoveredZone('move')}
-            onMouseLeave={() => setHoveredZone(null)}
-          >
-            📦 Déplacer
-          </div>
-
-          {/* Zone Copier (bas) */}
-          <div
-            style={{
-              flex: 1,
-              background: hoveredZone === 'copy' ? '#bfdbfe' : '#eff6ff',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 11, fontWeight: 700, color: '#1e40af',
-              cursor: 'copy',
-              transition: 'background 0.1s'
-            }}
-            onMouseEnter={() => setHoveredZone('copy')}
-            onMouseLeave={() => setHoveredZone(null)}
-          >
-            📋 Copier
-          </div>
+          onClick={e => e.stopPropagation()}>
+          <DropZone
+            id={`${cellId}__move`}
+            label="📦 Déplacer"
+            color="#f0fdf4" hoverColor="#bbf7d0" textColor="#166534"
+            borderStyle="1px solid #86efac"
+          />
+          <DropZone
+            id={`${cellId}__copy`}
+            label="📋 Copier"
+            color="#eff6ff" hoverColor="#bfdbfe" textColor="#1e40af"
+          />
         </div>
       )}
     </div>
   )
-}
-
-// Hook pour savoir quelle zone est survolée
-export function useDropZone(cellId: string) {
-  const move = useDroppable({ id: cellId + '__move', data: { action: 'move' } })
-  const copy = useDroppable({ id: cellId + '__copy', data: { action: 'copy' } })
-  return { move, copy }
 }
