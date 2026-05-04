@@ -459,26 +459,7 @@ export default function ResourceCalendar() {
           </div>
         </div>
 
-        {/* Ligne Non assignés */}
-        <div style={{display:'grid',gridTemplateColumns:'200px repeat(7, 1fr) 80px',borderBottom:`1px solid ${BD}`,background:'#fafafa'}}>
-          <div style={{padding:'12px 16px',borderRight:`1px solid ${BD}`,display:'flex',alignItems:'center',gap:8}}>
-            <div style={{width:32,height:32,borderRadius:'50%',background:'#e5e7eb',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:'#888',flexShrink:0}}>N/A</div>
-            <div style={{fontSize:12,color:'#888',fontWeight:500}}>Non assignés</div>
-          </div>
-          {days.map((d, i) => (
-            <div key={i} style={{borderRight:`1px solid ${BD}`,minHeight:56,padding:4,cursor:'pointer'}}
-              onClick={()=>openModal('unassigned', formatDate(d))}>
-              {getShiftsForUserDay('unassigned', formatDate(d)).map(s => (
-                <div key={s.id} style={{background:s.color,borderRadius:6,padding:'2px 6px',fontSize:11,color:'#fff',fontWeight:600,marginBottom:2,cursor:'pointer'}}
-                  onClick={e=>{e.stopPropagation();openModal('unassigned',formatDate(d),s)}}>
-                  {s.startTime}-{s.endTime}
-                  <div style={{fontWeight:400,opacity:0.9,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-          ))}
-          <div style={{padding:'12px 8px',textAlign:'center',fontSize:12,color:'#888'}}>—</div>
-        </div>
+
 
         {/* Lignes ouvriers */}
         {ouvriers.length === 0 ? (
@@ -647,30 +628,7 @@ export default function ResourceCalendar() {
               })}
               <div style={{padding:'8px 4px',textAlign:'center' as const,fontSize:11,fontWeight:600,color:'#888'}}>TOTAL</div>
             </div>
-            {/* Ligne non assignés mois */}
-            <div style={{display:'grid',gridTemplateColumns:`200px repeat(${monthDays.length},44px) 80px`,borderBottom:`1px solid ${BD}`}}>
-              <div style={{padding:'8px 16px',borderRight:`1px solid ${BD}`,display:'flex',alignItems:'center',gap:8}}>
-                <div style={{width:28,height:28,borderRadius:'50%',background:'#e5e7eb',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#888'}}>N/A</div>
-                <span style={{fontSize:12,color:'#888'}}>Non assignés</span>
-              </div>
-              {monthDays.map((d,i)=>{
-                const dateStr=formatDate(d)
-                const isWeekend=d.getDay()===0||d.getDay()===6
-                const dayShifts=getShiftsForUserDay('unassigned',dateStr)
-                return(
-                  <div key={i} style={{borderRight:`1px solid ${BD}`,minHeight:44,background:isWeekend?'#fafafa':undefined,cursor:'pointer',display:'flex',flexDirection:'column' as const,gap:1,padding:1}}
-                    onClick={()=>openModal('unassigned',dateStr)}>
-                    {dayShifts.map(s=>(
-                      <div key={s.id} style={{background:s.color,borderRadius:3,height:8,cursor:'pointer'}}
-                        onMouseEnter={e=>{e.stopPropagation();setHoveredShift(s.id);setTooltipPos({x:e.clientX,y:e.clientY})}}
-                        onMouseLeave={()=>setHoveredShift(null)}
-                        onClick={e=>{e.stopPropagation();openModal('unassigned',dateStr,s)}}/>
-                    ))}
-                  </div>
-                )
-              })}
-              <div style={{padding:'8px 4px',textAlign:'center' as const,fontSize:12,color:'#888'}}>—</div>
-            </div>
+
             {/* Lignes ouvriers mois */}
             {ouvriers.map((o,oi)=>{
               const totalMois=monthDays.reduce((sum,d)=>{
