@@ -911,7 +911,7 @@ export default function ResourceCalendar() {
                 </button>
                 :<button onClick={saveAbsence}
                   style={{flex:2,padding:11,background:'#6b7280',color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer'}}>
-                  {editShift.shift ? 'Enregistrer' : '+ Créer l'absence'}
+                  {editShift.shift ? 'Enregistrer' : '+ Créer une absence'}
                 </button>
               }
             </div>
