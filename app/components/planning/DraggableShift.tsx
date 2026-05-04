@@ -5,11 +5,11 @@ import { CSS } from '@dnd-kit/utilities'
 interface Props {
   shift: any
   children: React.ReactNode
-  onClick?: (e: React.MouseEvent) => void
+  onClickShift?: (e: React.MouseEvent) => void
   onHover?: (id: string | null, x: number, y: number) => void
 }
 
-export function DraggableShift({ shift, children, onClick, onHover }: Props) {
+export function DraggableShift({ shift, children, onClickShift, onHover }: Props) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: shift.id,
     data: { shift }
@@ -22,16 +22,15 @@ export function DraggableShift({ shift, children, onClick, onHover }: Props) {
       {...attributes}
       style={{
         transform: CSS.Translate.toString(transform),
-        opacity: isDragging ? 0.5 : 1,
+        opacity: isDragging ? 0.4 : 1,
         cursor: isDragging ? 'grabbing' : 'grab',
         touchAction: 'none',
         userSelect: 'none' as const,
-        position: 'relative',
-        zIndex: isDragging ? 999 : 1,
+        marginBottom: 2,
       }}
-      onClick={onClick}
       onMouseEnter={e => onHover?.(shift.id, e.clientX, e.clientY)}
       onMouseLeave={() => onHover?.(null, 0, 0)}
+      onClick={e => { e.stopPropagation(); onClickShift?.(e) }}
     >
       {children}
     </div>
