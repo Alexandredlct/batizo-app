@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { DraggableShift } from './DraggableShift'
 import { DroppableCell } from './DroppableCell'
 import DatePicker, { getWeekNumber } from './DatePicker'
@@ -119,6 +119,7 @@ export default function ResourceCalendar() {
   const [clearTarget, setClearTarget] = useState<'all'|'user'>('all')
   const [clearUserId, setClearUserId] = useState('')
   const [showMenuMore, setShowMenuMore] = useState(false)
+  const menuMoreRef = useRef<HTMLDivElement>(null)
   const [sortMode, setSortMode] = useState<'asc'|'desc'|'custom'>(()=>{
     if(typeof window==='undefined') return 'custom'
     try{const r=localStorage.getItem('batizo_planning_sort');return (r as any)||'custom'}catch(e){return 'custom'}
@@ -215,6 +216,23 @@ export default function ResourceCalendar() {
       if(raw) setPostes(JSON.parse(raw))
     } catch(e) {}
   }, [])
+
+  // Fermer menu ⋮ au clic extérieur + Echap
+  useEffect(() => {
+    if(!showMenuMore) return
+    const handleClick = (e: MouseEvent) => {
+      if(menuMoreRef.current && !menuMoreRef.current.contains(e.target as Node)) {
+        setShowMenuMore(false)
+      }
+    }
+    const handleKey = (e: KeyboardEvent) => { if(e.key==='Escape') setShowMenuMore(false) }
+    document.addEventListener('mousedown', handleClick)
+    document.addEventListener('keydown', handleKey)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleKey)
+    }
+  }, [showMenuMore])
 
   // Drag natif
   const startDrag = (e: React.MouseEvent, shift: Shift) => {
@@ -452,33 +470,31 @@ export default function ResourceCalendar() {
               Semaine {getWeekNumber(days[0])}
             </span>
           )}
+          <div ref={menuMoreRef} style={{position:'relative'}}>
+            <button onClick={()=>setShowMenuMore(m=>!m)}
+              style={{width:32,height:32,border:`1px solid ${BD}`,borderRadius:7,background:'#fff',cursor:'pointer',fontSize:18,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',color:'#333',transition:'background 0.15s'}}
+              onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#f3f4f6'}
+              onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background='#fff'}>
+              ⋮
+            </button>
+            {showMenuMore&&(
+              <div style={{position:'absolute',top:'calc(100% + 4px)',left:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.1)',zIndex:200,minWidth:210,overflow:'hidden'}}>
+                <button onClick={()=>{setSortDraft(sortMode);setCustomDraft(ouvriersTries.map(o=>o.id));setShowSortModal(true);setShowMenuMore(false)}}
+                  style={{width:'100%',padding:'10px 16px',background:'none',border:'none',cursor:'pointer',fontSize:13,color:'#333',textAlign:'left' as const,display:'flex',alignItems:'center',gap:8}}
+                  onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#f9fafb'}
+                  onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background='none'}>
+                  ⇅ Trier les employés
+                </button>
+                <button onClick={()=>{setShowClearModal(true);setShowMenuMore(false)}}
+                  style={{width:'100%',padding:'10px 16px',background:'none',border:'none',cursor:'pointer',fontSize:13,color:'#ef4444',textAlign:'left' as const,display:'flex',alignItems:'center',gap:8}}
+                  onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#fef2f2'}
+                  onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background='none'}>
+                  🗑️ Effacer les shifts
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-        <div style={{position:'relative'}}>
-          <button onClick={()=>setShowMenuMore(m=>!m)}
-            style={{width:32,height:32,border:`1px solid ${BD}`,borderRadius:7,background:'#fff',cursor:'pointer',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',color:'#333'}}
-            onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#f3f4f6'}
-            onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background='#fff'}>
-            ⋮
-          </button>
-          {showMenuMore&&(
-            <div style={{position:'absolute',top:'calc(100% + 4px)',right:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.1)',zIndex:100,minWidth:200,overflow:'hidden'}}
-              onClick={()=>setShowMenuMore(false)}>
-              <button onClick={()=>{setSortDraft(sortMode);setCustomDraft(ouvriersTries.map(o=>o.id));setShowSortModal(true)}}
-                style={{width:'100%',padding:'10px 16px',background:'none',border:'none',cursor:'pointer',fontSize:13,color:'#333',textAlign:'left' as const,display:'flex',alignItems:'center',gap:8}}
-                onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#f9fafb'}
-                onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background='none'}>
-                ⇅ Trier les employés
-              </button>
-              <button onClick={()=>setShowClearModal(true)}
-                style={{width:'100%',padding:'10px 16px',background:'none',border:'none',cursor:'pointer',fontSize:13,color:'#ef4444',textAlign:'left' as const,display:'flex',alignItems:'center',gap:8}}
-                onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#fef2f2'}
-                onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background='none'}>
-                🗑️ Effacer les shifts
-              </button>
-            </div>
-          )}
-        </div>
-
         {/* Sélecteur vue */}
         <div style={{display:'flex',background:'#f3f4f6',borderRadius:8,padding:3,gap:2}}>
           {(['semaine','mois'] as const).map(v=>(
@@ -667,10 +683,17 @@ export default function ResourceCalendar() {
           onClick={()=>setShowClearModal(false)}>
           <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:420,width:'100%'}}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
-              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>⚠️ Effacer les shifts</div>
+              <div style={{fontSize:14,fontWeight:700,color:'#111'}}>
+                ⚠️ Effacer les shifts du {days[0].toLocaleDateString('fr-FR',{day:'numeric',month:'long'})} au {days[6].toLocaleDateString('fr-FR',{day:'numeric',month:'long'})}
+              </div>
               <button onClick={()=>setShowClearModal(false)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
             </div>
-            <p style={{fontSize:13,color:'#555',marginBottom:16,lineHeight:1.6}}>Vous êtes sur le point de supprimer définitivement des shifts. Cette action est irréversible.</p>
+            <p style={{fontSize:13,color:'#555',marginBottom:16,lineHeight:1.6}}>
+              Vous êtes sur le point de supprimer définitivement les shifts de la semaine du{' '}
+              <strong>{days[0].toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}</strong> au{' '}
+              <strong>{days[6].toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}</strong>{' '}
+              (semaine {getWeekNumber(days[0])}). Cette action est irréversible.
+            </p>
             <div style={{fontSize:13,fontWeight:600,color:'#333',marginBottom:10}}>Quels shifts effacer ?</div>
             {[['all','Tous les shifts de la semaine'],['user','Seulement les shifts de :']] .map(([val,label])=>(
               <div key={val} onClick={()=>setClearTarget(val as any)}
