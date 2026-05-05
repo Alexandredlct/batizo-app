@@ -114,6 +114,21 @@ export default function ResourceCalendar() {
   const [ouvriers, setOuvriers] = useState<Ouvrier[]>([])
   const [allUsers, setAllUsers] = useState<any[]>([])
   const [showAddMemberModal, setShowAddMemberModal] = useState(false)
+  const [showSortModal, setShowSortModal] = useState(false)
+  const [showClearModal, setShowClearModal] = useState(false)
+  const [clearTarget, setClearTarget] = useState<'all'|'user'>('all')
+  const [clearUserId, setClearUserId] = useState('')
+  const [showMenuMore, setShowMenuMore] = useState(false)
+  const [sortMode, setSortMode] = useState<'asc'|'desc'|'custom'>(()=>{
+    if(typeof window==='undefined') return 'custom'
+    try{const r=localStorage.getItem('batizo_planning_sort');return (r as any)||'custom'}catch(e){return 'custom'}
+  })
+  const [customOrder, setCustomOrder] = useState<string[]>(()=>{
+    if(typeof window==='undefined') return []
+    try{const r=localStorage.getItem('batizo_planning_order');return r?JSON.parse(r):[]}catch(e){return []}
+  })
+  const [sortDraft, setSortDraft] = useState<'asc'|'desc'|'custom'>('custom')
+  const [customDraft, setCustomDraft] = useState<string[]>([])
   const [planningMemberIds, setPlanningMemberIds] = useState<string[]>(()=>{
     if(typeof window==='undefined') return []
     try{const raw=localStorage.getItem('batizo_planning_members');if(raw)return JSON.parse(raw)}catch(e){}
@@ -293,6 +308,19 @@ export default function ResourceCalendar() {
     return days
   }
 
+  // Ouvriers triés
+  const ouvriersTries = [...ouvriers].sort((a,b)=>{
+    if(sortMode==='asc') return a.nom.localeCompare(b.nom,'fr')
+    if(sortMode==='desc') return b.nom.localeCompare(a.nom,'fr')
+    // custom
+    const ia=customOrder.indexOf(a.id)
+    const ib=customOrder.indexOf(b.id)
+    if(ia===-1&&ib===-1) return 0
+    if(ia===-1) return 1
+    if(ib===-1) return -1
+    return ia-ib
+  })
+
   const days = getWeekDays(weekOffset)
   const monthDays = getMonthDays(monthOffset)
   const moisLabelMois = new Date(new Date().getFullYear(), new Date().getMonth()+monthOffset, 1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'})
@@ -425,6 +453,32 @@ export default function ResourceCalendar() {
             </span>
           )}
         </div>
+        <div style={{position:'relative'}}>
+          <button onClick={()=>setShowMenuMore(m=>!m)}
+            style={{width:32,height:32,border:`1px solid ${BD}`,borderRadius:7,background:'#fff',cursor:'pointer',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',color:'#333'}}
+            onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#f3f4f6'}
+            onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background='#fff'}>
+            ⋮
+          </button>
+          {showMenuMore&&(
+            <div style={{position:'absolute',top:'calc(100% + 4px)',right:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.1)',zIndex:100,minWidth:200,overflow:'hidden'}}
+              onClick={()=>setShowMenuMore(false)}>
+              <button onClick={()=>{setSortDraft(sortMode);setCustomDraft(ouvriersTries.map(o=>o.id));setShowSortModal(true)}}
+                style={{width:'100%',padding:'10px 16px',background:'none',border:'none',cursor:'pointer',fontSize:13,color:'#333',textAlign:'left' as const,display:'flex',alignItems:'center',gap:8}}
+                onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#f9fafb'}
+                onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background='none'}>
+                ⇅ Trier les employés
+              </button>
+              <button onClick={()=>setShowClearModal(true)}
+                style={{width:'100%',padding:'10px 16px',background:'none',border:'none',cursor:'pointer',fontSize:13,color:'#ef4444',textAlign:'left' as const,display:'flex',alignItems:'center',gap:8}}
+                onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#fef2f2'}
+                onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background='none'}>
+                🗑️ Effacer les shifts
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Sélecteur vue */}
         <div style={{display:'flex',background:'#f3f4f6',borderRadius:8,padding:3,gap:2}}>
           {(['semaine','mois'] as const).map(v=>(
@@ -462,7 +516,7 @@ export default function ResourceCalendar() {
 
 
         {/* Lignes ouvriers */}
-        {ouvriers.length === 0 ? (
+        {ouvriersTries.length === 0 ? (
           <div style={{padding:'3rem',textAlign:'center',color:'#888',fontSize:13}}>
             Aucun membre dans le planning.{' '}
             <button onClick={()=>setShowAddMemberModal(true)} style={{color:G,background:'none',border:'none',cursor:'pointer',fontWeight:600,fontSize:13,padding:0}}>
@@ -544,6 +598,118 @@ export default function ResourceCalendar() {
           </button>
         </div>
       </div>}
+
+      {/* Modale Trier les employés */}
+      {showSortModal&&(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}
+          onClick={()=>setShowSortModal(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:440,width:'100%',maxHeight:'80vh',display:'flex',flexDirection:'column' as const}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>⇅ Trier les employés</div>
+              <button onClick={()=>setShowSortModal(false)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
+            </div>
+            {/* Options tri */}
+            {(['asc','desc','custom'] as const).map(mode=>(
+              <div key={mode} onClick={()=>setSortDraft(mode)}
+                style={{display:'flex',alignItems:'center',gap:12,padding:'10px 0',cursor:'pointer'}}>
+                <div style={{width:18,height:18,borderRadius:'50%',border:`2px solid ${sortDraft===mode?G:BD}`,background:sortDraft===mode?G:'#fff',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  {sortDraft===mode&&<div style={{width:6,height:6,borderRadius:'50%',background:'#fff'}}/>}
+                </div>
+                <span style={{fontSize:13,color:'#111',fontWeight:sortDraft===mode?600:400}}>
+                  {mode==='asc'?'A à Z':mode==='desc'?'Z à A':'Personnaliser…'}
+                </span>
+              </div>
+            ))}
+            {/* Liste custom avec flèches */}
+            {sortDraft==='custom'&&(
+              <div style={{marginTop:12,border:`1px solid ${BD}`,borderRadius:10,overflow:'hidden',flex:1,overflowY:'auto'}}>
+                {customDraft.map((uid,idx)=>{
+                  const u=ouvriers.find(o=>o.id===uid)
+                  if(!u) return null
+                  return(
+                    <div key={uid} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',borderBottom:idx<customDraft.length-1?`1px solid ${BD}`:'none',background:'#fff'}}>
+                      <div style={{width:32,height:32,borderRadius:'50%',background:u.color,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:11,fontWeight:700,flexShrink:0}}>{u.initiales}</div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:13,fontWeight:500,color:'#111'}}>{u.nom}</div>
+                        <div style={{fontSize:11,color:'#888'}}>{u.heures?`${u.heures}h`:u.contrat||'—'}</div>
+                      </div>
+                      <div style={{display:'flex',flexDirection:'column' as const,gap:2}}>
+                        <button disabled={idx===0} onClick={()=>setCustomDraft(d=>{const r=[...d];[r[idx-1],r[idx]]=[r[idx],r[idx-1]];return r})}
+                          style={{width:24,height:24,border:`1px solid ${BD}`,borderRadius:4,background:idx===0?'#f9fafb':'#fff',cursor:idx===0?'default':'pointer',fontSize:12,display:'flex',alignItems:'center',justifyContent:'center',color:idx===0?'#ccc':'#555'}}>↑</button>
+                        <button disabled={idx===customDraft.length-1} onClick={()=>setCustomDraft(d=>{const r=[...d];[r[idx],r[idx+1]]=[r[idx+1],r[idx]];return r})}
+                          style={{width:24,height:24,border:`1px solid ${BD}`,borderRadius:4,background:idx===customDraft.length-1?'#f9fafb':'#fff',cursor:idx===customDraft.length-1?'default':'pointer',fontSize:12,display:'flex',alignItems:'center',justifyContent:'center',color:idx===customDraft.length-1?'#ccc':'#555'}}>↓</button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+            <div style={{display:'flex',gap:10,marginTop:20}}>
+              <button onClick={()=>setShowSortModal(false)} style={{flex:1,padding:11,border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555'}}>Annuler</button>
+              <button onClick={()=>{
+                setSortMode(sortDraft)
+                if(sortDraft==='custom') setCustomOrder(customDraft)
+                try{localStorage.setItem('batizo_planning_sort',sortDraft);if(sortDraft==='custom')localStorage.setItem('batizo_planning_order',JSON.stringify(customDraft))}catch(e){}
+                setShowSortModal(false)
+              }} style={{flex:1,padding:11,background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>Valider</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modale Effacer les shifts - Ticket 2 */}
+      {showClearModal&&(()=>{
+        const weekDates=days.map(formatDate)
+        const shiftsThisWeek=shifts.filter(s=>weekDates.includes(s.date))
+        const shiftsTarget=clearTarget==='all'?shiftsThisWeek:shiftsThisWeek.filter(s=>s.userId===clearUserId)
+        return(
+        <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.4)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}
+          onClick={()=>setShowClearModal(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,padding:24,maxWidth:420,width:'100%'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+              <div style={{fontSize:15,fontWeight:700,color:'#111'}}>⚠️ Effacer les shifts</div>
+              <button onClick={()=>setShowClearModal(false)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888'}}>×</button>
+            </div>
+            <p style={{fontSize:13,color:'#555',marginBottom:16,lineHeight:1.6}}>Vous êtes sur le point de supprimer définitivement des shifts. Cette action est irréversible.</p>
+            <div style={{fontSize:13,fontWeight:600,color:'#333',marginBottom:10}}>Quels shifts effacer ?</div>
+            {[['all','Tous les shifts de la semaine'],['user','Seulement les shifts de :']] .map(([val,label])=>(
+              <div key={val} onClick={()=>setClearTarget(val as any)}
+                style={{display:'flex',alignItems:'center',gap:10,padding:'8px 0',cursor:'pointer'}}>
+                <div style={{width:18,height:18,borderRadius:'50%',border:`2px solid ${clearTarget===val?'#ef4444':BD}`,background:clearTarget===val?'#ef4444':'#fff',flexShrink:0}}/>
+                <span style={{fontSize:13,color:'#111'}}>{label}</span>
+                {val==='all'&&<span style={{fontSize:11,color:'#888'}}>({shiftsThisWeek.length} shifts)</span>}
+              </div>
+            ))}
+            {clearTarget==='user'&&(
+              <select value={clearUserId} onChange={e=>setClearUserId(e.target.value)}
+                style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',marginTop:8,marginLeft:24}}>
+                <option value="">Sélectionner un membre...</option>
+                {ouvriersTries.map(o=>(
+                  <option key={o.id} value={o.id}>{o.nom} ({shiftsThisWeek.filter(s=>s.userId===o.id).length} shifts)</option>
+                ))}
+              </select>
+            )}
+            {shiftsTarget.length>0&&clearTarget==='user'&&clearUserId&&(
+              <div style={{fontSize:11,color:'#888',marginTop:6,marginLeft:24}}>{shiftsTarget.length} shift(s) seront supprimés</div>
+            )}
+            <div style={{display:'flex',gap:10,marginTop:20}}>
+              <button onClick={()=>setShowClearModal(false)} style={{flex:1,padding:11,border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555'}}>Annuler</button>
+              <button
+                disabled={shiftsTarget.length===0||(clearTarget==='user'&&!clearUserId)}
+                onClick={()=>{
+                  const toDelete=new Set(shiftsTarget.map(s=>s.id))
+                  saveShifts(shifts.filter(s=>!toDelete.has(s.id)))
+                  setShowClearModal(false)
+                  setClearTarget('all');setClearUserId('')
+                }}
+                style={{flex:1,padding:11,background:shiftsTarget.length>0&&(clearTarget==='all'||clearUserId)?'#ef4444':'#e5e7eb',color:shiftsTarget.length>0&&(clearTarget==='all'||clearUserId)?'#fff':'#aaa',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                🗑️ Effacer ({shiftsTarget.length})
+              </button>
+            </div>
+          </div>
+        </div>
+        )
+      })()}
 
       {/* Modale sélection membres planning */}
       {showAddMemberModal&&(
@@ -630,7 +796,7 @@ export default function ResourceCalendar() {
             </div>
 
             {/* Lignes ouvriers mois */}
-            {ouvriers.map((o,oi)=>{
+            {ouvriersTries.map((o,oi)=>{
               const totalMois=monthDays.reduce((sum,d)=>{
                 return sum+getShiftsForUserDay(o.id,formatDate(d)).reduce((s2,sh)=>s2+calcHeures(sh.startTime,sh.endTime),0)
               },0)
