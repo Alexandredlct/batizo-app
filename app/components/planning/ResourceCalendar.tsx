@@ -129,6 +129,7 @@ export default function ResourceCalendar() {
     try{const r=localStorage.getItem('batizo_planning_order');return r?JSON.parse(r):[]}catch(e){return []}
   })
   const [sortDraft, setSortDraft] = useState<'asc'|'desc'|'custom'>('custom')
+  const [sortKey, setSortKey] = useState(0)
   const [customDraft, setCustomDraft] = useState<string[]>([])
   const [planningMemberIds, setPlanningMemberIds] = useState<string[]>(()=>{
     if(typeof window==='undefined') return []
@@ -343,7 +344,7 @@ export default function ResourceCalendar() {
       })
     }
     return list
-  },[ouvriers,sortMode,customOrder])
+  },[ouvriers,sortMode,customOrder,sortKey])
 
   const days = getWeekDays(weekOffset)
   const monthDays = getMonthDays(monthOffset)
@@ -672,12 +673,16 @@ export default function ResourceCalendar() {
             <div style={{display:'flex',gap:10,marginTop:20}}>
               <button onClick={()=>setShowSortModal(false)} style={{flex:1,padding:11,border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555'}}>Annuler</button>
               <button onClick={()=>{
+                const newOrder = sortDraft==='custom'
+                  ? [...customDraft]
+                  : [...ouvriers].sort((a,b)=>sortDraft==='asc'?a.nom.localeCompare(b.nom,'fr'):b.nom.localeCompare(a.nom,'fr')).map(o=>o.id)
                 setSortMode(sortDraft)
-                if(sortDraft==='custom') {
-                  setCustomOrder([...customDraft])
-                  try{localStorage.setItem('batizo_planning_order',JSON.stringify(customDraft))}catch(e){}
-                }
-                try{localStorage.setItem('batizo_planning_sort',sortDraft)}catch(e){}
+                setCustomOrder(newOrder)
+                setSortKey(k=>k+1)
+                try{
+                  localStorage.setItem('batizo_planning_sort',sortDraft)
+                  localStorage.setItem('batizo_planning_order',JSON.stringify(newOrder))
+                }catch(e){}
                 setShowSortModal(false)
               }} style={{flex:1,padding:11,background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>Valider</button>
             </div>
