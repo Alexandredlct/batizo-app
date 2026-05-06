@@ -32,12 +32,16 @@ interface Poste {
 interface Ouvrier {
   id: string
   nom: string
+  role?: string
   contrat?: string
   heures?: number
   externe?: boolean
   initiales: string
   color: string
 }
+
+const ROLE_LABELS:Record<string,string> = {proprietaire:'Propriétaire',admin:'Admin',utilisateur:'Utilisateur',observateur:'Observateur',ouvrier:'Ouvrier'}
+const ROLE_COLORS:Record<string,string> = {proprietaire:'#7c3aed',admin:'#2563eb',utilisateur:'#374151',observateur:'#9ca3af',ouvrier:'#EA580C'}
 
 const AVATAR_COLORS = ['#7c3aed','#2563eb','#EA580C','#059669','#dc2626','#d97706','#0891b2']
 
@@ -166,7 +170,7 @@ export default function ResourceCalendar() {
         const membres = actifs
           .filter((u: any) => savedIds.includes(u.id))
           .map((u: any, i: number) => ({
-            id: u.id, nom: u.nom, contrat: u.contrat, heures: u.heures,
+            id: u.id, nom: u.nom, role: u.role, contrat: u.contrat, heures: u.heures,
             externe: u.externe, initiales: getInitiales(u.nom),
             color: AVATAR_COLORS[i % AVATAR_COLORS.length]
           }))
@@ -569,8 +573,8 @@ export default function ResourceCalendar() {
                     <div style={{fontSize:13,fontWeight:600,color:'#111',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
                       {o.nom}{o.externe&&<span style={{color:'#888'}}> *</span>}
                     </div>
-                    <div style={{fontSize:11,color:AM,fontWeight:500}}>
-                      {o.heures ? `${o.heures}h` : o.contrat === 'extra' ? 'Extra' : '—'}
+                    <div style={{fontSize:11,fontWeight:500,color:ROLE_COLORS[o.role||'']||'#888'}}>
+                      {ROLE_LABELS[o.role||'']||'—'}
                     </div>
                   </div>
                 </div>
@@ -848,7 +852,7 @@ export default function ResourceCalendar() {
                     <div style={{width:28,height:28,borderRadius:'50%',background:o.color,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#fff',flexShrink:0}}>{o.initiales}</div>
                     <div style={{minWidth:0}}>
                       <div style={{fontSize:12,fontWeight:600,color:'#111',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>{o.nom}{o.externe&&<span style={{color:'#888'}}> *</span>}</div>
-                      <div style={{fontSize:10,color:AM}}>{o.heures?`${o.heures}h`:o.contrat==='extra'?'Extra':'—'}</div>
+                      <div style={{fontSize:10,fontWeight:500,color:ROLE_COLORS[o.role||'']||'#888'}}>{ROLE_LABELS[o.role||'']||'—'}</div>
                     </div>
                   </div>
                   {monthDays.map((d,di)=>{
