@@ -327,17 +327,23 @@ export default function ResourceCalendar() {
   }
 
   // Ouvriers triés
-  const ouvriersTries = useMemo(()=>[...ouvriers].sort((a,b)=>{
-    if(sortMode==='asc') return a.nom.localeCompare(b.nom,'fr')
-    if(sortMode==='desc') return b.nom.localeCompare(a.nom,'fr')
-    if(customOrder.length===0) return 0
-    const ia=customOrder.indexOf(a.id)
-    const ib=customOrder.indexOf(b.id)
-    if(ia===-1&&ib===-1) return 0
-    if(ia===-1) return 1
-    if(ib===-1) return -1
-    return ia-ib
-  }),[ouvriers,sortMode,customOrder])
+  const ouvriersTries = useMemo(()=>{
+    const list = [...ouvriers]
+    if(sortMode==='asc') return list.sort((a,b)=>a.nom.localeCompare(b.nom,'fr'))
+    if(sortMode==='desc') return list.sort((a,b)=>b.nom.localeCompare(a.nom,'fr'))
+    // custom : trier selon customOrder
+    if(customOrder.length>0) {
+      return list.sort((a,b)=>{
+        const ia=customOrder.indexOf(a.id)
+        const ib=customOrder.indexOf(b.id)
+        if(ia===-1&&ib===-1) return 0
+        if(ia===-1) return 1
+        if(ib===-1) return -1
+        return ia-ib
+      })
+    }
+    return list
+  },[ouvriers,sortMode,customOrder])
 
   const days = getWeekDays(weekOffset)
   const monthDays = getMonthDays(monthOffset)
@@ -479,7 +485,10 @@ export default function ResourceCalendar() {
             </button>
             {showMenuMore&&(
               <div style={{position:'absolute',top:'calc(100% + 4px)',left:0,background:'#fff',border:`1px solid ${BD}`,borderRadius:10,boxShadow:'0 4px 20px rgba(0,0,0,0.1)',zIndex:200,minWidth:210,overflow:'hidden'}}>
-                <button onClick={()=>{setSortDraft(sortMode);setCustomDraft(ouvriersTries.map(o=>o.id));setShowSortModal(true);setShowMenuMore(false)}}
+                <button onClick={()=>{setSortDraft(sortMode)
+                  // Init draft depuis customOrder si dispo, sinon ordre brut
+                  setCustomDraft(customOrder.length>0 ? [...customOrder] : ouvriers.map(o=>o.id))
+                  setShowSortModal(true);setShowMenuMore(false)}}
                   style={{width:'100%',padding:'10px 16px',background:'none',border:'none',cursor:'pointer',fontSize:13,color:'#333',textAlign:'left' as const,display:'flex',alignItems:'center',gap:8}}
                   onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.background='#f9fafb'}
                   onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.background='none'}>
@@ -664,12 +673,11 @@ export default function ResourceCalendar() {
               <button onClick={()=>setShowSortModal(false)} style={{flex:1,padding:11,border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555'}}>Annuler</button>
               <button onClick={()=>{
                 setSortMode(sortDraft)
-                const newOrder = sortDraft==='custom' ? [...customDraft] : ouvriers.slice().sort((a,b)=>sortDraft==='asc'?a.nom.localeCompare(b.nom,'fr'):b.nom.localeCompare(a.nom,'fr')).map(o=>o.id)
-                setCustomOrder(newOrder)
-                try{
-                  localStorage.setItem('batizo_planning_sort',sortDraft)
-                  localStorage.setItem('batizo_planning_order',JSON.stringify(newOrder))
-                }catch(e){}
+                if(sortDraft==='custom') {
+                  setCustomOrder([...customDraft])
+                  try{localStorage.setItem('batizo_planning_order',JSON.stringify(customDraft))}catch(e){}
+                }
+                try{localStorage.setItem('batizo_planning_sort',sortDraft)}catch(e){}
                 setShowSortModal(false)
               }} style={{flex:1,padding:11,background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>Valider</button>
             </div>
