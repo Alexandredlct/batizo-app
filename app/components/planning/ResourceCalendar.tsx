@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { DraggableShift } from './DraggableShift'
 import { DroppableCell } from './DroppableCell'
 import DatePicker, { getWeekNumber } from './DatePicker'
@@ -327,10 +327,9 @@ export default function ResourceCalendar() {
   }
 
   // Ouvriers triés
-  const ouvriersTries = [...ouvriers].sort((a,b)=>{
+  const ouvriersTries = useMemo(()=>[...ouvriers].sort((a,b)=>{
     if(sortMode==='asc') return a.nom.localeCompare(b.nom,'fr')
     if(sortMode==='desc') return b.nom.localeCompare(a.nom,'fr')
-    // custom - si order vide, garder ordre actuel
     if(customOrder.length===0) return 0
     const ia=customOrder.indexOf(a.id)
     const ib=customOrder.indexOf(b.id)
@@ -338,7 +337,7 @@ export default function ResourceCalendar() {
     if(ia===-1) return 1
     if(ib===-1) return -1
     return ia-ib
-  })
+  }),[ouvriers,sortMode,customOrder])
 
   const days = getWeekDays(weekOffset)
   const monthDays = getMonthDays(monthOffset)
