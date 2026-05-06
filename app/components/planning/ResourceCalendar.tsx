@@ -330,7 +330,8 @@ export default function ResourceCalendar() {
   const ouvriersTries = [...ouvriers].sort((a,b)=>{
     if(sortMode==='asc') return a.nom.localeCompare(b.nom,'fr')
     if(sortMode==='desc') return b.nom.localeCompare(a.nom,'fr')
-    // custom
+    // custom - si order vide, garder ordre actuel
+    if(customOrder.length===0) return 0
     const ia=customOrder.indexOf(a.id)
     const ib=customOrder.indexOf(b.id)
     if(ia===-1&&ib===-1) return 0
@@ -664,8 +665,12 @@ export default function ResourceCalendar() {
               <button onClick={()=>setShowSortModal(false)} style={{flex:1,padding:11,border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555'}}>Annuler</button>
               <button onClick={()=>{
                 setSortMode(sortDraft)
-                if(sortDraft==='custom') setCustomOrder(customDraft)
-                try{localStorage.setItem('batizo_planning_sort',sortDraft);if(sortDraft==='custom')localStorage.setItem('batizo_planning_order',JSON.stringify(customDraft))}catch(e){}
+                const newOrder = sortDraft==='custom' ? [...customDraft] : ouvriers.slice().sort((a,b)=>sortDraft==='asc'?a.nom.localeCompare(b.nom,'fr'):b.nom.localeCompare(a.nom,'fr')).map(o=>o.id)
+                setCustomOrder(newOrder)
+                try{
+                  localStorage.setItem('batizo_planning_sort',sortDraft)
+                  localStorage.setItem('batizo_planning_order',JSON.stringify(newOrder))
+                }catch(e){}
                 setShowSortModal(false)
               }} style={{flex:1,padding:11,background:G,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer'}}>Valider</button>
             </div>
@@ -705,15 +710,15 @@ export default function ResourceCalendar() {
             ))}
             {clearTarget==='user'&&(
               <select value={clearUserId} onChange={e=>setClearUserId(e.target.value)}
-                style={{width:'100%',padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',marginTop:8,marginLeft:24}}>
+                style={{width:'calc(100% - 30px)',marginLeft:30,padding:'9px 12px',border:`1px solid ${BD}`,borderRadius:7,fontSize:13,outline:'none',color:'#111',marginTop:8,boxSizing:'border-box' as const}}>
                 <option value="">Sélectionner un membre...</option>
                 {ouvriersTries.map(o=>(
                   <option key={o.id} value={o.id}>{o.nom} ({shiftsThisWeek.filter(s=>s.userId===o.id).length} shifts)</option>
                 ))}
               </select>
             )}
-            {shiftsTarget.length>0&&clearTarget==='user'&&clearUserId&&(
-              <div style={{fontSize:11,color:'#888',marginTop:6,marginLeft:24}}>{shiftsTarget.length} shift(s) seront supprimés</div>
+            {clearTarget==='user'&&clearUserId&&(
+              <div style={{fontSize:11,color:'#888',marginTop:6,marginLeft:30}}>{shiftsTarget.length} shift(s) seront supprimés</div>
             )}
             <div style={{display:'flex',gap:10,marginTop:20}}>
               <button onClick={()=>setShowClearModal(false)} style={{flex:1,padding:11,border:`1px solid ${BD}`,borderRadius:8,background:'#fff',fontSize:13,cursor:'pointer',color:'#555'}}>Annuler</button>
