@@ -346,6 +346,11 @@ export default function ResourceCalendar() {
     return list
   },[ouvriers,sortMode,customOrder,sortKey])
 
+  // DEBUG - à supprimer après fix
+  useEffect(()=>{
+    console.log('sortMode:', sortMode, 'customOrder:', customOrder, 'ouvriersTries:', ouvriersTries.map(o=>o.nom))
+  },[sortMode,customOrder,ouvriersTries,sortKey])
+
   const days = getWeekDays(weekOffset)
   const monthDays = getMonthDays(monthOffset)
   const moisLabelMois = new Date(new Date().getFullYear(), new Date().getMonth()+monthOffset, 1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'})
