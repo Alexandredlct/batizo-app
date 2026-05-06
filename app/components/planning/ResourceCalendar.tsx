@@ -327,12 +327,11 @@ export default function ResourceCalendar() {
     return days
   }
 
-  // Ouvriers triés
-  const ouvriersTries = useMemo(()=>{
+  // Ouvriers triés - calcul direct sans useMemo
+  const getSortedOuvriers = () => {
     const list = [...ouvriers]
     if(sortMode==='asc') return list.sort((a,b)=>a.nom.localeCompare(b.nom,'fr'))
     if(sortMode==='desc') return list.sort((a,b)=>b.nom.localeCompare(a.nom,'fr'))
-    // custom : trier selon customOrder
     if(customOrder.length>0) {
       return list.sort((a,b)=>{
         const ia=customOrder.indexOf(a.id)
@@ -344,12 +343,10 @@ export default function ResourceCalendar() {
       })
     }
     return list
-  },[ouvriers,sortMode,customOrder,sortKey])
+  }
+  const ouvriersTries = getSortedOuvriers()
 
-  // DEBUG - à supprimer après fix
-  useEffect(()=>{
-    console.log('sortMode:', sortMode, 'customOrder:', customOrder, 'ouvriersTries:', ouvriersTries.map(o=>o.nom))
-  },[sortMode,customOrder,ouvriersTries,sortKey])
+
 
   const days = getWeekDays(weekOffset)
   const monthDays = getMonthDays(monthOffset)
